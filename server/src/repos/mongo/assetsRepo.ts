@@ -1,6 +1,5 @@
 import { getTaggedLogger } from '../../logging/console';
 import { Asset } from '../../models/Asset';
-import config from '../../config';
 import type { AssetDTO, AssetsRepo } from '../interfaces';
 
 const log = getTaggedLogger('REPO:ASSETS');

@@ -1,7 +1,6 @@
 import { Types } from 'mongoose';
 import { getTaggedLogger } from '../../logging/console';
 import { Project } from '../../models/Project';
-import config from '../../config';
 import type { ProjectDTO, ProjectsRepo } from '../interfaces';
 
 const log = getTaggedLogger('REPO:PROJECTS');

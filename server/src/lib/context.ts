@@ -12,7 +12,6 @@
  * - Handlers can read `(ctx.req as any).userId` or `ctx.userId` if provided
  */
 import bunyan from 'bunyan';
-import { getTaggedLogger } from '../logging/console';
 import type { IncomingMessage } from 'http';
 
 /**
@@ -37,6 +36,6 @@ export interface RequestContext {
  * Build a new context instance. Keep this minimal and immutable.
  */
 export function buildContext({ requestId, log, req, userId }: RequestContext): RequestContext {
-  const child = getTaggedLogger('WS').child({ requestId });
+  const child = log.child({ requestId });
   return { requestId, log: child, req, userId };
 }

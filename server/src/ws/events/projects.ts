@@ -11,7 +11,6 @@ import { Project } from '../../models/Project';
 import { send } from '../types';
 import type { RequestContext } from '../../lib/context';
 import { requireAuth } from '../authz';
-import { verifyTokenOrThrow } from '../../services/jwt';
 
 export function registerProjectEvents(schemas: Schemas) {
   return {
@@ -106,7 +105,7 @@ export function registerProjectEvents(schemas: Schemas) {
           const authHeader = ctx.req.headers['authorization'];
           const token = Array.isArray(authHeader) ? authHeader[0] : authHeader;
           if (!token) return false;
-          const jwt = token.startsWith('Bearer ') ? token.slice(7) : token;
+          const _jwt = token.startsWith('Bearer ') ? token.slice(7) : token;
           // This call is async; wrap in sync IIFE pattern is not valid here, so return false and rely on owner
           return false;
         } catch {
