@@ -100,18 +100,7 @@ export function registerProjectEvents(schemas: Schemas) {
       const current = await Project.findById(req.id).lean();
       if (!current) return send(socket, 'system:error', { message: 'project not found' });
       // Optional role-based override: allow if token has role admin/editor
-      const roleAllowed = (() => {
-        try {
-          const authHeader = ctx.req.headers['authorization'];
-          const token = Array.isArray(authHeader) ? authHeader[0] : authHeader;
-          if (!token) return false;
-          const _jwt = token.startsWith('Bearer ') ? token.slice(7) : token;
-          // This call is async; wrap in sync IIFE pattern is not valid here, so return false and rely on owner
-          return false;
-        } catch {
-          return false;
-        }
-      })();
+      const roleAllowed = false;
       if (current.ownerId !== userId && !roleAllowed) {
         return send(socket, 'system:error', { message: 'forbidden' });
       }
