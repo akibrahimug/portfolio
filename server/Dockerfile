@@ -9,8 +9,7 @@ RUN yarn build
 # Runner: lean image for production
 FROM node:20-slim
 WORKDIR /app
-ENV NODE_ENV=production \\
-    NODE_OPTIONS=--enable-source-maps
+ENV NODE_ENV=production NODE_OPTIONS=--enable-source-maps
 COPY --from=builder /app/package.json /app/yarn.lock ./
 RUN corepack enable && yarn workspaces focus --all --production || yarn install --production --frozen-lockfile
 COPY --from=builder /app/dist ./dist
