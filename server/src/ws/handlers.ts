@@ -5,6 +5,7 @@
  * - Records per-event metrics and logs duration
  */
 import type bunyan from 'bunyan';
+import { getTaggedLogger } from '../logging/console';
 import type { WebSocket } from 'ws';
 import { send } from './types';
 import type { Schemas } from '../schemas';
@@ -38,11 +39,14 @@ interface Deps {
  * - setGetConnections: allows the caller to provide a lazy connection counter
  */
 export function buildHandlers({ log, schemas, models: _models }: Deps) {
+  // ensure logs have WS tag when created from index, which already uses SERVER tag
+  const wsLog = getTaggedLogger('WS');
   /**
    * Called once per new WebSocket connection. Sends a welcome frame.
    */
   async function onConnection(socket: WebSocket, _ctx: RequestContext) {
     send(socket, 'system:welcome', { version: 'v1' });
+    wsLog.info({ event: 'system:welcome' }, 'welcome sent');
   }
 
   // Function pointer returning the current number of active WS connections.
@@ -94,39 +98,50 @@ export function buildHandlers({ log, schemas, models: _models }: Deps) {
           // Echo with latency computation based on client-provided ts
           const req = schemas.SystemPingReq.parse(parsed.payload);
           const latencyMs = Date.now() - req.ts;
+          wsLog.info({ event: 'system:ping', latencyMs }, 'ping');
           return send(socket, 'system:ping', { pong: true, ts: req.ts, latencyMs });
         }
         case 'auth:hello': {
           // Placeholder echo; real identity established at handshake time
           schemas.AuthHelloReq.parse(parsed.payload);
           const user = { id: 'anonymous', email: 'anon@example.com', name: null };
+          wsLog.info({ event: 'auth:hello' }, 'auth hello');
           return send(socket, 'auth:hello', { user, issuedAt: new Date().toISOString() });
         }
         // Projects
         case 'projects:list':
+          wsLog.info({ event: 'projects:list' }, 'dispatch');
           return projectHandlers.list(socket, parsed.payload);
         case 'projects:get':
+          wsLog.info({ event: 'projects:get' }, 'dispatch');
           return projectHandlers.get(socket, parsed.payload);
         case 'projects:create':
           if (!allow(ctx)) return send(socket, 'system:error', { message: 'rate_limited' });
+          wsLog.info({ event: 'projects:create', userId: ctx.req.userId }, 'dispatch');
           return projectHandlers.create(socket, parsed.payload, ctx);
         case 'projects:update':
           if (!allow(ctx)) return send(socket, 'system:error', { message: 'rate_limited' });
+          wsLog.info({ event: 'projects:update', userId: ctx.req.userId }, 'dispatch');
           return projectHandlers.update(socket, parsed.payload, ctx);
         case 'projects:delete':
           if (!allow(ctx)) return send(socket, 'system:error', { message: 'rate_limited' });
+          wsLog.info({ event: 'projects:delete', userId: ctx.req.userId }, 'dispatch');
           return projectHandlers.remove(socket, parsed.payload, ctx);
         // Assets
         case 'assets:requestUpload':
           if (!allow(ctx)) return send(socket, 'system:error', { message: 'rate_limited' });
+          wsLog.info({ event: 'assets:requestUpload', userId: ctx.req.userId }, 'dispatch');
           return assetHandlers.requestUpload(socket, parsed.payload, ctx);
         case 'assets:confirm':
           if (!allow(ctx)) return send(socket, 'system:error', { message: 'rate_limited' });
+          wsLog.info({ event: 'assets:confirm', userId: ctx.req.userId }, 'dispatch');
           return assetHandlers.confirm(socket, parsed.payload, ctx);
         // Stats
         case 'stats:get':
+          wsLog.info({ event: 'stats:get' }, 'dispatch');
           return statsHandlers.get(socket);
         case 'stats:subscribe':
+          wsLog.info({ event: 'stats:subscribe' }, 'dispatch');
           return statsHandlers.subscribe(socket, parsed.payload);
         default:
           ok = false;

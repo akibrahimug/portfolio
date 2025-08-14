@@ -16,7 +16,7 @@ import 'dotenv/config';
 import http from 'http';
 import express from 'express';
 import cors from 'cors';
-import bunyan from 'bunyan';
+import { getTaggedLogger } from './logging/console';
 import { WebSocketServer, WebSocket } from 'ws';
 import { v4 as uuidv4 } from 'uuid';
 import mongoose from 'mongoose';
@@ -35,7 +35,7 @@ import { snapshot } from './logging/metrics';
 import { startMetrics } from './logging/otel';
 import { initSentry } from './logging/sentry';
 
-const log = bunyan.createLogger({ name: config.serviceName, level: 'info' });
+const log = getTaggedLogger('SERVER');
 
 /**
  * Extract a bearer token from the WS upgrade request.
@@ -78,11 +78,11 @@ async function main() {
   const connections = new Set<WebSocket>();
 
   // Minimal HTTP surface under base path
-  app.get(`${config.apiBase}/healthz`, (_req, res) => {
+  app.get(`${config.apiBase}/healthz`, (req, res) => {
     // Return metadata helpful for debugging and uptime dashboards
     const now = new Date();
     const mem = process.memoryUsage();
-    res.status(200).json({
+    const payload = {
       ok: true,
       service: config.serviceName,
       version: pkg.version,
@@ -92,25 +92,36 @@ async function main() {
       apiBase: config.apiBase,
       wsPath: `${config.apiBase}/ws`,
       rssMb: Math.round((mem.rss / 1024 / 1024) * 10) / 10,
-    });
+      ip: req.ip,
+      userAgent: req.headers['user-agent'],
+    } as const;
+    log.info({ route: 'healthz', ip: req.ip }, 'healthz');
+    res.status(200).json(payload);
   });
 
-  app.get(`${config.apiBase}/readyz`, (_req, res) => {
+  app.get(`${config.apiBase}/readyz`, (req, res) => {
     // Consider ready when Mongoose is connected and the process is responsive
     const dbReady = mongoose.connection.readyState === 1; // connected
     const mem = process.memoryUsage();
-    res.status(dbReady ? 200 : 503).json({
+    const payload = {
       ready: dbReady,
       connections: connections.size,
       apiBase: config.apiBase,
       wsPath: `${config.apiBase}/ws`,
       rssMb: Math.round((mem.rss / 1024 / 1024) * 10) / 10,
-    });
+    } as const;
+    log.info(
+      { route: 'readyz', ip: req.ip, ready: dbReady, connections: connections.size },
+      'readyz',
+    );
+    res.status(dbReady ? 200 : 503).json(payload);
   });
 
   // Optional minimal HTTP stats endpoint mirroring stats:get
-  app.get(`${config.apiBase}/stats`, (_req, res) => {
-    res.status(200).json(snapshot(connections.size));
+  app.get(`${config.apiBase}/stats`, (req, res) => {
+    const snap = snapshot(connections.size);
+    log.info({ route: 'stats', ip: req.ip, ...snap }, 'stats snapshot');
+    res.status(200).json(snap);
   });
 
   // Create HTTP server to host both HTTP routes and WS upgrades
@@ -148,14 +159,26 @@ async function main() {
       if (!token) {
         // Close with 4401 (similar to HTTP 401) if no token present
         socket.close(4401, 'unauthorized');
+        log.warn(
+          { event: 'ws:connection', reason: 'missing_token', ip: req.socket.remoteAddress },
+          'ws unauthorized',
+        );
         return;
       }
       // Verify signature/claims; attach identity to the request for handlers
       const claims = await verifyTokenOrThrow(token);
       (req as unknown as { userId?: string }).userId = claims.sub;
+      log.info(
+        { event: 'ws:connection', userId: claims.sub, ip: req.socket.remoteAddress },
+        'ws connected',
+      );
     } catch (err) {
       // Close with 4403 (similar to HTTP 403) on verification failure
       socket.close(4403, 'forbidden');
+      log.warn(
+        { event: 'ws:connection', error: err instanceof Error ? err.message : String(err) },
+        'ws forbidden',
+      );
       return;
     }
 
@@ -170,7 +193,13 @@ async function main() {
     // Route every inbound frame through the central dispatcher
     socket.on('message', (raw) => handleMessage(socket, raw as Buffer, ctx));
     // Remove from connection set on disconnect to keep metrics accurate
-    socket.on('close', () => connections.delete(socket));
+    socket.on('close', (code, reason) => {
+      connections.delete(socket);
+      log.info(
+        { event: 'ws:close', code, reason: reason?.toString(), connections: connections.size },
+        'ws closed',
+      );
+    });
   });
 
   // Graceful shutdown
