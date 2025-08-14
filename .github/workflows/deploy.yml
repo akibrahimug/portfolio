@@ -1,4 +1,4 @@
-name: Deploy
+name: Deploy to Cloud Run
 
 on:
   push:
@@ -12,54 +12,73 @@ on:
 
 jobs:
   deploy-staging:
+    name: Build, Push & Deploy (staging)
     runs-on: ubuntu-latest
+    # All shell runs happen in the server/ dir – where your Dockerfile lives
     defaults:
       run:
         working-directory: server
     permissions:
       contents: read
       id-token: write
+
     steps:
+      # 1) Checkout code
       - uses: actions/checkout@v4
+
+      # 2) Node setup + Yarn cache
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: yarn
           cache-dependency-path: server/yarn.lock
+
+      # 3) Install & verify
       - run: yarn install --frozen-lockfile
       - run: yarn lint
       - run: yarn typecheck
       - run: yarn test --ci
-      - name: Build Docker image
-        run: docker build -t ${{ secrets.GCP_ARTIFACT_REGISTRY_REPO }}/$SERVICE_NAME:${{ github.sha }} .
-        env:
-          SERVICE_NAME: ${{ secrets.SERVICE_NAME }}
-      - name: Auth to GCP
-        uses: google-github-actions/auth@v2
+
+      # 4) Authenticate to Google Cloud via Workload Identity
+      - uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
           service_account: ${{ secrets.GCP_SA_EMAIL }}
-          audience: "https://github.com/akibrahimug/portfolio"
-      - name: Set up gcloud
-        uses: google-github-actions/setup-gcloud@v2
-      - name: Configure Docker auth
-        run: HOST=$(echo "${{ secrets.GCP_ARTIFACT_REGISTRY_REPO }}" | cut -d/ -f1); gcloud auth configure-docker "$HOST"
-      - name: Push image
-        run: docker push ${{ secrets.GCP_ARTIFACT_REGISTRY_REPO }}/${{ secrets.SERVICE_NAME }}:${{ github.sha }}
+          # Important: audience must match *this* repository
+          audience: https://github.com/${{ github.repository }}
+
+      # 5) Install gcloud
+      - uses: google-github-actions/setup-gcloud@v2
+
+      # 6) Compose image name and registry host, export to env
+      - id: vars
+        run: |
+          echo "REG_HOST=${{ secrets.GCP_REGION }}-docker.pkg.dev" >> "$GITHUB_ENV"
+          echo "IMAGE=${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/${{ secrets.GCP_AR_REPO }}/${{ secrets.SERVICE_NAME }}:${{ github.sha }}" >> "$GITHUB_ENV"
+
+      # 7) Configure Docker to auth to Artifact Registry
+      - run: gcloud auth configure-docker "$REG_HOST" --quiet
+
+      # 8) Build & push the Docker image
+      #    (context is ".", i.e. server/, because of defaults. Dockerfile is server/Dockerfile)
+      - run: docker build -t "$IMAGE" .
+      - run: docker push "$IMAGE"
+
+      # 9) Deploy to Cloud Run (staging)
       - name: Deploy to Cloud Run (staging)
         run: |
-          gcloud run deploy $SERVICE_NAME-stg \
-            --image=$IMAGE \
-            --region=$GCP_REGION \
+          gcloud run deploy "$SERVICE_NAME-stg" \
+            --image="$IMAGE" \
+            --region="$GCP_REGION" \
             --platform=managed \
             --allow-unauthenticated \
             --port=5000 \
             --set-env-vars=NODE_ENV=production \
             --set-env-vars=API_BASE=/api/v1 \
-            --set-env-vars=WS_ORIGINS=$WS_ORIGINS \
-            --set-env-vars=GCS_BUCKET_UPLOADS=$GCS_BUCKET_UPLOADS \
-            --set-env-vars=CLERK_ISSUER=$CLERK_ISSUER \
-            --set-env-vars=CLERK_AUDIENCE=$CLERK_AUDIENCE \
+            --set-env-vars=WS_ORIGINS="$WS_ORIGINS" \
+            --set-env-vars=GCS_BUCKET_UPLOADS="$GCS_BUCKET_UPLOADS" \
+            --set-env-vars=CLERK_ISSUER="$CLERK_ISSUER" \
+            --set-env-vars=CLERK_AUDIENCE="$CLERK_AUDIENCE" \
             --set-secrets=MONGODB_URI=MONGODB_URI:latest \
             --min-instances=0 \
             --max-instances=10 \
@@ -67,58 +86,62 @@ jobs:
             --timeout=900s
         env:
           SERVICE_NAME: ${{ secrets.SERVICE_NAME }}
-          IMAGE: ${{ secrets.GCP_ARTIFACT_REGISTRY_REPO }}/${{ secrets.SERVICE_NAME }}:${{ github.sha }}
           GCP_REGION: ${{ secrets.GCP_REGION }}
           WS_ORIGINS: ${{ secrets.WS_ORIGINS }}
           GCS_BUCKET_UPLOADS: ${{ secrets.GCS_BUCKET_UPLOADS }}
           CLERK_ISSUER: ${{ secrets.CLERK_ISSUER }}
           CLERK_AUDIENCE: ${{ secrets.CLERK_AUDIENCE }}
+
+      # 10) Readiness check (staging)
       - name: Readiness check (staging)
-        run: curl -f $URL/api/v1/readyz | cat
+        run: curl -fsSL "$URL/api/v1/readyz" | cat
         env:
           URL: ${{ secrets.STAGING_URL }}
 
   promote-prod:
+    name: Promote image to prod
     needs: deploy-staging
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: server
-    if: ${{ github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/master' }}
+    # Run on push to master *or* when manually dispatched with promote=true
+    if: ${{ (github.event_name == 'workflow_dispatch' && github.event.inputs.promote == 'true') || github.ref == 'refs/heads/master' }}
     permissions:
       contents: read
       id-token: write
+
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: yarn
-          cache-dependency-path: server/yarn.lock
-      - name: Auth to GCP
-        uses: google-github-actions/auth@v2
+
+      # Auth again (separate job)
+      - uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
           service_account: ${{ secrets.GCP_SA_EMAIL }}
-          audience: "https://github.com/akibrahimug/portfolio"
-      - name: Set up gcloud
-        uses: google-github-actions/setup-gcloud@v2
-      - name: Configure Docker auth
-        run: HOST=$(echo "${{ secrets.GCP_ARTIFACT_REGISTRY_REPO }}" | cut -d/ -f1); gcloud auth configure-docker "$HOST"
+          audience: https://github.com/${{ github.repository }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      # Recompose IMAGE exactly the same way (same commit SHA)
+      - id: vars
+        run: |
+          echo "IMAGE=${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/${{ secrets.GCP_AR_REPO }}/${{ secrets.SERVICE_NAME }}:${{ github.sha }}" >> "$GITHUB_ENV"
+
       - name: Deploy to Cloud Run (prod)
         run: |
-          gcloud run deploy $SERVICE_NAME-prd \
-            --image=$IMAGE \
-            --region=$GCP_REGION \
+          gcloud run deploy "$SERVICE_NAME-prd" \
+            --image="$IMAGE" \
+            --region="$GCP_REGION" \
             --platform=managed \
             --allow-unauthenticated \
             --port=5000 \
             --set-env-vars=NODE_ENV=production \
             --set-env-vars=API_BASE=/api/v1 \
-            --set-env-vars=WS_ORIGINS=$WS_ORIGINS \
-            --set-env-vars=GCS_BUCKET_UPLOADS=$GCS_BUCKET_UPLOADS \
-            --set-env-vars=CLERK_ISSUER=$CLERK_ISSUER \
-            --set-env-vars=CLERK_AUDIENCE=$CLERK_AUDIENCE \
+            --set-env-vars=WS_ORIGINS="$WS_ORIGINS" \
+            --set-env-vars=GCS_BUCKET_UPLOADS="$GCS_BUCKET_UPLOADS" \
+            --set-env-vars=CLERK_ISSUER="$CLERK_ISSUER" \
+            --set-env-vars=CLERK_AUDIENCE="$CLERK_AUDIENCE" \
             --set-secrets=MONGODB_URI=MONGODB_URI:latest \
             --min-instances=1 \
             --max-instances=20 \
@@ -126,13 +149,13 @@ jobs:
             --timeout=900s
         env:
           SERVICE_NAME: ${{ secrets.SERVICE_NAME }}
-          IMAGE: ${{ secrets.GCP_ARTIFACT_REGISTRY_REPO }}/${{ secrets.SERVICE_NAME }}:${{ github.sha }}
           GCP_REGION: ${{ secrets.GCP_REGION }}
           WS_ORIGINS: ${{ secrets.WS_ORIGINS }}
           GCS_BUCKET_UPLOADS: ${{ secrets.GCS_BUCKET_UPLOADS }}
           CLERK_ISSUER: ${{ secrets.CLERK_ISSUER }}
           CLERK_AUDIENCE: ${{ secrets.CLERK_AUDIENCE }}
+
       - name: Readiness check (prod)
-        run: curl -f $URL/api/v1/readyz | cat
+        run: curl -fsSL "$URL/api/v1/readyz" | cat
         env:
           URL: ${{ secrets.PROD_URL }}
