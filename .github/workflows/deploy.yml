@@ -2,17 +2,20 @@ name: Deploy
 
 on:
   push:
-    branches: ['master']
+    branches: ["master"]
   workflow_dispatch:
     inputs:
       promote:
-        description: 'Promote current commit to prod'
+        description: "Promote current commit to prod"
         required: false
-        default: 'true'
+        default: "true"
 
 jobs:
   deploy-staging:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
     permissions:
       contents: read
       id-token: write
@@ -22,14 +25,14 @@ jobs:
         with:
           node-version: 20
           cache: npm
+          cache-dependency-path: server/package-lock.json
       - run: npm ci
       - run: npm run lint
       - run: npm run typecheck
       - run: npm test -- --ci
       - name: Build Docker image
-        run: docker build -t ${{ env.GCP_ARTIFACT_REGISTRY_REPO }}/$SERVICE_NAME:${{ github.sha }} .
+        run: docker build -t ${{ secrets.GCP_ARTIFACT_REGISTRY_REPO }}/$SERVICE_NAME:${{ github.sha }} .
         env:
-          GCP_ARTIFACT_REGISTRY_REPO: ${{ secrets.GCP_ARTIFACT_REGISTRY_REPO }}
           SERVICE_NAME: ${{ secrets.SERVICE_NAME }}
       - name: Auth to GCP
         uses: google-github-actions/auth@v2
@@ -39,13 +42,9 @@ jobs:
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@v2
       - name: Configure Docker auth
-        run: gcloud auth configure-docker ${{ env.REGISTRY_HOST }}
-        env:
-          REGISTRY_HOST: ${{ secrets.GCP_REGISTRY_HOST }}
+        run: gcloud auth configure-docker ${{ secrets.GCP_REGISTRY_HOST }}
       - name: Push image
-        run: docker push ${{ env.IMAGE }}
-        env:
-          IMAGE: ${{ secrets.GCP_ARTIFACT_REGISTRY_REPO }}/${{ secrets.SERVICE_NAME }}:${{ github.sha }}
+        run: docker push ${{ secrets.GCP_ARTIFACT_REGISTRY_REPO }}/${{ secrets.SERVICE_NAME }}:${{ github.sha }}
       - name: Deploy to Cloud Run (staging)
         run: |
           gcloud run deploy $SERVICE_NAME-stg \
@@ -81,6 +80,9 @@ jobs:
   promote-prod:
     needs: deploy-staging
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
     if: ${{ github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/master' }}
     permissions:
       contents: read
@@ -91,6 +93,7 @@ jobs:
         with:
           node-version: 20
           cache: npm
+          cache-dependency-path: server/package-lock.json
       - name: Auth to GCP
         uses: google-github-actions/auth@v2
         with:
