@@ -81,7 +81,8 @@ jobs:
             --min-instances=0 \
             --max-instances=10 \
             --concurrency=80 \
-            --timeout=900s
+            --timeout=900s \
+            --service-account=${{ secrets.GCP_SA_EMAIL }}
         env:
           SERVICE_NAME: ${{ secrets.SERVICE_NAME }}
           IMAGE: ${{ secrets.GCP_ARTIFACT_REGISTRY_REPO }}/${{ secrets.SERVICE_NAME }}:${{ github.sha }}
@@ -156,7 +157,8 @@ jobs:
             --min-instances=1 \
             --max-instances=20 \
             --concurrency=80 \
-            --timeout=900s
+            --timeout=900s \
+            --service-account=${{ secrets.GCP_SA_EMAIL }}
         env:
           SERVICE_NAME: ${{ secrets.SERVICE_NAME }}
           IMAGE: ${{ secrets.GCP_ARTIFACT_REGISTRY_REPO }}/${{ secrets.SERVICE_NAME }}:${{ github.sha }}
