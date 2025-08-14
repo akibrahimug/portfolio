@@ -58,16 +58,6 @@ jobs:
             secretmanager.googleapis.com \
             run.googleapis.com || true
 
-      - name: Ensure Secret Accessor on MONGODB_URI (idempotent)
-        run: |
-          set -euo pipefail
-          gcloud secrets add-iam-policy-binding MONGODB_URI \
-            --project="$GCP_PROJECT" \
-            --member="serviceAccount:${{ secrets.GCP_SA_EMAIL }}" \
-            --role="roles/secretmanager.secretAccessor" || true
-        env:
-          GCP_PROJECT: ${{ secrets.GCP_PROJECT }}
-
       - name: Configure Docker auth
         shell: bash
         run: |
