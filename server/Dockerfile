@@ -1,18 +1,18 @@
 # Builder: install deps and compile TS
 FROM node:20 as builder
 WORKDIR /app
-COPY package*.json ./
-RUN npm ci
+COPY package.json yarn.lock ./
+RUN corepack enable && yarn install --frozen-lockfile
 COPY . .
-RUN npm run build
+RUN yarn build
 
 # Runner: lean image for production
 FROM node:20-slim
 WORKDIR /app
 ENV NODE_ENV=production \\
     NODE_OPTIONS=--enable-source-maps
-COPY --from=builder /app/package*.json ./
-RUN npm ci --omit=dev
+COPY --from=builder /app/package.json /app/yarn.lock ./
+RUN corepack enable && yarn workspaces focus --all --production || yarn install --production --frozen-lockfile
 COPY --from=builder /app/dist ./dist
 # Drop root for security
 RUN useradd -m -u 10001 appuser \

@@ -24,12 +24,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
-          cache-dependency-path: server/package-lock.json
-      - run: npm ci
-      - run: npm run lint
-      - run: npm run typecheck
-      - run: npm test -- --ci
+          cache: yarn
+          cache-dependency-path: server/yarn.lock
+      - run: yarn install --frozen-lockfile
+      - run: yarn lint
+      - run: yarn typecheck
+      - run: yarn test --ci
       - name: Build Docker image
         run: docker build -t ${{ secrets.GCP_ARTIFACT_REGISTRY_REPO }}/$SERVICE_NAME:${{ github.sha }} .
         env:
@@ -42,7 +42,7 @@ jobs:
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@v2
       - name: Configure Docker auth
-        run: gcloud auth configure-docker ${{ secrets.GCP_REGISTRY_HOST }}
+        run: HOST=$(echo "${{ secrets.GCP_ARTIFACT_REGISTRY_REPO }}" | cut -d/ -f1); gcloud auth configure-docker "$HOST"
       - name: Push image
         run: docker push ${{ secrets.GCP_ARTIFACT_REGISTRY_REPO }}/${{ secrets.SERVICE_NAME }}:${{ github.sha }}
       - name: Deploy to Cloud Run (staging)
@@ -92,8 +92,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
-          cache-dependency-path: server/package-lock.json
+          cache: yarn
+          cache-dependency-path: server/yarn.lock
       - name: Auth to GCP
         uses: google-github-actions/auth@v2
         with:
@@ -102,9 +102,7 @@ jobs:
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@v2
       - name: Configure Docker auth
-        run: gcloud auth configure-docker ${{ env.REGISTRY_HOST }}
-        env:
-          REGISTRY_HOST: ${{ secrets.GCP_REGISTRY_HOST }}
+        run: HOST=$(echo "${{ secrets.GCP_ARTIFACT_REGISTRY_REPO }}" | cut -d/ -f1); gcloud auth configure-docker "$HOST"
       - name: Deploy to Cloud Run (prod)
         run: |
           gcloud run deploy $SERVICE_NAME-prd \
