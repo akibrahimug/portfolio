@@ -54,7 +54,7 @@ jobs:
       - id: vars
         run: |
           echo "REG_HOST=${{ secrets.GCP_REGION }}-docker.pkg.dev" >> "$GITHUB_ENV"
-          echo "IMAGE=${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/${{ secrets.GCP_AR_REPO }}/${{ secrets.SERVICE_NAME }}:${{ github.sha }}" >> "$GITHUB_ENV"
+          echo "IMAGE=${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/${{ secrets.GCP_ARTIFACT_REGISTRY_REPO }}/${{ secrets.SERVICE_NAME }}:${{ github.sha }}" >> "$GITHUB_ENV"
 
       # 7) Configure Docker to auth to Artifact Registry
       - run: gcloud auth configure-docker "$REG_HOST" --quiet
@@ -126,7 +126,7 @@ jobs:
       # Recompose IMAGE exactly the same way (same commit SHA)
       - id: vars
         run: |
-          echo "IMAGE=${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/${{ secrets.GCP_AR_REPO }}/${{ secrets.SERVICE_NAME }}:${{ github.sha }}" >> "$GITHUB_ENV"
+          echo "IMAGE=${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/${{ secrets.GCP_ARTIFACT_REGISTRY_REPO }}/${{ secrets.SERVICE_NAME }}:${{ github.sha }}" >> "$GITHUB_ENV"
 
       - name: Deploy to Cloud Run (prod)
         run: |
