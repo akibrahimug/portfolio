@@ -98,7 +98,7 @@ async function main() {
     } as const;
     log.info({ route: 'healthz', ip: req.ip }, 'healthz');
     res.status(200).json(payload);
-  });
+  }); 
 
   app.get(`${config.apiBase}/readyz`, (req, res) => {
     // Consider ready when Mongoose is connected and the process is responsive
