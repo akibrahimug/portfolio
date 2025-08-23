@@ -21,7 +21,7 @@ describe('Projects integration', () => {
     await stop();
   });
 
-  it('supports list/get without crashing', async () => {
+  it('returns deprecation error for projects over WS', async () => {
     const url = base.replace('http', 'ws') + '/api/v1/ws';
     await new Promise<void>((resolve, reject) => {
       const ws = new WebSocket(url);
@@ -30,8 +30,8 @@ describe('Projects integration', () => {
       });
       ws.on('message', (data) => {
         const msg = JSON.parse(String(data));
-        if (msg.event === 'projects:list') {
-          expect(msg.payload.items).toBeDefined();
+        if (msg.event === 'system:error') {
+          expect(msg.payload.message).toBe('deprecated_event_use_http');
           ws.close();
           resolve();
         }

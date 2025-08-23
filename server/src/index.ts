@@ -26,14 +26,14 @@ import config from './config';
 import { buildSchemas } from './schemas';
 import { buildHandlers } from './ws/handlers';
 import { connectMongoose } from './infra/mongoose';
-import { Project } from './models/Project';
-import { Asset } from './models/Asset';
 import { buildContext } from './lib/context';
 import type { AuthenticatedRequest } from './lib/context';
+import routes from './routes';
 import { verifyTokenOrThrow } from './services/jwt';
 import { snapshot } from './logging/metrics';
-import { startMetrics } from './logging/otel';
+// import { startMetrics } from './logging/otel'; // Temporarily disabled due to Node version constraint
 import { initSentry } from './logging/sentry';
+
 
 const log = getTaggedLogger('SERVER');
 
@@ -71,8 +71,11 @@ async function main() {
       origin: config.wsOrigins || '*',
     }),
   );
-  // Parse JSON bodies (not heavily used since API is WS-first)
+  // Parse JSON bodies for HTTP API endpoints
   app.use(express.json());
+
+  // Mount API routes
+  app.use(`${config.apiBase}/v1`, routes);
 
   // Track active WS connections for readiness metrics and stats events
   const connections = new Set<WebSocket>();
@@ -90,7 +93,6 @@ async function main() {
       now: now.toISOString(),
       uptimeSec: Math.floor(process.uptime()),
       apiBase: config.apiBase,
-      wsPath: `${config.apiBase}/ws`,
       rssMb: Math.round((mem.rss / 1024 / 1024) * 10) / 10,
       ip: req.ip,
       userAgent: req.headers['user-agent'],
@@ -107,7 +109,6 @@ async function main() {
       ready: dbReady,
       connections: connections.size,
       apiBase: config.apiBase,
-      wsPath: `${config.apiBase}/ws`,
       rssMb: Math.round((mem.rss / 1024 / 1024) * 10) / 10,
     } as const;
     log.info(
@@ -124,6 +125,9 @@ async function main() {
     res.status(200).json(snap);
   });
 
+  // REST API: projects and assets. Use auth middleware for mutating routes.
+
+
   // Create HTTP server to host both HTTP routes and WS upgrades
   const server = http.createServer(app);
 
@@ -136,50 +140,45 @@ async function main() {
   await new (await import('./repos/mongo/assetsRepo')).MongoAssetsRepo().ensureIndexes();
 
   // Start optional OTEL metrics if configured
-  startMetrics();
+  // startMetrics(); // Temporarily disabled due to Node version constraint
 
   // Build Zod schemas bundle used by handlers to validate all incoming payloads
   const schemas = buildSchemas();
 
-  // WebSocket server mounted under base path to keep a single external port/path
+  // WebSocket server mounted under base path; keep only for live stats/health
   const wss = new WebSocketServer({ server, path: `${config.apiBase}/ws` });
   // Construct handlers and inject dependencies. Provide a callback to expose connection counts.
   const { handleMessage, onConnection, setGetConnections } = buildHandlers({
     log,
     schemas,
-    models: { Project, Asset },
   });
   setGetConnections(() => connections.size);
 
-  // WS connection lifecycle: authenticate, create context, and delegate message handling
+  // WS connection lifecycle: create context and delegate message handling
+  // Auth is optional for stats-only WebSocket usage
   wss.on('connection', async (socket, req) => {
-    // Auth: verify Clerk-issued JWT via JWKS
+    // Optional auth: try to extract and verify token but don't require it
     try {
       const token = extractTokenFromReq(req);
-      if (!token) {
-        // Close with 4401 (similar to HTTP 401) if no token present
-        socket.close(4401, 'unauthorized');
-        log.warn(
-          { event: 'ws:connection', reason: 'missing_token', ip: req.socket.remoteAddress },
-          'ws unauthorized',
+      if (token) {
+        const claims = await verifyTokenOrThrow(token);
+        (req as unknown as { userId?: string }).userId = claims.sub;
+        log.info(
+          { event: 'ws:connection', userId: claims.sub, ip: req.socket.remoteAddress },
+          'ws connected (authenticated)',
         );
-        return;
+      } else {
+        log.info(
+          { event: 'ws:connection', ip: req.socket.remoteAddress },
+          'ws connected (anonymous)',
+        );
       }
-      // Verify signature/claims; attach identity to the request for handlers
-      const claims = await verifyTokenOrThrow(token);
-      (req as unknown as { userId?: string }).userId = claims.sub;
-      log.info(
-        { event: 'ws:connection', userId: claims.sub, ip: req.socket.remoteAddress },
-        'ws connected',
-      );
     } catch (err) {
-      // Close with 4403 (similar to HTTP 403) on verification failure
-      socket.close(4403, 'forbidden');
+      // Log auth failure but still allow connection for stats
       log.warn(
         { event: 'ws:connection', error: err instanceof Error ? err.message : String(err) },
-        'ws forbidden',
+        'ws auth failed, continuing as anonymous',
       );
-      return;
     }
 
     connections.add(socket);

@@ -40,6 +40,11 @@ const EnvSchema = zod_1.z.object({
         .optional(),
     // OpenTelemetry (optional)
     OTEL_EXPORTER_OTLP_ENDPOINT: zod_1.z.string().optional(),
+    // Rate limiting
+    RATE_LIMIT_RPM: zod_1.z
+        .string()
+        .transform((v) => (v ? parseInt(v, 10) : NaN))
+        .optional(),
 });
 const raw = EnvSchema.parse(process.env);
 function parseCsv(value) {
@@ -70,23 +75,16 @@ function resolveMongoUri() {
     }
     return value;
 }
-// Get the resolved MongoDB connection string
 const mongodbUri = resolveMongoUri();
-// Default allowed MIME types for file uploads if not configured
 const allowedUploadMime = parseCsv(raw.ALLOWED_UPLOAD_MIME) ?? [
     'image/png',
     'image/jpeg',
     'image/webp',
 ];
-// Extract Clerk authentication settings
 const clerkIssuer = raw.CLERK_ISSUER;
 // If JWKS URL not explicitly provided, derive it from issuer
 const clerkJwksUrl = raw.CLERK_JWKS_URL ||
     (clerkIssuer ? `${clerkIssuer.replace(/\/$/, '')}/.well-known/jwks.json` : undefined);
-/**
- * Main application configuration object.
- * Combines environment variables with defaults and derived values.
- */
 const config = {
     nodeEnv: raw.NODE_ENV,
     port: Number.isNaN(raw.PORT) ? 5000 : raw.PORT,
@@ -94,32 +92,33 @@ const config = {
     serviceName: raw.SERVICE_NAME || 'portfolio-backend',
     wsOrigins,
     mongodbUri,
-    // Clerk authentication configuration
     clerk: {
         issuer: clerkIssuer,
         jwksUrl: clerkJwksUrl,
         audience: raw.CLERK_AUDIENCE,
     },
-    // Google Cloud Platform settings
     gcp: {
         projectId: raw.GCP_PROJECT_ID,
         region: raw.GCP_REGION,
         artifactRegistryRepo: raw.GCP_ARTIFACT_REGISTRY_REPO,
     },
-    // Google Cloud Storage settings
     gcs: {
         bucketUploads: raw.GCS_BUCKET_UPLOADS,
     },
-    // Error tracking
     sentryDsn: raw.SENTRY_DSN,
-    // File upload settings
     uploads: {
         allowedMime: allowedUploadMime,
-        maxMb: Number.isNaN(raw.MAX_UPLOAD_MB) ? 20 : raw.MAX_UPLOAD_MB,
+        maxMb: Number.isNaN(raw.MAX_UPLOAD_MB)
+            ? 20
+            : raw.MAX_UPLOAD_MB,
     },
-    // OpenTelemetry configuration
     otel: {
         endpoint: raw.OTEL_EXPORTER_OTLP_ENDPOINT,
+    },
+    rateLimit: {
+        rpm: Number.isNaN(raw.RATE_LIMIT_RPM)
+            ? 120
+            : raw.RATE_LIMIT_RPM,
     },
 };
 exports.default = config;

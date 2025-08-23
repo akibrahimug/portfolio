@@ -6,8 +6,6 @@ import { WebSocketServer } from 'ws';
 import config from '../config';
 import { buildSchemas } from '../schemas';
 import { buildHandlers } from '../ws/handlers';
-import { Project } from '../models/Project';
-import { Asset } from '../models/Asset';
 import { snapshot } from '../logging/metrics';
 import { v4 as uuidv4 } from 'uuid';
 import { buildContext } from '../lib/context';
@@ -39,7 +37,6 @@ export async function startTestServer(): Promise<{ url: string; stop: () => Prom
   const { handleMessage, onConnection } = buildHandlers({
     log,
     schemas,
-    models: { Project, Asset },
   });
 
   wss.on('connection', (socket, req) => {

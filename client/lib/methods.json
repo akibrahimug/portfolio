@@ -1,0 +1,103 @@
+{
+  "methods": [
+    {
+      "name": "Agile",
+      "category": "process",
+      "description": "Iterative approach that delivers value through small, incremental changes",
+      "complexity": "Medium",
+      "teamSize": "Any",
+      "flexibility": "High",
+      "timeToImplement": "Medium"
+    },
+    {
+      "name": "Scrum",
+      "category": "process",
+      "description": "Framework that helps teams work together through regular meetings and roles",
+      "complexity": "Medium",
+      "teamSize": "Small",
+      "flexibility": "Medium",
+      "timeToImplement": "Medium"
+    },
+    {
+      "name": "Test Driven Development",
+      "category": "process",
+      "description": "Writing tests before writing the code that needs to be tested",
+      "complexity": "High",
+      "teamSize": "Any",
+      "flexibility": "Medium",
+      "timeToImplement": "Long"
+    },
+    {
+      "name": "DRY",
+      "category": "principle",
+      "description": "Don't Repeat Yourself - each piece of knowledge must have a single representation",
+      "complexity": "Low",
+      "teamSize": "Any",
+      "flexibility": "High",
+      "timeToImplement": "Short"
+    },
+    {
+      "name": "KISS",
+      "category": "principle",
+      "description": "Keep It Simple, Stupid - simplicity should be a key goal and unnecessary complexity avoided",
+      "complexity": "Low",
+      "teamSize": "Any",
+      "flexibility": "High",
+      "timeToImplement": "Short"
+    },
+    {
+      "name": "Object Oriented Programming",
+      "category": "paradigm",
+      "description": "Programming paradigm based on the concept of objects containing data and methods",
+      "complexity": "Medium",
+      "teamSize": "Any",
+      "flexibility": "Medium",
+      "timeToImplement": "Medium"
+    },
+    {
+      "name": "REST",
+      "category": "architecture",
+      "description": "Architectural style for distributed systems, particularly web services",
+      "complexity": "Medium",
+      "teamSize": "Any",
+      "flexibility": "Medium",
+      "timeToImplement": "Medium"
+    },
+    {
+      "name": "SASS",
+      "category": "technology",
+      "description": "CSS preprocessor that adds features like variables, nesting, and mixins",
+      "complexity": "Low",
+      "teamSize": "Any",
+      "flexibility": "High",
+      "timeToImplement": "Short"
+    },
+    {
+      "name": "Progressive Web Apps",
+      "category": "technology",
+      "description": "Web apps that use modern web capabilities to deliver app-like experiences",
+      "complexity": "Medium",
+      "teamSize": "Medium",
+      "flexibility": "Medium",
+      "timeToImplement": "Medium"
+    },
+    {
+      "name": "Mobile First",
+      "category": "design",
+      "description": "Design strategy that prioritizes designing for mobile devices first",
+      "complexity": "Medium",
+      "teamSize": "Any",
+      "flexibility": "Medium",
+      "timeToImplement": "Medium"
+    },
+    {
+      "name": "Responsive Web Design",
+      "category": "design",
+      "description": "Approach to web design that makes web pages render well on all devices",
+      "complexity": "Medium",
+      "teamSize": "Any",
+      "flexibility": "High",
+      "timeToImplement": "Medium"
+    }
+  ]
+}

@@ -3,6 +3,7 @@
  * Usage:
  *   node dist/scripts/migrate-data.js /path/to/dump.json
  */
+import 'dotenv/config';
 import fs from 'fs';
 import path from 'path';
 import { connectMongoose } from '../src/infra/mongoose';

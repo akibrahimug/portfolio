@@ -1,0 +1,229 @@
+{
+  "techStack": [
+    {
+      "name": "JavaScript",
+      "icon": "/icons/javascript.svg",
+      "color": "bg-yellow-100 dark:bg-yellow-900",
+      "experience": "6+ years",
+      "learningSource": "Self-taught, bootcamp, professional work",
+      "confidenceLevel": 90,
+      "description": "JavaScript is my primary programming language. I've used it extensively for both frontend and backend development, building everything from simple websites to complex SPAs and APIs."
+    },
+    {
+      "name": "TypeScript",
+      "icon": "/icons/typescript.svg",
+      "color": "bg-blue-100 dark:bg-blue-900",
+      "experience": "3+ years",
+      "learningSource": "Self-taught, professional projects",
+      "confidenceLevel": 85,
+      "description": "TypeScript has become my go-to for all new projects. I appreciate the type safety and improved developer experience it provides over vanilla JavaScript."
+    },
+    {
+      "name": "React",
+      "icon": "/icons/react.svg",
+      "color": "bg-blue-100 dark:bg-blue-900",
+      "experience": "5+ years",
+      "learningSource": "Documentation, courses, professional work",
+      "confidenceLevel": 95,
+      "description": "React is my preferred frontend library. I've built numerous applications with it, from small components to large-scale applications with complex state management."
+    },
+    {
+      "name": "Next.js",
+      "icon": "/icons/nextjs.svg",
+      "color": "bg-gray-100 dark:bg-gray-800",
+      "experience": "3+ years",
+      "learningSource": "Documentation, courses, professional work",
+      "confidenceLevel": 88,
+      "description": "Next.js is my framework of choice for React applications. I love its built-in routing, SSR capabilities, and overall developer experience."
+    },
+    {
+      "name": "Node.js",
+      "icon": "/icons/nodejs.svg",
+      "color": "bg-green-100 dark:bg-green-900",
+      "experience": "4+ years",
+      "learningSource": "Self-taught, professional projects",
+      "confidenceLevel": 85,
+      "description": "Node.js is my primary backend runtime. I've built RESTful APIs, microservices, and server-rendered applications with it."
+    },
+    {
+      "name": "Express",
+      "icon": "/icons/express.svg",
+      "color": "bg-gray-100 dark:bg-gray-800",
+      "experience": "3+ years",
+      "learningSource": "Documentation, professional projects",
+      "confidenceLevel": 85,
+      "description": "Express is my go-to framework for building Node.js APIs. I've used it to create everything from simple REST endpoints to complex API architectures."
+    },
+    {
+      "name": "MongoDB",
+      "icon": "/icons/mongodb.svg",
+      "color": "bg-green-100 dark:bg-green-900",
+      "experience": "3+ years",
+      "learningSource": "Documentation, courses, professional work",
+      "confidenceLevel": 80,
+      "description": "MongoDB is my preferred NoSQL database. I've used it extensively with Node.js applications, leveraging its flexible schema design for various use cases."
+    },
+    {
+      "name": "PostgreSQL",
+      "icon": "/icons/postgresql.svg",
+      "color": "bg-blue-100 dark:bg-blue-800",
+      "experience": "2+ years",
+      "learningSource": "Documentation, courses, professional work",
+      "confidenceLevel": 60,
+      "description": "PostgreSQL is my relational database of choice. I've used it for projects requiring complex queries, transactions, and data integrity."
+    },
+    {
+      "name": "GraphQL",
+      "icon": "/icons/graphql.svg",
+      "color": "bg-red-100 dark:bg-red-950",
+      "experience": "2+ years",
+      "learningSource": "Documentation, courses",
+      "confidenceLevel": 60,
+      "description": "I've implemented GraphQL APIs with Apollo Server and consumed them with Apollo Client. I appreciate its flexibility for frontend data fetching."
+    },
+    {
+      "name": "Redux",
+      "icon": "/icons/redux.svg",
+      "color": "bg-purple-100 dark:bg-purple-900",
+      "experience": "3+ years",
+      "learningSource": "Documentation, courses, professional work",
+      "confidenceLevel": 85,
+      "description": "I've used Redux for state management in large React applications. While I now often prefer simpler alternatives, I'm very comfortable with Redux patterns."
+    },
+    {
+      "name": "Tailwind CSS",
+      "icon": "/icons/tailwind.svg",
+      "color": "bg-blue-100 dark:bg-blue-800",
+      "experience": "4+ years",
+      "learningSource": "Documentation, projects",
+      "confidenceLevel": 90,
+      "description": "Tailwind CSS has become my preferred styling solution. I love its utility-first approach and the speed at which I can build responsive interfaces with it."
+    },
+    {
+      "name": "Sass",
+      "icon": "/icons/sass.svg",
+      "color": "bg-red-100 dark:bg-red-950",
+      "experience": "5+ years",
+      "learningSource": "Self-taught, professional projects",
+      "confidenceLevel": 90,
+      "description": "Before Tailwind, Sass was my go-to CSS preprocessor. I've used it to create maintainable stylesheets with variables, mixins, and nested rules."
+    },
+    {
+      "name": "Git",
+      "icon": "/icons/git.svg",
+      "color": "bg-orange-100 dark:bg-orange-800",
+      "experience": "6+ years",
+      "learningSource": "Self-taught, professional work",
+      "confidenceLevel": 90,
+      "description": "Git is essential to my workflow. I'm comfortable with branching strategies, resolving conflicts, rebasing, and other advanced Git operations."
+    },
+    {
+      "name": "Jest",
+      "icon": "/icons/jest.svg",
+      "color": "bg-purple-100 dark:bg-purple-900",
+      "experience": "3+ years",
+      "learningSource": "Documentation, professional projects",
+      "confidenceLevel": 80,
+      "description": "Jest is my primary testing framework. I write unit and integration tests for both frontend and backend code to ensure reliability."
+    },
+    {
+      "name": "Webpack",
+      "icon": "/icons/webpack.svg",
+      "color": "bg-blue-100 dark:bg-blue-800",
+      "experience": "4+ years",
+      "learningSource": "Documentation, professional projects",
+      "confidenceLevel": 75,
+      "description": "I've configured Webpack for various projects, setting up optimized builds, code splitting, and asset management."
+    },
+    {
+      "name": "Firebase",
+      "icon": "/icons/firebase.svg",
+      "color": "bg-yellow-100 dark:bg-yellow-800",
+      "experience": "5+ years",
+      "learningSource": "Documentation, personal projects",
+      "confidenceLevel": 85,
+      "description": "I've used Firebase for authentication, real-time databases, and hosting in several projects. It's my go-to for rapid prototyping."
+    },
+    {
+      "name": "AWS",
+      "icon": "/icons/aws.svg",
+      "color": "bg-blue-100 dark:bg-blue-800",
+      "experience": "2+ years",
+      "learningSource": "Documentation, courses, professional work",
+      "confidenceLevel": 55,
+      "description": "I've worked with various AWS services including S3, EC2, Lambda, and DynamoDB to build scalable cloud applications."
+    },
+    {
+      "name": "Vercel",
+      "icon": "/icons/vercel.svg",
+      "color": "bg-gray-100 dark:bg-gray-900",
+      "experience": "3+ years",
+      "learningSource": "Documentation, personal projects",
+      "confidenceLevel": 85,
+      "description": "Vercel is my preferred deployment platform for frontend applications. I love its seamless integration with Git and Next.js."
+    },
+    {
+      "name": "Figma",
+      "icon": "/icons/figma.svg",
+      "color": "bg-purple-100 dark:bg-purple-900",
+      "experience": "2+ years",
+      "learningSource": "Self-taught, professional work",
+      "confidenceLevel": 75,
+      "description": "I use Figma for UI design and prototyping. As a developer with design skills, I can translate designs into code accurately."
+    },
+    {
+      "name": "HTML",
+      "icon": "/icons/html.svg",
+      "color": "bg-red-100 dark:bg-red-950",
+      "experience": "6+ years",
+      "learningSource": "Self-taught, courses, professional work",
+      "confidenceLevel": 95,
+      "description": "HTML is fundamental to my work. I write semantic, accessible markup and stay current with HTML5 features and best practices."
+    },
+    {
+      "name": "CSS",
+      "icon": "/icons/css.svg",
+      "color": "bg-blue-100 dark:bg-blue-800",
+      "experience": "6+ years",
+      "learningSource": "Self-taught, courses, professional work",
+      "confidenceLevel": 90,
+      "description": "I have strong CSS skills, including flexbox, grid, animations, and responsive design. I can implement complex layouts with clean, maintainable code."
+    },
+    {
+      "name": "Appwrite",
+      "icon": "/icons/appwrite.svg",
+      "color": "bg-blue-100 dark:bg-blue-800",
+      "experience": "2+ years",
+      "learningSource": "Documentation, courses, professional work",
+      "confidenceLevel": 85,
+      "description": "I've used Appwrite for authentication, real-time databases, and hosting in several projects. It's my go-to for rapid prototyping."
+    },
+    {
+      "name": "Chart.js",
+      "icon": "/icons/chartjs.svg",
+      "color": "bg-yellow-100 dark:bg-yellow-800",
+      "experience": "2+ years",
+      "learningSource": "Documentation, courses, professional work",
+      "confidenceLevel": 95,
+      "description": "I've used Chart.js for data visualization in several projects. It's my go-to for creating charts and graphs."
+    },
+    {
+      "name": "Plaid",
+      "icon": "/icons/plaid.svg",
+      "color": "bg-blue-100 dark:bg-blue-800",
+      "experience": "2+ years",
+      "learningSource": "Documentation, courses, side projects",
+      "confidenceLevel": 75,
+      "description": "I've used Plaid for financial data integration in several projects. Its a great way to get data from a user's bank or credit card."
+    },
+    {
+      "name": "Stripe",
+      "icon": "/icons/stripe.svg",
+      "color": "bg-purple-200 dark:bg-purple-900",
+      "experience": "2+ years",
+      "learningSource": "Documentation, courses, side projects",
+      "confidenceLevel": 75,
+      "description": "I've used Stripe for payment processing in several projects. Its a great way to get data from a user's bank or credit card."
+    }
+  ]
+}

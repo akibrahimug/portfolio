@@ -1,4 +1,8 @@
 "use strict";
+/**
+ * WebSocket message envelope used by the service.
+ * Each frame is JSON of shape: { event: string, payload: unknown }
+ */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.send = send;
 /**

@@ -1,31 +1,16 @@
 import bunyan from 'bunyan';
 import { buildSchemas } from '../../schemas';
-import { Project } from '../../models/Project';
-import { Asset } from '../../models/Asset';
-
-jest.mock('../events/projects', () => ({
-  registerProjectEvents: () => ({
-    list: async () => undefined,
-    get: async () => undefined,
-    create: async (socket: { send: (s: string) => void }) => {
-      // Simulate successful create without hitting DB
-      socket.send(JSON.stringify({ event: 'projects:create', payload: { ok: true } }));
-    },
-    update: async () => undefined,
-    remove: async () => undefined,
-  }),
-}));
-
-jest.mock('../events/assets', () => ({
-  registerAssetEvents: () => ({
-    requestUpload: async () => undefined,
-    confirm: async () => undefined,
-  }),
-}));
 
 jest.mock('../events/stats', () => ({
   registerStatsEvents: () => ({
-    get: async () => undefined,
+    get: async (socket: { send: (s: string) => void }) => {
+      socket.send(
+        JSON.stringify({
+          event: 'stats:get',
+          payload: { connections: 1, epm: 0, errorRate: 0, p95ms: 0 },
+        }),
+      );
+    },
     subscribe: async () => undefined,
   }),
 }));
@@ -45,18 +30,17 @@ function makeCtx(userId?: string) {
 jest.setTimeout(20000);
 
 describe('ws handlers', () => {
-  it('rate limits sensitive events', async () => {
-    process.env.RATE_LIMIT_RPM = '1';
-    jest.resetModules();
+  it('returns deprecation error for projects/assets events', async () => {
     const schemas = buildSchemas();
     const { buildHandlers } = await import('../handlers');
     const handlers = buildHandlers({
       log: bunyan.createLogger({ name: 'test', level: 'fatal' }),
       schemas,
-      models: { Project, Asset },
     });
     const socket = new FakeSocket();
     const ctx = makeCtx('u1');
+
+    // Test projects:create returns deprecation error
     await (
       handlers as unknown as {
         handleMessage: (s: { send: (s: string) => void }, b: Buffer, c: unknown) => Promise<void>;
@@ -83,37 +67,41 @@ describe('ws handlers', () => {
       ),
       ctx,
     );
+
+    const last = socket.frames[socket.frames.length - 1] as {
+      event: string;
+      payload: { message: string; docs?: string };
+    };
+    expect(last.event).toBe('system:error');
+    expect(last.payload.message).toBe('deprecated_event_use_http');
+    expect(last.payload.docs).toBeDefined();
+  });
+
+  it('handles stats:get event', async () => {
+    const schemas = buildSchemas();
+    const { buildHandlers } = await import('../handlers');
+    const handlers = buildHandlers({
+      log: bunyan.createLogger({ name: 'test', level: 'fatal' }),
+      schemas,
+    });
+    const socket = new FakeSocket();
+    const ctx = makeCtx();
+
     await (
       handlers as unknown as {
         handleMessage: (s: { send: (s: string) => void }, b: Buffer, c: unknown) => Promise<void>;
       }
     ).handleMessage(
       socket as unknown as { send: (s: string) => void },
-      Buffer.from(
-        JSON.stringify({
-          event: 'projects:create',
-          payload: {
-            version: 'v1',
-            data: {
-              title: 't2',
-              slug: 's2',
-              kind: 'frontend',
-              techStack: [],
-              tags: [],
-              visibility: 'public',
-              status: 'draft',
-              ownerId: 'u1',
-            },
-          },
-        }),
-      ),
+      Buffer.from(JSON.stringify({ event: 'stats:get', payload: { version: 'v1' } })),
       ctx,
     );
+
     const last = socket.frames[socket.frames.length - 1] as {
       event: string;
-      payload: { message: string };
+      payload: { connections: number };
     };
-    expect(last.event).toBe('system:error');
-    expect(last.payload.message).toBe('rate_limited');
+    expect(last.event).toBe('stats:get');
+    expect(last.payload.connections).toBeDefined();
   });
 });
