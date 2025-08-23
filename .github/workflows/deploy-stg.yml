@@ -1,0 +1,49 @@
+name: Deploy to Cloud Run (stg)
+'on':
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+    paths:
+      - 'server/**'
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  REGION: ${{ secrets.GCP_REGION }}
+  SERVICE_NAME: ${{ secrets.CLOUD_RUN_SERVICE_STG }}
+  IMAGE: ${{ secrets.CLOUD_RUN_IMAGE_STG }}
+  GCS_BUCKET_UPLOADS_SECRET: ${{ secrets.GCS_BUCKET_UPLOADS_SECRET_NAME }}
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }}
+
+      - name: Setup gcloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+
+      - name: Deploy to Cloud Run (stg)
+        run: |
+          gcloud run deploy "$SERVICE_NAME-stg" \
+            --region "$REGION" \
+            --image "$IMAGE" \
+            --remove-env-vars=GCS_BUCKET_UPLOADS \
+            --remove-secrets=GCS_BUCKET_UPLOADS \
+            --update-secrets=GCS_BUCKET_UPLOADS="${GCS_BUCKET_UPLOADS_SECRET}:latest"
+
+

@@ -87,7 +87,6 @@ jobs:
             --set-env-vars=NODE_ENV=production \
             --set-env-vars=API_BASE=/api/v1 \
             --set-env-vars=WS_ORIGINS="$WS_ORIGINS" \
-            --set-env-vars=GCS_BUCKET_UPLOADS="$GCS_BUCKET_UPLOADS" \
             --set-env-vars=CLERK_ISSUER="$CLERK_ISSUER" \
             --set-env-vars=CLERK_AUDIENCE="$CLERK_AUDIENCE" \
             --set-secrets=MONGODB_URI=MONGODB_URI:latest \
@@ -181,7 +180,6 @@ jobs:
             --set-env-vars=NODE_ENV=production \
             --set-env-vars=API_BASE=/api/v1 \
             --set-env-vars=WS_ORIGINS="$WS_ORIGINS" \
-            --set-env-vars=GCS_BUCKET_UPLOADS="$GCS_BUCKET_UPLOADS" \
             --set-env-vars=CLERK_ISSUER="$CLERK_ISSUER" \
             --set-env-vars=CLERK_AUDIENCE="$CLERK_AUDIENCE" \
             --set-secrets=MONGODB_URI=MONGODB_URI:latest \
