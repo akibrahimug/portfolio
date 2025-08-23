@@ -34,7 +34,6 @@ import { snapshot } from './logging/metrics';
 // import { startMetrics } from './logging/otel'; // Temporarily disabled due to Node version constraint
 import { initSentry } from './logging/sentry';
 
-
 const log = getTaggedLogger('SERVER');
 
 /**
@@ -75,7 +74,7 @@ async function main() {
   app.use(express.json());
 
   // Mount API routes
-  app.use(`${config.apiBase}/v1`, routes);
+  app.use(config.apiBase, routes);
 
   // Track active WS connections for readiness metrics and stats events
   const connections = new Set<WebSocket>();
@@ -126,7 +125,6 @@ async function main() {
   });
 
   // REST API: projects and assets. Use auth middleware for mutating routes.
-
 
   // Create HTTP server to host both HTTP routes and WS upgrades
   const server = http.createServer(app);
