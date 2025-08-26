@@ -37,13 +37,18 @@ export interface Asset {
 }
 
 export interface Message {
-  _id?: string
-  messageID?: string
+  _id: string
   name: string
   email: string
+  subject?: string
   message: string
+  status: 'unread' | 'read' | 'replied' | 'archived'
+  priority: 'low' | 'normal' | 'high' | 'urgent'
+  ipAddress?: string
+  userAgent?: string
+  source: string
   createdAt: string
-  updatedAt?: string
+  updatedAt: string
 }
 
 export interface User {
@@ -58,13 +63,18 @@ export interface User {
 export interface Technology {
   _id: string
   name: string
-  category?: string
-  description?: string
-  complexity?: string
-  teamSize?: string
-  flexibility?: string
-  timeToImplement?: string
-  userID?: string
+  category: string
+  description: string
+  complexity: 'Beginner' | 'Intermediate' | 'Advanced' | 'Expert'
+  teamSize: 'Individual' | 'Small Team' | 'Large Team' | 'Any'
+  flexibility: 'Low' | 'Medium' | 'High'
+  timeToImplement: string
+  proficiency: number
+  yearsOfExperience: number
+  iconUrl?: string
+  ownerId: string
+  createdAt: string
+  updatedAt: string
 }
 
 export interface Experience {
@@ -83,13 +93,20 @@ export interface Experience {
   locationType: 'On-site' | 'Remote' | 'Hybrid'
   description: string
   startDate: string
-  endDate?: string
-  current?: boolean
-  skills?: string[]
+  endDate?: string | null
+  current: boolean
+  skills: string[]
   companyLogoUrl?: string
   linkedinUrl?: string
-  userID?: string
+  ownerId: string
+  createdAt: string
+  updatedAt: string
 }
+
+export type ExperienceCreateRequest = Omit<
+  Experience,
+  '_id' | 'ownerId' | 'createdAt' | 'updatedAt'
+>
 
 export interface Certification {
   _id: string
@@ -206,7 +223,7 @@ export interface ProjectUpdateRequest {
 }
 
 export interface AssetUploadRequest {
-  projectId: string
+  projectId?: string
   filename: string
   contentType: string
   size: number
@@ -220,10 +237,16 @@ export interface AssetUploadResponse {
 }
 
 export interface AssetConfirmRequest {
-  projectId: string
+  projectId?: string
   objectPath: string
   contentType: string
   size: number
+}
+
+export interface AssetConfirmResponse {
+  asset: Asset
+  publicUrl: string
+  viewUrl: string
 }
 
 // Stats and monitoring types

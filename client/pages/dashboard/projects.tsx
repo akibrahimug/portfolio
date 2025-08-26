@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { DashboardLayout, Breadcrumb } from '@/components/dashboard/DashboardLayout'
 import { DataTable } from '@/components/dashboard/DataTable'
 import { Badge } from '@/components/ui/badge'
@@ -12,6 +12,7 @@ import {
 
 const ProjectsPage: React.FC = () => {
   const { data: projectsData, loading, error, refetch } = useProjects()
+  console.log('projectsData', projectsData)
   const createProject = useCreateProject()
   // TODO: Get real auth token from Clerk when implemented
   const updateProject = useUpdateProject()

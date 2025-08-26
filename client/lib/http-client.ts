@@ -17,6 +17,7 @@ import type {
   Message,
   Technology,
   Experience,
+  ExperienceCreateRequest,
   Certification,
   Badge,
   Resume,
@@ -40,7 +41,7 @@ class HttpClient {
   private baseUrl: string
 
   constructor() {
-    this.baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || ''
+    this.baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000/api'
     if (!this.baseUrl.endsWith('/')) {
       this.baseUrl += '/'
     }
@@ -174,7 +175,7 @@ class HttpClient {
   async confirmUpload(
     confirmation: AssetConfirmRequest,
     token: string,
-  ): Promise<ApiResponse<{ asset: Asset }>> {
+  ): Promise<ApiResponse<{ asset: Asset; publicUrl: string; viewUrl: string }>> {
     return this.request('/assets/confirm', {
       method: 'POST',
       body: confirmation,
@@ -183,7 +184,10 @@ class HttpClient {
     })
   }
 
-  async browseAssets(params?: { prefix?: string; limit?: number; type?: string }): Promise<
+  async browseAssets(
+    params: { prefix?: string; limit?: number; type?: string } = {},
+    token?: string,
+  ): Promise<
     ApiResponse<{
       files: Array<{
         name: string
@@ -206,18 +210,21 @@ class HttpClient {
     const query = searchParams.toString()
     return this.request(`/assets/browse${query ? `?${query}` : ''}`, {
       requiresAuth: true,
-      token: 'placeholder-token', // TODO: Get real auth token from Clerk when implemented
+      token: token || '',
     })
   }
 
-  async getAssetFolders(prefix?: string): Promise<ApiResponse<{ folders: string[] }>> {
+  async getAssetFolders(
+    prefix?: string,
+    token?: string,
+  ): Promise<ApiResponse<{ folders: string[] }>> {
     const searchParams = new URLSearchParams()
     if (prefix) searchParams.set('prefix', prefix)
 
     const query = searchParams.toString()
     return this.request(`/assets/folders${query ? `?${query}` : ''}`, {
       requiresAuth: true,
-      token: 'placeholder-token', // TODO: Get real auth token from Clerk when implemented
+      token: token || '',
     })
   }
 
@@ -231,14 +238,30 @@ class HttpClient {
     return { success: false, error: 'Endpoint not implemented on server yet' }
   }
 
-  async getMessages(): Promise<ApiResponse<Message[]>> {
-    return this.request('/messages', { requiresAuth: true })
+  async getMessages(token?: string): Promise<ApiResponse<Message[]>> {
+    return this.request('/messages', {
+      requiresAuth: true,
+      token: token || '',
+    })
   }
 
   async createMessage(message: Partial<Message>): Promise<ApiResponse<Message>> {
     return this.request('/messages', {
       method: 'POST',
       body: message,
+    })
+  }
+
+  async updateMessage(
+    id: string,
+    updates: { status?: string; priority?: string },
+    token: string,
+  ): Promise<ApiResponse<{ message: Message }>> {
+    return this.request(`/messages/${id}`, {
+      method: 'PATCH',
+      body: updates,
+      requiresAuth: true,
+      token,
     })
   }
 
@@ -260,13 +283,34 @@ class HttpClient {
 
   async createTechnologies(
     tech: Partial<Technology>,
-    token?: string,
-  ): Promise<ApiResponse<Technology>> {
+    token: string,
+  ): Promise<ApiResponse<{ technology: Technology }>> {
     return this.request('/technologies', {
       method: 'POST',
       body: tech,
       requiresAuth: true,
-      token: token || '',
+      token,
+    })
+  }
+
+  async updateTechnology(
+    id: string,
+    updates: Partial<Technology>,
+    token: string,
+  ): Promise<ApiResponse<{ technology: Technology }>> {
+    return this.request(`/technologies/${id}`, {
+      method: 'PATCH',
+      body: updates,
+      requiresAuth: true,
+      token,
+    })
+  }
+
+  async deleteTechnology(id: string, token: string): Promise<ApiResponse<{ ok: boolean }>> {
+    return this.request(`/technologies/${id}`, {
+      method: 'DELETE',
+      requiresAuth: true,
+      token,
     })
   }
 
@@ -283,12 +327,35 @@ class HttpClient {
   }
 
   async createExperience(
-    experience: Omit<Experience, '_id'>,
+    experience: ExperienceCreateRequest,
+    token: string,
   ): Promise<ApiResponse<{ experience: Experience }>> {
     return this.request('/experiences', {
       method: 'POST',
       body: experience,
-      requiresAuth: false, // TODO: Enable auth when Clerk is implemented
+      requiresAuth: true,
+      token,
+    })
+  }
+
+  async updateExperience(
+    id: string,
+    updates: Partial<Experience>,
+    token: string,
+  ): Promise<ApiResponse<{ experience: Experience }>> {
+    return this.request(`/experiences/${id}`, {
+      method: 'PATCH',
+      body: updates,
+      requiresAuth: true,
+      token,
+    })
+  }
+
+  async deleteExperience(id: string, token: string): Promise<ApiResponse<{ ok: boolean }>> {
+    return this.request(`/experiences/${id}`, {
+      method: 'DELETE',
+      requiresAuth: true,
+      token,
     })
   }
 

@@ -6,6 +6,7 @@
 import { useState, useEffect, useCallback } from 'react'
 
 import { httpClient } from '@/lib/http-client'
+import { useClerkAuth } from '@/hooks/useClerkAuth'
 import type {
   ProjectCreateRequest,
   ProjectUpdateRequest,
@@ -14,6 +15,7 @@ import type {
   Message,
   Technology,
   Experience,
+  ExperienceCreateRequest,
 } from '@/types/api'
 
 interface UseApiState<T> {
@@ -136,41 +138,76 @@ export function useProject(idOrSlug: string | null) {
   )
 }
 
-export function useCreateProject(token?: string) {
-  return useApiMutation((project: ProjectCreateRequest) =>
-    token
+export function useCreateProject() {
+  const { getAuthToken } = useClerkAuth()
+
+  return useApiMutation(async (project: ProjectCreateRequest) => {
+    const token = await getAuthToken()
+    return token
       ? httpClient.createProject(project, token)
-      : Promise.resolve({ success: false, error: 'No auth token' }),
-  )
+      : Promise.resolve({ success: false, error: 'No auth token' })
+  })
 }
 
 export function useUpdateProject() {
-  return useApiMutation(({ id, updates }: { id: string; updates: ProjectUpdateRequest }) =>
-    // TODO: Get real auth token from Clerk when implemented
-    httpClient.updateProject(id, updates, 'placeholder-token'),
-  )
+  const { getAuthToken } = useClerkAuth()
+
+  return useApiMutation(async ({ id, updates }: { id: string; updates: ProjectUpdateRequest }) => {
+    const token = await getAuthToken()
+    return token
+      ? httpClient.updateProject(id, updates, token)
+      : Promise.resolve({ success: false, error: 'No auth token' })
+  })
 }
 
 export function useDeleteProject() {
-  return useApiMutation((id: string) =>
-    // TODO: Get real auth token from Clerk when implemented
-    httpClient.deleteProject(id, 'placeholder-token'),
-  )
+  const { getAuthToken } = useClerkAuth()
+
+  return useApiMutation(async (id: string) => {
+    const token = await getAuthToken()
+    return token
+      ? httpClient.deleteProject(id, token)
+      : Promise.resolve({ success: false, error: 'No auth token' })
+  })
 }
 
 export function useMessages() {
-  return useApiQuery(() => httpClient.getMessages())
+  const { getAuthToken } = useClerkAuth()
+
+  return useApiQuery(async () => {
+    const token = await getAuthToken()
+    return token
+      ? httpClient.getMessages(token)
+      : Promise.resolve({ success: false, error: 'No auth token' })
+  })
 }
 
 export function useCreateMessage() {
   return useApiMutation((message: Partial<Message>) => httpClient.createMessage(message))
 }
 
-export function useDeleteMessage() {
-  return useApiMutation((id: string) =>
-    // TODO: Get real auth token from Clerk when implemented
-    httpClient.deleteMessage(id, 'placeholder-token'),
+export function useUpdateMessage() {
+  const { getAuthToken } = useClerkAuth()
+
+  return useApiMutation(
+    async ({ id, updates }: { id: string; updates: { status?: string; priority?: string } }) => {
+      const token = await getAuthToken()
+      return token
+        ? httpClient.updateMessage(id, updates, token)
+        : Promise.resolve({ success: false, error: 'No auth token' })
+    },
   )
+}
+
+export function useDeleteMessage() {
+  const { getAuthToken } = useClerkAuth()
+
+  return useApiMutation(async (id: string) => {
+    const token = await getAuthToken()
+    return token
+      ? httpClient.deleteMessage(id, token)
+      : Promise.resolve({ success: false, error: 'No auth token' })
+  })
 }
 
 export function useTechnologies() {
@@ -178,10 +215,36 @@ export function useTechnologies() {
 }
 
 export function useCreateTechnologies() {
-  return useApiMutation((tech: Partial<Technology>) =>
-    // TODO: Get real auth token from Clerk when implemented
-    httpClient.createTechnologies(tech, 'placeholder-token'),
-  )
+  const { getAuthToken } = useClerkAuth()
+
+  return useApiMutation(async (tech: Partial<Technology>) => {
+    const token = await getAuthToken()
+    return token
+      ? httpClient.createTechnologies(tech, token)
+      : Promise.resolve({ success: false, error: 'No auth token' })
+  })
+}
+
+export function useUpdateTechnology() {
+  const { getAuthToken } = useClerkAuth()
+
+  return useApiMutation(async ({ id, updates }: { id: string; updates: Partial<Technology> }) => {
+    const token = await getAuthToken()
+    return token
+      ? httpClient.updateTechnology(id, updates, token)
+      : Promise.resolve({ success: false, error: 'No auth token' })
+  })
+}
+
+export function useDeleteTechnology() {
+  const { getAuthToken } = useClerkAuth()
+
+  return useApiMutation(async (id: string) => {
+    const token = await getAuthToken()
+    return token
+      ? httpClient.deleteTechnology(id, token)
+      : Promise.resolve({ success: false, error: 'No auth token' })
+  })
 }
 
 export function useCertifications() {
@@ -197,10 +260,36 @@ export function useExperiences() {
 }
 
 export function useCreateExperience() {
-  return useApiMutation((experience: Omit<Experience, '_id'>) =>
-    // TODO: Get real auth token from Clerk when implemented
-    httpClient.createExperience(experience),
-  )
+  const { getAuthToken } = useClerkAuth()
+
+  return useApiMutation(async (experience: ExperienceCreateRequest) => {
+    const token = await getAuthToken()
+    return token
+      ? httpClient.createExperience(experience, token)
+      : Promise.resolve({ success: false, error: 'No auth token' })
+  })
+}
+
+export function useUpdateExperience() {
+  const { getAuthToken } = useClerkAuth()
+
+  return useApiMutation(async ({ id, updates }: { id: string; updates: Partial<Experience> }) => {
+    const token = await getAuthToken()
+    return token
+      ? httpClient.updateExperience(id, updates, token)
+      : Promise.resolve({ success: false, error: 'No auth token' })
+  })
+}
+
+export function useDeleteExperience() {
+  const { getAuthToken } = useClerkAuth()
+
+  return useApiMutation(async (id: string) => {
+    const token = await getAuthToken()
+    return token
+      ? httpClient.deleteExperience(id, token)
+      : Promise.resolve({ success: false, error: 'No auth token' })
+  })
 }
 
 export function useResumes() {
@@ -228,18 +317,46 @@ export function useAvatars() {
 }
 
 // Asset upload hooks
-export function useRequestUpload(token?: string) {
-  return useApiMutation((request: AssetUploadRequest) =>
-    token
+export function useRequestUpload() {
+  const { getAuthToken } = useClerkAuth()
+
+  return useApiMutation(async (request: AssetUploadRequest) => {
+    const token = await getAuthToken()
+    return token
       ? httpClient.requestUpload(request, token)
-      : Promise.resolve({ success: false, error: 'No auth token' }),
-  )
+      : Promise.resolve({ success: false, error: 'No auth token' })
+  })
 }
 
-export function useConfirmUpload(token?: string) {
-  return useApiMutation((confirmation: AssetConfirmRequest) =>
-    token
+export function useConfirmUpload() {
+  const { getAuthToken } = useClerkAuth()
+
+  return useApiMutation(async (confirmation: AssetConfirmRequest) => {
+    const token = await getAuthToken()
+    return token
       ? httpClient.confirmUpload(confirmation, token)
-      : Promise.resolve({ success: false, error: 'No auth token' }),
-  )
+      : Promise.resolve({ success: false, error: 'No auth token' })
+  })
+}
+
+// Browse assets (auth required)
+export function useBrowseAssets() {
+  const { getAuthToken } = useClerkAuth()
+  return useApiQuery(async () => {
+    const token = await getAuthToken()
+    return token
+      ? httpClient.browseAssets({}, token)
+      : Promise.resolve({ success: false, error: 'No auth token' })
+  })
+}
+
+// List asset folders (auth required)
+export function useAssetFolders(prefix?: string) {
+  const { getAuthToken } = useClerkAuth()
+  return useApiQuery(async () => {
+    const token = await getAuthToken()
+    return token
+      ? httpClient.getAssetFolders(prefix, token)
+      : Promise.resolve({ success: false, error: 'No auth token' })
+  }, [prefix])
 }

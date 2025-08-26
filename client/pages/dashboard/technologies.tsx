@@ -3,12 +3,18 @@ import { DashboardLayout, Breadcrumb } from '@/components/dashboard/DashboardLay
 import { DataTable } from '@/components/dashboard/DataTable'
 import { Badge } from '@/components/ui/badge'
 import { Technology } from '@/lib/schemas'
-import { useTechnologies, useCreateTechnologies } from '@/hooks/useHttpApi'
+import {
+  useTechnologies,
+  useCreateTechnologies,
+  useUpdateTechnology,
+  useDeleteTechnology,
+} from '@/hooks/useHttpApi'
 
 const TechnologiesPage: React.FC = () => {
   const { data: technologiesData, loading, error, refetch } = useTechnologies()
-  // TODO: Get real auth token from Clerk when implemented
   const createTechnology = useCreateTechnologies()
+  const updateTechnology = useUpdateTechnology()
+  const deleteTechnology = useDeleteTechnology()
 
   const technologies = technologiesData || []
 
@@ -20,6 +26,30 @@ const TechnologiesPage: React.FC = () => {
       }
     } catch (error) {
       console.error('Error creating technology:', error)
+      throw error
+    }
+  }
+
+  const handleEdit = async (id: string, formData: any) => {
+    try {
+      const result = await updateTechnology.mutate({ id, updates: formData })
+      if (result) {
+        refetch()
+      }
+    } catch (error) {
+      console.error('Error updating technology:', error)
+      throw error
+    }
+  }
+
+  const handleDelete = async (id: string) => {
+    try {
+      const result = await deleteTechnology.mutate(id)
+      if (result) {
+        refetch()
+      }
+    } catch (error) {
+      console.error('Error deleting technology:', error)
       throw error
     }
   }
@@ -89,6 +119,8 @@ const TechnologiesPage: React.FC = () => {
         columns={columns}
         entityType='technology'
         onAdd={handleAdd}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
         onView={(id) => {
           const tech = technologies.find((t) => t._id === id)
           if (tech) {

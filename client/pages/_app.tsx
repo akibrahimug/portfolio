@@ -3,7 +3,10 @@ import '@/styles/globals.css'
 import type { AppProps } from 'next/app'
 import { StyledEngineProvider } from '@mui/material'
 import { useEffect, useRef } from 'react'
+import { useRouter } from 'next/router'
 import { statsWsClient } from '@/lib/stats-websocket'
+import { ClerkProvider } from '@clerk/nextjs'
+import { ThemeProvider } from '@/components/theme-provider'
 
 // Auth is now handled by Clerk - no need for custom AuthProvider
 
@@ -27,10 +30,21 @@ function StatsBootstrap() {
 }
 
 function MyApp({ Component, pageProps }: AppProps) {
+  const router = useRouter()
+
+  // TODO: Add GSAP animations back later
+  // useEffect(() => {
+  //   initGlobalScrollAnimations()
+  // }, [router.asPath])
+
   return (
     <StyledEngineProvider injectFirst>
-      <StatsBootstrap />
-      <Component {...pageProps} />
+      <ClerkProvider {...pageProps}>
+        <ThemeProvider attribute='class' defaultTheme='system' enableSystem>
+          <StatsBootstrap />
+          <Component {...pageProps} />
+        </ThemeProvider>
+      </ClerkProvider>
     </StyledEngineProvider>
   )
 }

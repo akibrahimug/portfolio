@@ -91,10 +91,10 @@ export const formConfigs: Record<string, Form> = {
       },
       {
         name: 'heroImageUrl',
-        label: 'Hero Image URL',
-        type: 'url',
+        label: 'Hero Image',
+        type: 'image',
         required: false,
-        placeholder: 'https://example.com/image.png',
+        placeholder: 'Select or upload image',
       },
       {
         name: 'visibility',
@@ -311,10 +311,10 @@ export const formConfigs: Record<string, Form> = {
       },
       {
         name: 'badgeUrl',
-        label: 'Badge Image URL',
-        type: 'url',
+        label: 'Badge Image',
+        type: 'image',
         required: false,
-        placeholder: 'https://example.com/badge.png',
+        placeholder: 'Select or upload image',
       },
       {
         name: 'description',
@@ -385,10 +385,10 @@ export const formConfigs: Record<string, Form> = {
       },
       {
         name: 'iconUrl',
-        label: 'Technology Icon URL',
-        type: 'url',
+        label: 'Technology Icon',
+        type: 'image',
         required: false,
-        placeholder: 'https://example.com/icon.png',
+        placeholder: 'Select or upload image',
       },
       {
         name: 'description',

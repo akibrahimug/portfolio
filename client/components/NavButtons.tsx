@@ -3,7 +3,7 @@
 import React from 'react'
 import { Button } from '@/components/ui/button'
 import { GithubLogo } from '@phosphor-icons/react'
-import { useRouter } from 'next/navigation'
+import { useRouter } from 'next/router'
 import Link from 'next/link'
 
 const NavButtons = () => {
@@ -50,9 +50,9 @@ const NavButtons = () => {
             variant='ghost'
             className='h-10 w-full pl-4 pr-12 rounded-none text-left justify-start font-normal hover:bg-gray-100 hover:text-gray-900 transition-colors cursor-pointer'
             value='Restful API'
-            onClick={() => router.push('/restapi')}
+            onClick={() => router.push('/dashboard')}
           >
-            REST API
+            Dashboard
           </Button>
 
           <Link

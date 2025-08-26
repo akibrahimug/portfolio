@@ -15,8 +15,14 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Checkbox } from '@/components/ui/checkbox'
-import { useExperiences, useCreateExperience } from '@/hooks/useHttpApi'
+import {
+  useExperiences,
+  useCreateExperience,
+  useUpdateExperience,
+  useDeleteExperience,
+} from '@/hooks/useHttpApi'
 import { Experience } from '@/types/api'
+import { MediaLibraryPicker } from '@/components/ui/media-library-picker'
 import {
   Plus,
   PencilSimple,
@@ -70,6 +76,7 @@ const ExperienceModal: React.FC<{
     companyLogoUrl: experience?.companyLogoUrl || '',
     linkedinUrl: experience?.linkedinUrl || '',
   })
+  const [isImagePickerOpen, setIsImagePickerOpen] = useState(false)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -228,14 +235,34 @@ const ExperienceModal: React.FC<{
               />
             </div>
 
-            {/* Company Logo URL */}
-            <div>
-              <Label htmlFor='companyLogoUrl'>Company Logo URL</Label>
-              <Input
-                id='companyLogoUrl'
-                value={formData.companyLogoUrl}
-                onChange={(e) => handleInputChange('companyLogoUrl', e.target.value)}
-                placeholder='https://example.com/logo.png'
+            {/* Company Logo (Image Picker) */}
+            <div className='space-y-2'>
+              <Label>Company Logo</Label>
+              {formData.companyLogoUrl && (
+                <div className='relative inline-block'>
+                  <img
+                    src={formData.companyLogoUrl}
+                    alt='Company logo'
+                    className='w-24 h-24 object-cover rounded border'
+                  />
+                </div>
+              )}
+              <div className='flex gap-2'>
+                <Button type='button' variant='outline' onClick={() => setIsImagePickerOpen(true)}>
+                  {formData.companyLogoUrl ? 'Change Logo' : 'Select Logo'}
+                </Button>
+                <Input
+                  placeholder='Or paste image URL directly...'
+                  value={formData.companyLogoUrl}
+                  onChange={(e) => handleInputChange('companyLogoUrl', e.target.value)}
+                />
+              </div>
+              <MediaLibraryPicker
+                isOpen={isImagePickerOpen}
+                onClose={() => setIsImagePickerOpen(false)}
+                onSelect={(url) => handleInputChange('companyLogoUrl', url)}
+                filter='image'
+                title='Select Company Logo'
               />
             </div>
 
@@ -360,7 +387,7 @@ const ExperienceCard: React.FC<{
                       {' · '}
                       {calculateDuration(
                         experience.startDate,
-                        experience.current ? undefined : experience.endDate,
+                        experience.current ? undefined : experience.endDate || undefined,
                       )}
                     </span>
                   </div>
@@ -428,6 +455,8 @@ const ExperienceCard: React.FC<{
 export default function ExperiencesPage() {
   const { data: experiencesData, loading, error, refetch } = useExperiences()
   const createExperience = useCreateExperience()
+  const updateExperience = useUpdateExperience()
+  const deleteExperience = useDeleteExperience()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingExperience, setEditingExperience] = useState<Experience | undefined>()
 
@@ -445,8 +474,11 @@ export default function ExperiencesPage() {
         endDate: formData.current ? undefined : formData.endDate,
       }
 
-      // TODO: Get real auth token from Clerk when implemented
-      await createExperience.mutate(experienceData)
+      if (editingExperience) {
+        await updateExperience.mutate({ id: editingExperience._id, updates: experienceData })
+      } else {
+        await createExperience.mutate(experienceData)
+      }
       refetch()
       setEditingExperience(undefined)
     } catch (err) {
@@ -459,9 +491,13 @@ export default function ExperiencesPage() {
     setIsModalOpen(true)
   }
 
-  const handleDelete = (experienceId: string) => {
-    // TODO: Implement delete functionality
-    console.log('Delete experience:', experienceId)
+  const handleDelete = async (experienceId: string) => {
+    try {
+      await deleteExperience.mutate(experienceId)
+      refetch()
+    } catch (err) {
+      console.error('Error deleting experience:', err)
+    }
   }
 
   const handleAddNew = () => {

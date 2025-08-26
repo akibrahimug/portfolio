@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './dialog'
 import { Button } from './button'
 import { Input } from './input'
@@ -16,6 +16,8 @@ import {
   Check,
 } from '@phosphor-icons/react'
 import { httpClient } from '@/lib/http-client'
+import { useClerkAuth } from '@/hooks/useClerkAuth'
+import { useRequestUpload, useConfirmUpload } from '@/hooks/useHttpApi'
 
 interface MediaFile {
   name: string
@@ -48,15 +50,26 @@ export const MediaLibraryPicker: React.FC<MediaLibraryPickerProps> = ({
   const [loading, setLoading] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedFile, setSelectedFile] = useState<string | null>(null)
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
+  const fileInputRef = React.useRef<HTMLInputElement | null>(null)
+
+  const { getAuthToken } = useClerkAuth()
+  const requestUpload = useRequestUpload()
+  const confirmUpload = useConfirmUpload()
 
   const loadFiles = async (prefix = '') => {
     setLoading(true)
     try {
-      const response = await httpClient.browseAssets({
-        prefix,
-        limit: 100,
-        type: filter === 'image' ? 'image' : undefined,
-      })
+      const token = await getAuthToken()
+      const response = await httpClient.browseAssets(
+        {
+          prefix,
+          limit: 100,
+          type: filter === 'image' ? 'image' : undefined,
+        },
+        token || undefined,
+      )
 
       if (response.success && response.data) {
         setFiles(response.data.files)
@@ -74,7 +87,8 @@ export const MediaLibraryPicker: React.FC<MediaLibraryPickerProps> = ({
 
   const loadFolders = async (prefix = '') => {
     try {
-      const response = await httpClient.getAssetFolders(prefix)
+      const token = await getAuthToken()
+      const response = await httpClient.getAssetFolders(prefix, token || undefined)
       if (response.success && response.data) {
         setFolders(response.data.folders)
       }
@@ -272,16 +286,90 @@ export const MediaLibraryPicker: React.FC<MediaLibraryPickerProps> = ({
             </TabsContent>
 
             <TabsContent value='upload'>
-              <div className='flex items-center justify-center h-32 border-2 border-dashed border-muted-foreground rounded-lg'>
-                <div className='text-center'>
-                  <Upload className='w-8 h-8 mx-auto mb-2 text-muted-foreground' />
-                  <p className='text-sm text-muted-foreground'>
-                    Upload functionality will be integrated here
-                  </p>
-                  <p className='text-xs text-muted-foreground mt-1'>
-                    TODO: Implement drag & drop upload
-                  </p>
+              <div className='space-y-3'>
+                <div className='flex items-center gap-3'>
+                  <input
+                    ref={fileInputRef}
+                    type='file'
+                    accept={filter === 'image' ? 'image/*' : '*/*'}
+                    className='hidden'
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0]
+                      if (!file) return
+                      setUploadError(null)
+                      setUploading(true)
+                      try {
+                        const token = await getAuthToken()
+                        if (!token) throw new Error('Not authenticated')
+
+                        // Step 1: request signed URL
+                        const reqRes = await httpClient.requestUpload(
+                          {
+                            projectId: undefined,
+                            filename: file.name,
+                            contentType: file.type,
+                            size: file.size,
+                          },
+                          token,
+                        )
+                        if (!reqRes.success || !reqRes.data) throw new Error(reqRes.error)
+
+                        const { uploadUrl, headers, objectPath } = reqRes.data
+
+                        // Step 2: PUT file to GCS signed URL
+                        const putRes = await fetch(uploadUrl, {
+                          method: 'PUT',
+                          headers,
+                          body: file,
+                        })
+                        if (!putRes.ok) throw new Error(`Upload failed: ${putRes.status}`)
+
+                        // Step 3: confirm upload to persist metadata and get URLs
+                        const confirmRes = await httpClient.confirmUpload(
+                          {
+                            projectId: undefined,
+                            objectPath,
+                            contentType: file.type,
+                            size: file.size,
+                          },
+                          token,
+                        )
+                        if (!confirmRes.success || !confirmRes.data)
+                          throw new Error(confirmRes.error)
+
+                        // Prefer viewUrl if present, fallback to publicUrl or constructed path
+                        const anyData = confirmRes.data as any
+                        const finalUrl = anyData.publicUrl || anyData.viewUrl || ''
+                        if (finalUrl) {
+                          onSelect(finalUrl)
+                          onClose()
+                          // Refresh listing
+                          loadFiles(currentFolder)
+                        }
+                      } catch (err) {
+                        const msg = err instanceof Error ? err.message : 'Upload failed'
+                        console.error(msg)
+                        setUploadError(msg)
+                      } finally {
+                        setUploading(false)
+                        if (fileInputRef.current) fileInputRef.current.value = ''
+                      }
+                    }}
+                  />
+                  <Button
+                    type='button'
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploading}
+                    className='cursor-pointer'
+                  >
+                    <Upload className='w-4 h-4 mr-2' />
+                    {uploading ? 'Uploading...' : 'Choose file'}
+                  </Button>
+                  {uploadError && <span className='text-sm text-red-600'>{uploadError}</span>}
                 </div>
+                <p className='text-xs text-muted-foreground'>
+                  Max size enforced by server; images only if filtered.
+                </p>
               </div>
             </TabsContent>
           </Tabs>
