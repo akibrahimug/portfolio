@@ -104,9 +104,9 @@ jobs:
             --set-env-vars=API_BASE=/api/v1 \
             --set-env-vars=CLERK_ISSUER="$CLERK_ISSUER" \
             --set-env-vars=CLERK_AUDIENCE="$CLERK_AUDIENCE" \
-            --set-secrets=MONGODB_URI=MONGODB_URI:latest \
-            --set-secrets=GCS_BUCKET_UPLOADS=GCS_BUCKET_UPLOADS:latest \
-            --set-secrets=UPLOADS_ALLOWED_MIME=UPLOADS_ALLOWED_MIME:latest \
+            --update-secrets=MONGODB_URI=MONGODB_URI:latest \
+            --update-secrets=GCS_BUCKET_UPLOADS=GCS_BUCKET_UPLOADS:latest \
+            --update-secrets=UPLOADS_ALLOWED_MIME=UPLOADS_ALLOWED_MIME:latest \
             --min-instances=0 \
             --max-instances=10 \
             --concurrency=80 \
@@ -220,9 +220,9 @@ jobs:
             --set-env-vars=WS_ORIGINS="$WS_ORIGINS" \
             --set-env-vars=CLERK_ISSUER="$CLERK_ISSUER" \
             --set-env-vars=CLERK_AUDIENCE="$CLERK_AUDIENCE" \
-            --set-secrets=MONGODB_URI=MONGODB_URI:latest \
-            --set-secrets=GCS_BUCKET_UPLOADS=GCS_BUCKET_UPLOADS:latest \
-            --set-secrets=UPLOADS_ALLOWED_MIME=UPLOADS_ALLOWED_MIME:latest \
+            --update-secrets=MONGODB_URI=MONGODB_URI:latest \
+            --update-secrets=GCS_BUCKET_UPLOADS=GCS_BUCKET_UPLOADS:latest \
+            --update-secrets=UPLOADS_ALLOWED_MIME=UPLOADS_ALLOWED_MIME:latest \
             --min-instances=1 \
             --max-instances=20 \
             --concurrency=80 \
