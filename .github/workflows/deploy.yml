@@ -89,7 +89,7 @@ jobs:
             --set-env-vars=WS_ORIGINS="$WS_ORIGINS" \
             --set-env-vars=CLERK_ISSUER="$CLERK_ISSUER" \
             --set-env-vars=CLERK_AUDIENCE="$CLERK_AUDIENCE" \
-            --set-env-vars=UPLOADS_ALLOWED_MIME="$UPLOADS_ALLOWED_MIME"
+            --set-env-vars=UPLOADS_ALLOWED_MIME="$UPLOADS_ALLOWED_MIME" \
             --set-secrets=MONGODB_URI=MONGODB_URI:latest \
             --set-secrets=GCS_BUCKET_UPLOADS=GCS_BUCKET_UPLOADS:latest \
             --min-instances=0 \
@@ -185,7 +185,7 @@ jobs:
             --set-env-vars=WS_ORIGINS="$WS_ORIGINS" \
             --set-env-vars=CLERK_ISSUER="$CLERK_ISSUER" \
             --set-env-vars=CLERK_AUDIENCE="$CLERK_AUDIENCE" \
-            --set-env-vars=UPLOADS_ALLOWED_MIME="$UPLOADS_ALLOWED_MIME"
+            --set-env-vars=UPLOADS_ALLOWED_MIME="$UPLOADS_ALLOWED_MIME" \
             --set-secrets=MONGODB_URI=MONGODB_URI:latest \
             --set-secrets=GCS_BUCKET_UPLOADS=GCS_BUCKET_UPLOADS:latest \
             --min-instances=1 \
