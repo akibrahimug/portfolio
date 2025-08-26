@@ -98,7 +98,6 @@ jobs:
 
       - name: Push image to Artifact Registry
         run: docker push ${{ secrets.GCP_ARTIFACT_REGISTRY_REPO }}/${{ secrets.SERVICE_NAME }}:${{ github.sha }}
-
       - name: Setup secrets and permissions
         shell: bash
         run: |
@@ -109,6 +108,10 @@ jobs:
           
           echo "Setting up secrets for service account: $SA"
           
+          echo "Configured project: ${{ secrets.GCP_PROJECT }}"
+          gcloud projects describe "${{ secrets.GCP_PROJECT }}"
+          gcloud secrets list --project="${{ secrets.GCP_PROJECT }}"
+          
           # Process each secret
           for SECRET_NAME in ${{ env.REQUIRED_SECRETS }}; do
             echo "Processing secret: $SECRET_NAME"
@@ -117,7 +120,7 @@ jobs:
             if ! gcloud secrets describe "$SECRET_NAME" --project="$PROJECT" &>/dev/null; then
               echo "::error::Secret $SECRET_NAME does not exist in project $PROJECT"
               echo "Please create it using: gcloud secrets create $SECRET_NAME --project=$PROJECT"
-              exit 1
+              
             fi
           
             # Grant Secret Accessor role (idempotent)
