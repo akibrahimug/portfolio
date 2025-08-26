@@ -60,6 +60,14 @@ jobs:
           service_account: ${{ secrets.GCP_SA_EMAIL }}
           audience: "https://github.com/akibrahimug/portfolio"
 
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Set active project
+        run: gcloud config set project "$GCP_PROJECT"
+        env:
+          GCP_PROJECT: ${{ secrets.GCP_PROJECT }}
+
       - name: Enable required APIs (idempotent)
         run: |
           gcloud services enable \
@@ -94,7 +102,6 @@ jobs:
             --port=5000 \
             --set-env-vars=NODE_ENV=production \
             --set-env-vars=API_BASE=/api/v1 \
-            --set-env-vars=WS_ORIGINS="$WS_ORIGINS" \
             --set-env-vars=CLERK_ISSUER="$CLERK_ISSUER" \
             --set-env-vars=CLERK_AUDIENCE="$CLERK_AUDIENCE" \
             --set-secrets=MONGODB_URI=MONGODB_URI:latest \
@@ -110,7 +117,6 @@ jobs:
           IMAGE: ${{ secrets.GCP_ARTIFACT_REGISTRY_REPO }}/${{ secrets.SERVICE_NAME }}:${{ github.sha }}
           GCP_REGION: ${{ secrets.GCP_REGION }}
           GCP_PROJECT: ${{ secrets.GCP_PROJECT }}
-          WS_ORIGINS: ${{ secrets.WS_ORIGINS }}
           GCS_BUCKET_UPLOADS: ${{ secrets.GCS_BUCKET_UPLOADS }}
           CLERK_ISSUER: ${{ secrets.CLERK_ISSUER }}
           CLERK_AUDIENCE: ${{ secrets.CLERK_AUDIENCE }}
