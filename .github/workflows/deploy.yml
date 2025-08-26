@@ -42,6 +42,7 @@ jobs:
         with:
           workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER_ADMIN }}
           service_account: ${{ secrets.GCP_SA_ADMIN_EMAIL }}
+          audience: 'https://github.com/akibrahimug/portfolio'
 
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@v2
