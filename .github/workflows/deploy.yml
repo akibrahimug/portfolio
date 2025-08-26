@@ -89,7 +89,9 @@ jobs:
             --set-env-vars=WS_ORIGINS="$WS_ORIGINS" \
             --set-env-vars=CLERK_ISSUER="$CLERK_ISSUER" \
             --set-env-vars=CLERK_AUDIENCE="$CLERK_AUDIENCE" \
+            --set-env-vars=UPLOADS_ALLOWED_MIME="$UPLOADS_ALLOWED_MIME"
             --set-secrets=MONGODB_URI=MONGODB_URI:latest \
+            --set-secrets=GCS_BUCKET_UPLOADS=GCS_BUCKET_UPLOADS:latest \
             --min-instances=0 \
             --max-instances=10 \
             --concurrency=80 \
@@ -104,6 +106,7 @@ jobs:
           GCS_BUCKET_UPLOADS: ${{ secrets.GCS_BUCKET_UPLOADS }}
           CLERK_ISSUER: ${{ secrets.CLERK_ISSUER }}
           CLERK_AUDIENCE: ${{ secrets.CLERK_AUDIENCE }}
+          UPLOADS_ALLOWED_MIME: ${{secrets.UPLOADS_ALLOWED_MIME}}
 
       - name: Readiness check (staging)
         run: curl -f "$URL/api/v1/readyz" | cat
@@ -182,7 +185,9 @@ jobs:
             --set-env-vars=WS_ORIGINS="$WS_ORIGINS" \
             --set-env-vars=CLERK_ISSUER="$CLERK_ISSUER" \
             --set-env-vars=CLERK_AUDIENCE="$CLERK_AUDIENCE" \
+            --set-env-vars=UPLOADS_ALLOWED_MIME="$UPLOADS_ALLOWED_MIME"
             --set-secrets=MONGODB_URI=MONGODB_URI:latest \
+            --set-secrets=GCS_BUCKET_UPLOADS=GCS_BUCKET_UPLOADS:latest \
             --min-instances=1 \
             --max-instances=20 \
             --concurrency=80 \
@@ -194,9 +199,9 @@ jobs:
           GCP_REGION: ${{ secrets.GCP_REGION }}
           GCP_PROJECT: ${{ secrets.GCP_PROJECT }}
           WS_ORIGINS: ${{ secrets.WS_ORIGINS }}
-          GCS_BUCKET_UPLOADS: ${{ secrets.GCS_BUCKET_UPLOADS }}
           CLERK_ISSUER: ${{ secrets.CLERK_ISSUER }}
           CLERK_AUDIENCE: ${{ secrets.CLERK_AUDIENCE }}
+          UPLOADS_ALLOWED_MIME: ${{secrets.UPLOADS_ALLOWED_MIME}}
 
       - name: Readiness check (prod)
         run: curl -f "$URL/api/v1/readyz" | cat
