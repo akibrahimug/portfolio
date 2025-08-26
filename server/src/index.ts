@@ -65,26 +65,40 @@ async function main() {
   const app = express();
   app.disable('x-powered-by');
 
-  app.use(
+app.use(
   cors({
-    origin: (origin, cb) => {
-      // allow same-origin requests (no Origin) and any localhost:* in dev
-      if (!origin) return cb(null, true)
-      if (/^http:\/\/localhost:\d+$/.test(origin)) return cb(null, true)
-      // also allow anything configured in your config (array or '*')
-      if (config.wsOrigins === '*' ||
-          (Array.isArray(config.wsOrigins) && config.wsOrigins.includes(origin))) {
-        return cb(null, true)
+    origin: (origin, callback) => {
+      // allow same-origin requests (no Origin header) and any localhost:* in dev
+      if (!origin) return callback(null, true)
+      if (/^http:\/\/localhost:\d+$/.test(origin)) return callback(null, true)
+
+      // config.wsOrigins is a string[] (e.g. ['http://localhost:3000', '*'])
+      if (Array.isArray(config.wsOrigins)) {
+        if (config.wsOrigins.includes('*') || config.wsOrigins.includes(origin)) {
+          return callback(null, true)
+        }
       }
-      return cb(new Error('Not allowed by CORS'))
+
+      return callback(new Error('Not allowed by CORS'))
     },
-    methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
-    allowedHeaders: ['Content-Type','Authorization'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: false,
     preflightContinue: false,
     optionsSuccessStatus: 204,
   }),
 )
+
+// explicit OPTIONS handler (sometimes needed in dev)
+app.options('*', cors({
+  origin: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: false,
+  preflightContinue: false,
+  optionsSuccessStatus: 204,
+}))
+
 
   // Parse JSON bodies for HTTP API endpoints
   app.use(express.json());

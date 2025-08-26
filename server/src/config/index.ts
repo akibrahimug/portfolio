@@ -56,7 +56,7 @@ function parseCsv(value?: string): string[] | undefined {
     .filter(Boolean);
 }
 
-const wsOrigins = parseCsv(raw.WS_ORIGINS) ?? ['*'];
+const wsOrigins = parseCsv(raw.WS_ORIGINS) ?? ['*'] ;
 
 /**
  * Resolve the Mongo connection string with fallbacks:
