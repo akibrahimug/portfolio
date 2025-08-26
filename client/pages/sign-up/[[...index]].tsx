@@ -9,7 +9,7 @@ export default function Page() {
             Create Account
           </h2>
           <p className='mt-2 text-sm text-gray-600 dark:text-gray-400'>
-            Sign up to access your portfolio dashboard
+            Sign up to access my portfolio dashboard
           </p>
         </div>
         <div className='mt-8'>

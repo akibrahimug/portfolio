@@ -24,7 +24,7 @@ const NavButtons = () => {
   }
 
   return (
-    <div className='flex flex-wrap justify-center gap-1 w-full max-w-md mx-auto '>
+    <div className='flex flex-wrap justify-center gap-1 w-full max-w-md mx-auto relative'>
       <div className='flex w-full sm:w-auto rounded-full shadow-sm overflow-hidden '>
         {/* Contact Me */}
         <Button
@@ -37,7 +37,7 @@ const NavButtons = () => {
         {/* TechStack */}
         <Button
           variant='ghost'
-          className='flex-1 h-10 px-4 rounded-none border-r text-left justify-start  text-gray-500 font-extralight hover:bg-gray-100 hover:text-gray-900 transition-colors cursor-pointer '
+          className='flex-1 h-10 px-4 rounded-none border-r text-left justify-start  text-red-600 font-extralight hover:bg-gray-100 hover:text-red-700 transition-colors cursor-pointer '
           value='TechStack'
           onClick={scrollToProjects}
         >
@@ -45,7 +45,7 @@ const NavButtons = () => {
         </Button>
 
         {/* REST API with GitHub icon */}
-        <div className='flex-1 relative flex items-center'>
+        <div className='flex-1  flex items-center'>
           <Button
             variant='ghost'
             className='h-10 w-full pl-4 pr-12 rounded-none text-left justify-start font-normal hover:bg-gray-100 hover:text-gray-900 transition-colors cursor-pointer'
@@ -59,10 +59,10 @@ const NavButtons = () => {
             href='https://github.com/akibrahimug'
             target='_blank'
             rel='noopener noreferrer'
-            className='absolute right-5 transform translate-x-1/2'
+            className='absolute right-5 transform translate-x-1/2 border p-3 rounded-3xl bg-black text-white hover:scale-110 transition-transform delay-[0.1s]'
             aria-label='GitHub Profile'
           >
-            <GithubLogo className='w-5 h-5' />
+            <GithubLogo className='w-5 h-5 ' />
           </Link>
         </div>
       </div>

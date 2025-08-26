@@ -104,7 +104,7 @@ async function main() {
     // Parse JSON bodies for HTTP API endpoints
     app.use(express_1.default.json());
     // Mount API routes
-    app.use(`${config_1.default.apiBase}/v1`, routes_1.default);
+    app.use(config_1.default.apiBase, routes_1.default);
     // Track active WS connections for readiness metrics and stats events
     const connections = new Set();
     // Minimal HTTP surface under base path

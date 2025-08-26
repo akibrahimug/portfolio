@@ -282,7 +282,7 @@ const ExperienceModal: React.FC<{
             <Button type='button' variant='outline' onClick={onClose}>
               Cancel
             </Button>
-            <Button type='submit' className='bg-blue-600 hover:bg-blue-700'>
+            <Button type='submit' className='bg-black cursor-pointer'>
               {experience ? 'Update' : 'Add'} Experience
             </Button>
           </div>
@@ -539,7 +539,7 @@ export default function ExperiencesPage() {
             Manage your professional experience and career history
           </p>
         </div>
-        <Button onClick={handleAddNew} className='bg-blue-600 hover:bg-blue-700 cursor-pointer'>
+        <Button onClick={handleAddNew} className='bg-black cursor-pointer'>
           <Plus className='w-4 h-4 mr-2' />
           Add Experience
         </Button>
@@ -559,7 +559,7 @@ export default function ExperiencesPage() {
               </p>
               <Button
                 onClick={handleAddNew}
-                className='bg-blue-600 hover:bg-blue-700 cursor-pointer'
+                className='bg-black cursor-pointer'
               >
                 <Plus className='w-4 h-4 mr-2' />
                 Add Your First Experience

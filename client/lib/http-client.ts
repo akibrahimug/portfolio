@@ -41,12 +41,14 @@ class HttpClient {
   private baseUrl: string
 
   constructor() {
-    this.baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000/api'
-    if (!this.baseUrl.endsWith('/')) {
-      this.baseUrl += '/'
+    const rawBase = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000/api/v1'
+    // Normalize: strip trailing slashes
+    let normalized = rawBase.replace(/\/+$/, '')
+    // Append version only if not already present
+    if (!normalized.endsWith('/api/v1')) {
+      normalized += '/api/v1'
     }
-    // Remove trailing slash and add v1 if not present
-    this.baseUrl = this.baseUrl.replace(/\/+$/, '') + '/v1'
+    this.baseUrl = normalized
   }
 
   private async request<T>(

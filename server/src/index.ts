@@ -43,6 +43,7 @@ const log = getTaggedLogger('SERVER');
  * 1) Sec-WebSocket-Protocol subprotocol header (format: "bearer,<token>")
  * 2) Query parameter `token`
  */
+
 function extractTokenFromReq(req: http.IncomingMessage): string | undefined {
   // Prefer subprotocol: bearer,<token>
   const protocols = (req.headers['sec-websocket-protocol'] as string | undefined)?.split(',');
@@ -63,13 +64,28 @@ async function main() {
 
   const app = express();
   app.disable('x-powered-by');
-  // CORS allows the configured origins to call the health endpoints and upgrade WS
+
   app.use(
-    cors({
-      // `wsOrigins` is a CSV parsed to array in config; default is '*'
-      origin: config.wsOrigins || '*',
-    }),
-  );
+  cors({
+    origin: (origin, cb) => {
+      // allow same-origin requests (no Origin) and any localhost:* in dev
+      if (!origin) return cb(null, true)
+      if (/^http:\/\/localhost:\d+$/.test(origin)) return cb(null, true)
+      // also allow anything configured in your config (array or '*')
+      if (config.wsOrigins === '*' ||
+          (Array.isArray(config.wsOrigins) && config.wsOrigins.includes(origin))) {
+        return cb(null, true)
+      }
+      return cb(new Error('Not allowed by CORS'))
+    },
+    methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
+    allowedHeaders: ['Content-Type','Authorization'],
+    credentials: false,
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
+  }),
+)
+
   // Parse JSON bodies for HTTP API endpoints
   app.use(express.json());
 

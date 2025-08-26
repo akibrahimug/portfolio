@@ -14,9 +14,6 @@ const Header: React.FC = () => {
           size={45}
         />
       </Link>
-
-      {/* middle section */}
-
       <MainHeader />
       <div className='hidden md:block m-auto'>
         <Methodologies />

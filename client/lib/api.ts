@@ -11,7 +11,10 @@ export class ApiService {
   private baseUrl: string
 
   constructor() {
-    this.baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1'
+    this.baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000/api/v1'
+        let normalized = raw.replace(/\/+$/, '')
+    if (!normalized.endsWith('/api/v1')) normalized += '/api/v1'
+    this.baseUrl = normalized
   }
 
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
