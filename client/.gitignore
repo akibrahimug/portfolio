@@ -16,7 +16,8 @@
 .env.development.local
 .env.test.local
 .env.production.local
-
+../server/bucket_key.json
+*_key.json
 # production
 /build
 

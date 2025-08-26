@@ -3,3 +3,5 @@ node_modules
 .env*.local
 mykey.json
 dist
+bucket_key.json
+*_key.json

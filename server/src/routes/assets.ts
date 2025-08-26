@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import type { Request, Response } from 'express';
+import { Types } from 'mongoose'; // Add this import
 import config from '../config';
 import { buildSchemas } from '../schemas';
 import { authMiddleware } from '../services/auth';
@@ -23,6 +24,24 @@ function getNumber(v: unknown): number | undefined {
 
 function getStringArray(v: unknown): string[] {
   return Array.isArray(v) && v.every((x) => typeof x === 'string') ? (v as string[]) : [];
+}
+
+/** Helper function to validate and convert projectId to ObjectId */
+function validateProjectId(projectId: string): Types.ObjectId {
+  // Check if it's already a valid ObjectId
+  if (Types.ObjectId.isValid(projectId)) {
+    return new Types.ObjectId(projectId);
+  }
+
+  // If it's not a valid ObjectId, create a deterministic ObjectId
+  // This allows string identifiers like 'resume' to have a consistent ObjectId
+  const hash = require('crypto')
+    .createHash('md5')
+    .update(`project-${projectId}`)
+    .digest('hex')
+    .substring(0, 24);
+
+  return new Types.ObjectId(hash);
 }
 
 /** Minimal projection of config we actually use, read safely from unknown */
@@ -199,6 +218,17 @@ router.post('/request-upload', authMiddleware, async (req: Request, res: Respons
       ...req.body,
     }) as AssetsRequestUploadParsed;
 
+    // Validate projectId (though we don't need it as ObjectId here, just validate)
+    try {
+      validateProjectId(parsed.projectId);
+    } catch (error) {
+      console.warn('[assets] projectId validation error:', error);
+      return res.status(400).json({ 
+        error: 'invalid_project_id', 
+        message: 'Invalid projectId format'
+      });
+    }
+
     const { projectId, filename } = parsed;
     let { contentType } = parsed;
     const { size } = parsed; // never reassigned → const
@@ -257,14 +287,25 @@ router.post('/confirm', authMiddleware, async (req: Request, res: Response) => {
       ownerId: userId,
     }) as AssetsConfirmParsed;
 
+    // Validate and convert projectId to a valid ObjectId
+    let validProjectId;
+    try {
+      validProjectId = validateProjectId(parsed.projectId);
+    } catch (error) {
+      console.warn('[assets] projectId validation error:', error);
+      return res.status(400).json({ 
+        error: 'invalid_project_id', 
+        message: 'Invalid projectId format'
+      });
+    }
+
     const assetDoc = (await Asset.create({
-      projectId: parsed.projectId,
+      projectId: validProjectId, // Use the validated ObjectId
       ownerId: parsed.ownerId,
       path: parsed.objectPath,
       contentType: parsed.contentType,
       size: parsed.size,
     })) as unknown as AssetDoc;
-
     return res.status(201).json({ asset: assetDoc });
   } catch (err) {
     // eslint-disable-next-line no-console

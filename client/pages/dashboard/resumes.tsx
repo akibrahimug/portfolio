@@ -116,6 +116,7 @@ export default function ResumesPage() {
         {
           method: 'POST',
           body: {
+            version: 'v1',
             projectId: 'resume',
             objectPath,
             contentType,
