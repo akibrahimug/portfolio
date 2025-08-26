@@ -72,32 +72,15 @@ jobs:
       - name: Configure GCP environment
         run: |
           gcloud config set project "${{ secrets.GCP_PROJECT }}"
-          
-          # Enable required APIs (idempotent)
           gcloud services enable \
-            secretmanager.googleapis.com \
-            run.googleapis.com \
-            artifactregistry.googleapis.com \
-            iamcredentials.googleapis.com || true
+          cloudresourcemanager.googleapis.com \
+          serviceusage.googleapis.com \
+          secretmanager.googleapis.com \
+          run.googleapis.com \
+          artifactregistry.googleapis.com \
+          iamcredentials.googleapis.com \
+          iam.googleapis.com || true
 
-      - name: Configure Docker auth for Artifact Registry
-        shell: bash
-        run: |
-          set -euo pipefail
-          REPO="${{ secrets.GCP_ARTIFACT_REGISTRY_REPO }}"
-          REG_HOST="${REPO%%/*}"
-          
-          if [[ ! "$REG_HOST" =~ ^[a-z0-9-]+-docker\.pkg\.dev$ ]]; then
-            echo "::error::GCP_ARTIFACT_REGISTRY_REPO must look like '<region>-docker.pkg.dev/<project>/<repo>'"
-            echo "Got: $REPO"
-            exit 1
-          fi
-          
-          echo "Configuring Docker auth for: $REG_HOST"
-          gcloud auth configure-docker "$REG_HOST" --quiet
-
-      - name: Push image to Artifact Registry
-        run: docker push ${{ secrets.GCP_ARTIFACT_REGISTRY_REPO }}/${{ secrets.SERVICE_NAME }}:${{ github.sha }}
       - name: Setup secrets and permissions
         shell: bash
         run: |
@@ -108,10 +91,6 @@ jobs:
           
           echo "Setting up secrets for service account: $SA"
           
-          echo "Configured project: ${{ secrets.GCP_PROJECT }}"
-          gcloud projects describe "${{ secrets.GCP_PROJECT }}"
-          gcloud secrets list --project="${{ secrets.GCP_PROJECT }}"
-          
           # Process each secret
           for SECRET_NAME in ${{ env.REQUIRED_SECRETS }}; do
             echo "Processing secret: $SECRET_NAME"
@@ -120,7 +99,7 @@ jobs:
             if ! gcloud secrets describe "$SECRET_NAME" --project="$PROJECT" &>/dev/null; then
               echo "::error::Secret $SECRET_NAME does not exist in project $PROJECT"
               echo "Please create it using: gcloud secrets create $SECRET_NAME --project=$PROJECT"
-              
+          
             fi
           
             # Grant Secret Accessor role (idempotent)
@@ -168,6 +147,24 @@ jobs:
           done
           
           echo "All secrets configured successfully"
+
+      - name: Configure Docker auth for Artifact Registry
+        shell: bash
+        run: |
+          set -euo pipefail
+          REPO="${{ secrets.GCP_ARTIFACT_REGISTRY_REPO }}"
+          REG_HOST="${REPO%%/*}"
+          if [[ ! "$REG_HOST" =~ ^[a-z0-9-]+-docker\.pkg\.dev$ ]]; then
+            echo "::error::GCP_ARTIFACT_REGISTRY_REPO must look like '<region>-docker.pkg.dev/<project>/<repo>'"
+            echo "Got: $REPO"
+            exit 1
+          fi
+          
+          echo "Configuring Docker auth for: $REG_HOST"
+          gcloud auth configure-docker "$REG_HOST" --quiet
+
+      - name: Push image to Artifact Registry
+        run: docker push ${{ secrets.GCP_ARTIFACT_REGISTRY_REPO }}/${{ secrets.SERVICE_NAME }}:${{ github.sha }}
 
       - name: Verify IAM permissions
         shell: bash
