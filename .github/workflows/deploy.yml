@@ -9,124 +9,22 @@ on:
         description: "Promote current commit to prod"
         required: false
         default: "true"
-      setup_secrets:
-        description: "Setup/update secrets (requires admin permissions)"
-        required: false
-        default: "false"
 
+# Define environment variables at workflow level
 env:
   NODE_VERSION: 20
   DOCKER_PLATFORM: linux/amd64
-  # Cloud Run
+  # List all secrets that need Secret Manager access
+  REQUIRED_SECRETS: "UPLOADS_ALLOWED_MIME MONGODB_URI GCS_BUCKET_UPLOADS CLERK_ISSUER CLERK_AUDIENCE"
+  # Cloud Run configuration
   CR_PORT: 5000
   CR_CONCURRENCY: 80
   CR_TIMEOUT: 900s
   CR_ENV_NODE: production
   CR_ENV_API_BASE: /api/v1
-  # Secrets we require in Secret Manager (names = env var names used at runtime)
-  REQUIRED_SECRETS: "UPLOADS_ALLOWED_MIME MONGODB_URI GCS_BUCKET_UPLOADS CLERK_ISSUER CLERK_AUDIENCE"
 
 jobs:
-  # Optional job to setup/update secrets - requires admin service account
-  setup-secrets:
-    if: ${{ github.event.inputs.setup_secrets == 'true' || github.event_name == 'workflow_dispatch' }}
-    runs-on: ubuntu-latest
-    environment: infrastructure
-    permissions:
-      contents: read
-      id-token: write
-
-    steps:
-      - name: Auth to GCP (Admin Service Account)
-        uses: google-github-actions/auth@v2
-        with:
-          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER_ADMIN }}
-          service_account: ${{ secrets.GCP_SA_ADMIN_EMAIL }}
-          audience: 'https://github.com/akibrahimug/portfolio'
-
-      - name: Set up gcloud
-        uses: google-github-actions/setup-gcloud@v2
-
-      - name: Configure GCP project
-        run: gcloud config set project "${{ secrets.GCP_PROJECT }}"
-
-      - name: Setup secrets in Secret Manager
-        shell: bash
-        run: |
-          set -euo pipefail
-          PROJECT="${{ secrets.GCP_PROJECT }}"
-          DEPLOY_SA="${{ secrets.GCP_SA_EMAIL }}"
-          
-          # Map Secret Manager names -> values sourced from GitHub Secrets
-          declare -A SECRET_VALUES=(
-            [UPLOADS_ALLOWED_MIME]="${{ secrets.UPLOADS_ALLOWED_MIME }}"
-            [MONGODB_URI]="${{ secrets.MONGODB_URI }}"
-            [GCS_BUCKET_UPLOADS]="${{ secrets.GCS_BUCKET_UPLOADS }}"
-            [CLERK_ISSUER]="${{ secrets.CLERK_ISSUER }}"
-            [CLERK_AUDIENCE]="${{ secrets.CLERK_AUDIENCE }}"
-          )
-
-          echo "Setting up secrets for deployment service account: $DEPLOY_SA"
-
-          for NAME in ${{ env.REQUIRED_SECRETS }}; do
-            echo "::group::Secret $NAME"
-          
-            VALUE="${SECRET_VALUES[$NAME]}"
-            if [[ -z "${VALUE}" ]]; then
-              echo "::error::GitHub Secret value for $NAME is empty or not provided."
-              exit 1
-            fi
-
-            # Create secret if it doesn't exist
-            if ! gcloud secrets describe "$NAME" --project="$PROJECT" >/dev/null 2>&1; then
-              printf %s "$VALUE" | gcloud secrets create "$NAME" \
-                --project="$PROJECT" \
-                --replication-policy="automatic" \
-                --data-file=-
-              echo "  - Created secret $NAME"
-            else
-              echo "  - Secret $NAME already exists"
-            fi
-
-            # Check if secret has versions, add one if missing
-            VERSIONS_COUNT=$(gcloud secrets versions list "$NAME" --project="$PROJECT" --format='value(name)' | wc -l | tr -d ' ')
-            if [[ "$VERSIONS_COUNT" -eq 0 ]]; then
-              printf %s "$VALUE" | gcloud secrets versions add "$NAME" --project="$PROJECT" --data-file=-
-              echo "  - Added initial version for $NAME"
-            else
-              echo "  - Secret $NAME has $VERSIONS_COUNT version(s)"
-            fi
-
-            # Ensure latest version is enabled
-            LATEST_NUM="$(gcloud secrets versions list "$NAME" --project="$PROJECT" --format='value(name)' --limit=1 | sed 's/.*versions\///')"
-            if [[ -n "$LATEST_NUM" ]]; then
-              STATE="$(gcloud secrets versions describe "$LATEST_NUM" --secret="$NAME" --project="$PROJECT" --format='value(state)')"
-              if [[ "$STATE" == "DISABLED" ]]; then
-                gcloud secrets versions enable "$LATEST_NUM" --secret="$NAME" --project="$PROJECT"
-                echo "  - Enabled $NAME:$LATEST_NUM"
-              else
-                echo "  - Latest version $LATEST_NUM is $STATE"
-              fi
-            fi
-
-            # Grant Secret Accessor to deployment SA
-            if ! gcloud secrets get-iam-policy "$NAME" --project="$PROJECT" --format="value(bindings[?role=='roles/secretmanager.secretAccessor'].members[])" | grep -q "serviceAccount:$DEPLOY_SA"; then
-              gcloud secrets add-iam-policy-binding "$NAME" \
-                --project="$PROJECT" \
-                --member="serviceAccount:$DEPLOY_SA" \
-                --role="roles/secretmanager.secretAccessor" \
-                --quiet
-              echo "  - Granted secretAccessor to $DEPLOY_SA"
-            else
-              echo "  - $DEPLOY_SA already has secretAccessor"
-            fi
-
-            echo "::endgroup::"
-          done
-
   deploy-staging:
-    needs: [setup-secrets]
-    if: always() && (needs.setup-secrets.result == 'success' || needs.setup-secrets.result == 'skipped')
     runs-on: ubuntu-latest
     environment: staging
     defaults:
@@ -148,7 +46,7 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
-      - name: Lint, typecheck, tests
+      - name: Run quality checks
         run: |
           yarn lint
           yarn typecheck
@@ -161,19 +59,21 @@ jobs:
             -t ${{ secrets.GCP_ARTIFACT_REGISTRY_REPO }}/${{ secrets.SERVICE_NAME }}:${{ github.sha }} \
             .
 
-      - name: Auth to GCP (Deployment Service Account)
+      - name: Auth to GCP (Workload Identity Federation)
         uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
           service_account: ${{ secrets.GCP_SA_EMAIL }}
-          audience: 'https://github.com/akibrahimug/portfolio'
+          audience: "https://github.com/akibrahimug/portfolio"
 
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@v2
 
-      - name: Configure GCP project & enable APIs
+      - name: Configure GCP environment
         run: |
           gcloud config set project "${{ secrets.GCP_PROJECT }}"
+          
+          # Enable required APIs (idempotent)
           gcloud services enable \
             secretmanager.googleapis.com \
             run.googleapis.com \
@@ -186,100 +86,132 @@ jobs:
           set -euo pipefail
           REPO="${{ secrets.GCP_ARTIFACT_REGISTRY_REPO }}"
           REG_HOST="${REPO%%/*}"
+          
           if [[ ! "$REG_HOST" =~ ^[a-z0-9-]+-docker\.pkg\.dev$ ]]; then
             echo "::error::GCP_ARTIFACT_REGISTRY_REPO must look like '<region>-docker.pkg.dev/<project>/<repo>'"
             echo "Got: $REPO"
             exit 1
           fi
+          
+          echo "Configuring Docker auth for: $REG_HOST"
           gcloud auth configure-docker "$REG_HOST" --quiet
 
-      - name: Push image
+      - name: Push image to Artifact Registry
         run: docker push ${{ secrets.GCP_ARTIFACT_REGISTRY_REPO }}/${{ secrets.SERVICE_NAME }}:${{ github.sha }}
 
-      - name: Verify secrets exist and are accessible
+      - name: Setup secrets and permissions
         shell: bash
         run: |
           set -euo pipefail
-          PROJECT="${{ secrets.GCP_PROJECT }}"
-
-          echo "Verifying required secrets exist and are accessible..."
           
-          for NAME in ${{ env.REQUIRED_SECRETS }}; do
-            echo "::group::Checking secret $NAME"
-          
-            # Check if secret exists
-            if ! gcloud secrets describe "$NAME" --project="$PROJECT" >/dev/null 2>&1; then
-              echo "::error::Secret $NAME does not exist in project $PROJECT"
-              echo "Run the workflow with 'setup_secrets=true' or create manually"
-              exit 1
-            fi
-          
-            # Check if we can access the latest version
-            if ! gcloud secrets versions access latest --secret="$NAME" --project="$PROJECT" >/dev/null 2>&1; then
-              echo "::error::Cannot access secret $NAME. Check IAM permissions."
-              exit 1
-            fi
-          
-            # Check version count and state
-            VERSIONS_COUNT=$(gcloud secrets versions list "$NAME" --project="$PROJECT" --format='value(name)' | wc -l | tr -d ' ')
-            LATEST_NUM="$(gcloud secrets versions list "$NAME" --project="$PROJECT" --format='value(name)' --limit=1 | sed 's/.*versions\///')"
-            STATE="$(gcloud secrets versions describe "$LATEST_NUM" --secret="$NAME" --project="$PROJECT" --format='value(state)')"
-          
-            echo "  - Secret $NAME: $VERSIONS_COUNT version(s), latest ($LATEST_NUM) is $STATE"
-          
-            if [[ "$STATE" != "ENABLED" ]]; then
-              echo "::error::Latest version of $NAME is not ENABLED. Current state: $STATE"
-              exit 1
-            fi
-          
-            echo "::endgroup::"
-          done
-          
-          echo "✅ All secrets are accessible and enabled"
-
-      - name: Grant bucket Object Admin + SA Token Creator to runtime SA
-        shell: bash
-        run: |
-          set -euo pipefail
           SA="${{ secrets.GCP_SA_EMAIL }}"
           PROJECT="${{ secrets.GCP_PROJECT }}"
+          
+          echo "Setting up secrets for service account: $SA"
+          
+          # Process each secret
+          for SECRET_NAME in ${{ env.REQUIRED_SECRETS }}; do
+            echo "Processing secret: $SECRET_NAME"
+          
+            # Check if secret exists
+            if ! gcloud secrets describe "$SECRET_NAME" --project="$PROJECT" &>/dev/null; then
+              echo "::error::Secret $SECRET_NAME does not exist in project $PROJECT"
+              echo "Please create it using: gcloud secrets create $SECRET_NAME --project=$PROJECT"
+              exit 1
+            fi
+          
+            # Grant Secret Accessor role (idempotent)
+            echo "  - Granting secretAccessor role..."
+            gcloud secrets add-iam-policy-binding "$SECRET_NAME" \
+              --project="$PROJECT" \
+              --member="serviceAccount:$SA" \
+              --role="roles/secretmanager.secretAccessor" \
+              --condition=None \
+              --quiet || true
+          
+            # Get latest version
+            LATEST_VERSION=$(gcloud secrets versions list "$SECRET_NAME" \
+              --project="$PROJECT" \
+              --format='value(name)' \
+              --limit=1 | head -n1)
+          
+            if [[ -z "$LATEST_VERSION" ]]; then
+              echo "::error::Secret $SECRET_NAME has no versions. Please create one."
+              exit 1
+            fi
+          
+            VERSION_NUM="${LATEST_VERSION##*/}"
+            echo "  - Latest version: $VERSION_NUM"
+          
+            # Check version state
+            VERSION_STATE=$(gcloud secrets versions describe "$VERSION_NUM" \
+              --secret="$SECRET_NAME" \
+              --project="$PROJECT" \
+              --format='value(state)')
+          
+            echo "  - Current state: $VERSION_STATE"
+          
+            # Enable if disabled
+            if [[ "$VERSION_STATE" == "DISABLED" ]]; then
+              echo "  - Enabling version $VERSION_NUM..."
+              gcloud secrets versions enable "$VERSION_NUM" \
+                --secret="$SECRET_NAME" \
+                --project="$PROJECT" \
+                --quiet
+              echo "  - Version enabled successfully"
+            elif [[ "$VERSION_STATE" != "ENABLED" ]]; then
+              echo "::warning::Secret $SECRET_NAME version $VERSION_NUM is in state: $VERSION_STATE"
+            fi
+          done
+          
+          echo "All secrets configured successfully"
 
-          # Read bucket name from Secret Manager
-          BUCKET="$(gcloud secrets versions access latest --secret=GCS_BUCKET_UPLOADS --project="$PROJECT")"
-          if [[ -z "$BUCKET" ]]; then
-            echo "::error::Secret GCS_BUCKET_UPLOADS has no value."
-            exit 1
-          fi
-
-          echo "Configuring permissions for bucket: gs://$BUCKET"
-
-          # Allow object operations (for post-upload validations / listings)
-          gcloud storage buckets add-iam-policy-binding "gs://${BUCKET}" \
-            --member="serviceAccount:${SA}" \
-            --role="roles/storage.objectAdmin" \
-            --project="$PROJECT" \
-            --quiet || true
-
-          # Allow keyless V4 signing (IAM SignBlob) on Cloud Run
-          gcloud iam service-accounts add-iam-policy-binding "$SA" \
-            --member="serviceAccount:${SA}" \
-            --role="roles/iam.serviceAccountTokenCreator" \
-            --project="$PROJECT" \
-            --quiet || true
+      - name: Verify IAM permissions
+        shell: bash
+        run: |
+          set -euo pipefail
+          
+          SA="${{ secrets.GCP_SA_EMAIL }}"
+          PROJECT="${{ secrets.GCP_PROJECT }}"
+          
+          echo "Verifying IAM permissions for $SA..."
+          
+          # Check if service account has necessary roles
+          ROLES=$(gcloud projects get-iam-policy "$PROJECT" \
+            --flatten="bindings[].members" \
+            --filter="bindings.members:serviceAccount:$SA" \
+            --format="value(bindings.role)")
+          
+          echo "Current roles:"
+          echo "$ROLES" | sed 's/^/  - /'
+          
+          # Verify each secret is accessible
+          echo "Verifying secret access..."
+          for SECRET_NAME in ${{ env.REQUIRED_SECRETS }}; do
+            if gcloud secrets versions access latest \
+                --secret="$SECRET_NAME" \
+                --project="$PROJECT" \
+                --impersonate-service-account="$SA" &>/dev/null; then
+              echo "  ✓ $SECRET_NAME is accessible"
+            else
+              echo "  ✗ $SECRET_NAME is NOT accessible"
+              echo "::warning::Service account may not have access to $SECRET_NAME"
+            fi
+          done
 
       - name: Deploy to Cloud Run (staging)
         shell: bash
         run: |
           set -euo pipefail
-
-          # Build --set-secrets flags dynamically from REQUIRED_SECRETS
+          
+          echo "Deploying to staging environment..."
+          
+          # Build secret flags
           SECRET_FLAGS=""
-          for NAME in ${{ env.REQUIRED_SECRETS }}; do
-            SECRET_FLAGS="$SECRET_FLAGS --set-secrets=$NAME=$NAME:latest"
+          for SECRET_NAME in ${{ env.REQUIRED_SECRETS }}; do
+            SECRET_FLAGS="$SECRET_FLAGS --set-secrets=$SECRET_NAME=${SECRET_NAME}:latest"
           done
-
-          echo "Deploying to staging with secrets: ${{ env.REQUIRED_SECRETS }}"
-
+          
           gcloud run deploy "${{ secrets.SERVICE_NAME }}-stg" \
             --image="${{ secrets.GCP_ARTIFACT_REGISTRY_REPO }}/${{ secrets.SERVICE_NAME }}:${{ github.sha }}" \
             --region="${{ secrets.GCP_REGION }}" \
@@ -287,7 +219,9 @@ jobs:
             --platform=managed \
             --allow-unauthenticated \
             --port=${{ env.CR_PORT }} \
-            --set-env-vars=^:^NODE_ENV=${{ env.CR_ENV_NODE }}:API_BASE=${{ env.CR_ENV_API_BASE }}:WS_ORIGINS=${{ secrets.WS_ORIGINS }} \
+            --set-env-vars=NODE_ENV=${{ env.CR_ENV_NODE }} \
+            --set-env-vars=API_BASE=${{ env.CR_ENV_API_BASE }} \
+            --set-env-vars=WS_ORIGINS="${{ secrets.WS_ORIGINS }}" \
             $SECRET_FLAGS \
             --min-instances=0 \
             --max-instances=10 \
@@ -296,49 +230,85 @@ jobs:
             --service-account="${{ secrets.GCP_SA_EMAIL }}" \
             --quiet
 
-      - name: Wait for staging to be Ready (and dump logs on failure)
+      - name: Wait for deployment to be ready
         shell: bash
         run: |
           set -euo pipefail
+          
+          echo "Waiting for deployment to be ready..."
           SERVICE="${{ secrets.SERVICE_NAME }}-stg"
           REGION="${{ secrets.GCP_REGION }}"
           PROJECT="${{ secrets.GCP_PROJECT }}"
-
-          echo "Waiting for $SERVICE to become Ready…"
-          for i in {1..30}; do
-            STATUS="$(gcloud run services describe "$SERVICE" --region="$REGION" --project="$PROJECT" --format='value(status.conditions[0].status)' 2>/dev/null || echo "")"
-            if [[ "$STATUS" == "True" ]]; then
-              echo "✅ Service is Ready."
-              exit 0
+          
+          MAX_ATTEMPTS=30
+          ATTEMPT=0
+          
+          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+            ATTEMPT=$((ATTEMPT + 1))
+            echo "Checking deployment status (attempt $ATTEMPT/$MAX_ATTEMPTS)..."
+          
+            STATUS=$(gcloud run services describe "$SERVICE" \
+              --region="$REGION" \
+              --project="$PROJECT" \
+              --format="value(status.conditions[0].status)" 2>/dev/null || echo "Unknown")
+          
+            if [ "$STATUS" = "True" ]; then
+              echo "✓ Deployment is ready!"
+              break
             fi
-            echo "  Attempt $i/30: status=$STATUS"
+          
+            echo "Status: $STATUS - waiting 10 seconds..."
             sleep 10
           done
-
-          echo "::error::Service did not become Ready. Dumping details…"
-          gcloud run services describe "$SERVICE" --region="$REGION" --project="$PROJECT" --format=yaml || true
-
-          REV="$(gcloud run services describe "$SERVICE" --region="$REGION" --project="$PROJECT" --format='value(status.latestCreatedRevisionName)' || true)"
-          if [[ -n "$REV" ]]; then
-            echo "Recent error logs for $REV:"
-            gcloud run logs read "$REV" --region="$REGION" --project="$PROJECT" --limit=200 --severity=ERROR --timestamps || true
+          
+          if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
+            echo "::error::Deployment did not become ready in time"
+          
+            # Get detailed error information
+            echo "Deployment details:"
+            gcloud run services describe "$SERVICE" \
+              --region="$REGION" \
+              --project="$PROJECT" \
+              --format=yaml || true
+          
+            exit 1
           fi
-          exit 1
 
       - name: Health check (staging)
+        shell: bash
         run: |
-          echo "Testing staging endpoint..."
-          curl -fsSL "${{ secrets.STAGING_URL }}/api/v1/readyz" | cat
-          echo "✅ Staging health check passed"
+          set -euo pipefail
+          
+          URL="${{ secrets.STAGING_URL }}"
+          MAX_RETRIES=5
+          RETRY=0
+          
+          echo "Performing health check on $URL/api/v1/readyz"
+          
+          while [ $RETRY -lt $MAX_RETRIES ]; do
+            if curl -fsSL --max-time 30 "$URL/api/v1/readyz"; then
+              echo "✓ Health check passed"
+              break
+            fi
+          
+            RETRY=$((RETRY + 1))
+            echo "Health check failed (attempt $RETRY/$MAX_RETRIES), retrying in 5 seconds..."
+            sleep 5
+          done
+          
+          if [ $RETRY -eq $MAX_RETRIES ]; then
+            echo "::error::Health check failed after $MAX_RETRIES attempts"
+            exit 1
+          fi
 
   promote-prod:
     needs: deploy-staging
-    if: ${{ github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/master' }}
     runs-on: ubuntu-latest
     environment: production
     defaults:
       run:
         working-directory: server
+    if: ${{ github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/master' }}
     permissions:
       contents: read
       id-token: write
@@ -346,7 +316,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Auth to GCP (Deployment Service Account)
+      - name: Auth to GCP (Workload Identity Federation)
         uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
@@ -355,59 +325,71 @@ jobs:
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@v2
 
-      - name: Configure project
+      - name: Configure GCP environment
         run: gcloud config set project "${{ secrets.GCP_PROJECT }}"
 
-      - name: Verify secrets (production)
+      - name: Verify secrets before production deployment
         shell: bash
         run: |
           set -euo pipefail
-          PROJECT="${{ secrets.GCP_PROJECT }}"
           
-          echo "Verifying production secrets..."
-          for NAME in ${{ env.REQUIRED_SECRETS }}; do
-            if ! gcloud secrets versions access latest --secret="$NAME" --project="$PROJECT" >/dev/null 2>&1; then
-              echo "::error::Cannot access secret $NAME for production deployment"
-              exit 1
-            fi
-          done
-          echo "✅ All secrets verified for production"
-
-      - name: Grant bucket Object Admin + SA Token Creator (prod)
-        shell: bash
-        run: |
-          set -euo pipefail
           SA="${{ secrets.GCP_SA_EMAIL }}"
           PROJECT="${{ secrets.GCP_PROJECT }}"
-          BUCKET="$(gcloud secrets versions access latest --secret=GCS_BUCKET_UPLOADS --project="$PROJECT")"
-          if [[ -z "$BUCKET" ]]; then
-            echo "::error::Secret GCS_BUCKET_UPLOADS has no value."
+          
+          echo "Verifying all secrets are ready for production deployment..."
+          
+          ALL_READY=true
+          for SECRET_NAME in ${{ env.REQUIRED_SECRETS }}; do
+            echo "Checking $SECRET_NAME..."
+          
+            # Get latest version state
+            LATEST_VERSION=$(gcloud secrets versions list "$SECRET_NAME" \
+              --project="$PROJECT" \
+              --format='value(name)' \
+              --limit=1 | head -n1)
+          
+            VERSION_NUM="${LATEST_VERSION##*/}"
+            VERSION_STATE=$(gcloud secrets versions describe "$VERSION_NUM" \
+              --secret="$SECRET_NAME" \
+              --project="$PROJECT" \
+              --format='value(state)')
+          
+            if [[ "$VERSION_STATE" != "ENABLED" ]]; then
+              echo "  ✗ $SECRET_NAME version $VERSION_NUM is $VERSION_STATE"
+              ALL_READY=false
+          
+              # Try to enable it
+              if [[ "$VERSION_STATE" == "DISABLED" ]]; then
+                echo "  Attempting to enable..."
+                gcloud secrets versions enable "$VERSION_NUM" \
+                  --secret="$SECRET_NAME" \
+                  --project="$PROJECT" \
+                  --quiet
+              fi
+            else
+              echo "  ✓ $SECRET_NAME is ready"
+            fi
+          done
+          
+          if [ "$ALL_READY" = false ]; then
+            echo "::error::Not all secrets are ready for production deployment"
             exit 1
           fi
           
-          echo "Configuring production permissions for bucket: gs://$BUCKET"
-          
-          gcloud storage buckets add-iam-policy-binding "gs://${BUCKET}" \
-            --member="serviceAccount:${SA}" \
-            --role="roles/storage.objectAdmin" \
-            --project="$PROJECT" \
-            --quiet || true
-          gcloud iam service-accounts add-iam-policy-binding "$SA" \
-            --member="serviceAccount:${SA}" \
-            --role="roles/iam.serviceAccountTokenCreator" \
-            --project="$PROJECT" \
-            --quiet || true
+          echo "All secrets verified successfully"
 
       - name: Deploy to Cloud Run (production)
         shell: bash
         run: |
           set -euo pipefail
-          SECRET_FLAGS=""
-          for NAME in ${{ env.REQUIRED_SECRETS }}; do
-            SECRET_FLAGS="$SECRET_FLAGS --set-secrets=$NAME=$NAME:latest"
-          done
           
-          echo "Deploying to production with secrets: ${{ env.REQUIRED_SECRETS }}"
+          echo "Deploying to production environment..."
+          
+          # Build secret flags
+          SECRET_FLAGS=""
+          for SECRET_NAME in ${{ env.REQUIRED_SECRETS }}; do
+            SECRET_FLAGS="$SECRET_FLAGS --set-secrets=$SECRET_NAME=${SECRET_NAME}:latest"
+          done
           
           gcloud run deploy "${{ secrets.SERVICE_NAME }}-prd" \
             --image="${{ secrets.GCP_ARTIFACT_REGISTRY_REPO }}/${{ secrets.SERVICE_NAME }}:${{ github.sha }}" \
@@ -416,7 +398,9 @@ jobs:
             --platform=managed \
             --allow-unauthenticated \
             --port=${{ env.CR_PORT }} \
-            --set-env-vars=^:^NODE_ENV=${{ env.CR_ENV_NODE }}:API_BASE=${{ env.CR_ENV_API_BASE }}:WS_ORIGINS=${{ secrets.WS_ORIGINS }} \
+            --set-env-vars=NODE_ENV=${{ env.CR_ENV_NODE }} \
+            --set-env-vars=API_BASE=${{ env.CR_ENV_API_BASE }} \
+            --set-env-vars=WS_ORIGINS="${{ secrets.WS_ORIGINS }}" \
             $SECRET_FLAGS \
             --min-instances=1 \
             --max-instances=20 \
@@ -425,36 +409,74 @@ jobs:
             --service-account="${{ secrets.GCP_SA_EMAIL }}" \
             --quiet
 
-      - name: Wait for production Ready (and dump logs on failure)
+      - name: Wait for deployment to be ready
         shell: bash
         run: |
           set -euo pipefail
+          
+          echo "Waiting for production deployment to be ready..."
           SERVICE="${{ secrets.SERVICE_NAME }}-prd"
           REGION="${{ secrets.GCP_REGION }}"
           PROJECT="${{ secrets.GCP_PROJECT }}"
           
-          echo "Waiting for production service to become Ready…"
-          for i in {1..30}; do
-            STATUS="$(gcloud run services describe "$SERVICE" --region="$REGION" --project="$PROJECT" --format='value(status.conditions[0].status)' 2>/dev/null || echo "")"
-            if [[ "$STATUS" == "True" ]]; then
-              echo "✅ Production service is Ready."
-              exit 0
+          MAX_ATTEMPTS=30
+          ATTEMPT=0
+          
+          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+            ATTEMPT=$((ATTEMPT + 1))
+            echo "Checking deployment status (attempt $ATTEMPT/$MAX_ATTEMPTS)..."
+          
+            STATUS=$(gcloud run services describe "$SERVICE" \
+              --region="$REGION" \
+              --project="$PROJECT" \
+              --format="value(status.conditions[0].status)" 2>/dev/null || echo "Unknown")
+          
+            if [ "$STATUS" = "True" ]; then
+              echo "✓ Production deployment is ready!"
+              break
             fi
-            echo "  Attempt $i/30: status=$STATUS"
+          
+            echo "Status: $STATUS - waiting 10 seconds..."
             sleep 10
           done
           
-          echo "::error::Production service did not become Ready. Dumping details…"
-          gcloud run services describe "$SERVICE" --region="$REGION" --project="$PROJECT" --format=yaml || true
-          REV="$(gcloud run services describe "$SERVICE" --region="$REGION" --project="$PROJECT" --format='value(status.latestCreatedRevisionName)' || true)"
-          if [[ -n "$REV" ]]; then
-            echo "Recent error logs for $REV:"
-            gcloud run logs read "$REV" --region="$REGION" --project="$PROJECT" --limit=200 --severity=ERROR --timestamps || true
+          if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
+            echo "::error::Production deployment did not become ready in time"
+            exit 1
           fi
-          exit 1
 
       - name: Health check (production)
+        shell: bash
         run: |
-          echo "Testing production endpoint..."
-          curl -fsSL "${{ secrets.PROD_URL }}/api/v1/readyz" | cat
-          echo "✅ Production deployment completed successfully"
+          set -euo pipefail
+          
+          URL="${{ secrets.PROD_URL }}"
+          MAX_RETRIES=5
+          RETRY=0
+          
+          echo "Performing health check on $URL/api/v1/readyz"
+          
+          while [ $RETRY -lt $MAX_RETRIES ]; do
+            if curl -fsSL --max-time 30 "$URL/api/v1/readyz"; then
+              echo "✓ Production health check passed"
+              break
+            fi
+          
+            RETRY=$((RETRY + 1))
+            echo "Health check failed (attempt $RETRY/$MAX_RETRIES), retrying in 5 seconds..."
+            sleep 5
+          done
+          
+          if [ $RETRY -eq $MAX_RETRIES ]; then
+            echo "::error::Production health check failed after $MAX_RETRIES attempts"
+            exit 1
+          fi
+
+      - name: Production deployment summary
+        shell: bash
+        run: |
+          echo "🚀 Production deployment completed successfully!"
+          echo "Service: ${{ secrets.SERVICE_NAME }}-prd"
+          echo "Region: ${{ secrets.GCP_REGION }}"
+          echo "URL: ${{ secrets.PROD_URL }}"
+          echo "Image: ${{ secrets.GCP_ARTIFACT_REGISTRY_REPO }}/${{ secrets.SERVICE_NAME }}:${{ github.sha }}"
