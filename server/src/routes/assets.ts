@@ -35,6 +35,7 @@ function validateProjectId(projectId: string): Types.ObjectId {
 
   // If it's not a valid ObjectId, create a deterministic ObjectId
   // This allows string identifiers like 'resume' to have a consistent ObjectId
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const hash = require('crypto')
     .createHash('md5')
     .update(`project-${projectId}`)
