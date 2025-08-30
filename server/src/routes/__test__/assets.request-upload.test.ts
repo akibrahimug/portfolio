@@ -47,16 +47,16 @@ function buildApp() {
 }
 
 describe('Assets request-upload', () => {
-  it('returns technologies/ prefix for projectId=technology', async () => {
+  it('returns technology/ prefix for assetType=technology', async () => {
     const app = buildApp();
     const res = await request(app).post('/assets/request-upload').send({
       filename: 'icon.svg',
       contentType: 'image/svg+xml',
       size: 1234,
-      projectId: 'technology',
+      assetType: 'technology',
       folder: 'tech-icons',
     });
     expect(res.status).toBe(200);
-    expect(res.body.objectPath).toMatch(/^technologies\/tech-icons\//);
+    expect(res.body.data.objectPath).toMatch(/^technology\/tech-icons\//);
   });
 });

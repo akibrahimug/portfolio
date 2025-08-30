@@ -118,7 +118,7 @@ export function buildSchemas() {
 
   // assets:requestUpload – signed URL issuance
   const AssetsRequestUploadReq = versionSchema.extend({
-    projectId: z.string(),
+    projectId: z.string().optional(),
     filename: z.string(),
     contentType: z.string(),
     size: z.number(),
@@ -146,7 +146,7 @@ export function buildSchemas() {
 
   // assets:confirm – persist metadata
   const AssetsConfirmReq = versionSchema.extend({
-    projectId: z.string(),
+    projectId: z.string().optional(),
     objectPath: z.string(),
     contentType: z.string(),
     size: z.number(),

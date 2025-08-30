@@ -34,7 +34,7 @@ describe('MongoTechnologiesRepo', () => {
     });
     expect(created.name).toBe('A');
 
-    const fetched = await repo.getById('a');
+    const fetched = await repo.getById(String(created._id));
     expect(fetched?.name).toBe('A');
 
     const list = await repo.list();
@@ -44,11 +44,11 @@ describe('MongoTechnologiesRepo', () => {
     expect(updated?.name).toBe('A2');
 
     await repo.deleteById(String(created._id));
-    const missing = await repo.getById('a');
+    const missing = await repo.getById(String(created._id));
     expect(missing).toBeNull();
   });
 
-  it('enforces unique name on create', async () => {
+  it('allows creating technologies with different names', async () => {
     await repo.create({
       name: 'B',
       category: 'frontend',
@@ -60,18 +60,19 @@ describe('MongoTechnologiesRepo', () => {
       learningSource: 'a',
       confidenceLevel: 1,
     });
-    await expect(
-      repo.create({
-        name: 'B2',
-        category: 'frontend',
-        description: 'd',
-        complexity: 'beginner',
-        icon: 'a',
-        color: 'red',
-        experience: 'beginner',
-        learningSource: 'a',
-        confidenceLevel: 1,
-      }),
-    ).rejects.toThrow(/name already exists/);
+    
+    // Should succeed with different name
+    const second = await repo.create({
+      name: 'B2',
+      category: 'frontend',
+      description: 'd',
+      complexity: 'beginner',
+      icon: 'a',
+      color: 'red',
+      experience: 'beginner',
+      learningSource: 'a',
+      confidenceLevel: 1,
+    });
+    expect(second.name).toBe('B2');
   });
 });

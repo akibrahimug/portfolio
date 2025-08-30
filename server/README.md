@@ -1,19 +1,20 @@
-# Portfolio Backend (WS-first, TypeScript, MongoDB)
+# Portfolio Backend (HTTP-first, TypeScript, MongoDB)
 
 Badges: Node.js 20, TypeScript 5, WebSocket, MongoDB/Mongoose, Google Cloud Storage, Cloud Run, Jest
 
 ### What is this?
 
-A WebSocket‑first backend powering a portfolio application. It exposes a minimal HTTP surface for health/readiness and a strongly‑typed WS API for all app interactions (projects, assets, stats). Authentication is performed during the WS handshake using Clerk‑issued JWTs validated via JWKS. File uploads are done directly from the browser to Google Cloud Storage using V4 signed URLs issued by the server.
+An HTTP‑first backend powering a portfolio application. It exposes a REST API for projects, assets, messages, technologies, and more, with runtime validation via Zod and JWT auth via Clerk. WebSocket is kept only for live stats. File uploads use Google Cloud Storage V4 signed URLs issued by the server; the browser uploads directly to GCS.
 
 ### Key features
 
-- WS‑first API mounted under `/api/v1/ws` with Zod‑validated payloads
-- Minimal HTTP endpoints: health, readiness, and lightweight stats
-- MongoDB with Mongoose, automatic index creation at startup
-- Auth via Clerk (issuer/audience), verified with JOSE against remote JWKS
-- Direct uploads to GCS via V4 signed URLs; server never proxies bytes
-- In‑memory rate limiting with configurable RPM
+- HTTP‑first REST API mounted under `/api/v1` with Zod‑validated payloads
+- Assets API for signed uploads: request‑upload → PUT to GCS → confirm
+- Projects CRUD with filtering and cursor pagination
+- WebSocket kept for stats/health snapshots only
+- MongoDB with Mongoose; automatic index creation at startup
+- Auth via Clerk (issuer/audience) verified with JOSE against remote JWKS
+- In‑memory rate limiting (configurable RPM) for sensitive routes
 - Optional Sentry and OpenTelemetry metrics export
 - Cloud Run ready Docker image with healthcheck and graceful shutdown
 
@@ -99,45 +100,22 @@ npm run lint && npm run format:check
 npm test            # or: npm run test:coverage
 ```
 
-## WebSocket API
+## WebSocket (stats only)
 
 ### Connection
 
 - URL: `ws://localhost:5000/api/v1/ws` (base path configurable via `API_BASE`)
-- Auth during handshake (required for mutating events):
-  - Prefer header `Sec-WebSocket-Protocol: bearer, <JWT>`
+- Optional auth during handshake:
+  - Header `Sec-WebSocket-Protocol: bearer, <JWT>`
   - Or query param `?token=<JWT>`
 
-### Envelope
+### Events
 
-All frames are JSON objects of the form:
+- `system:ping` → `{ ts }` → `{ pong: true, ts, latencyMs }`
+- `stats:get` → one‑off metrics snapshot
+- `stats:subscribe` → periodic metrics snapshots, `intervalMs` optional (default 5000)
 
-```json
-{
-  "event": "<namespace:name>",
-  "payload": {
-    /* data */
-  }
-}
-```
-
-Server responses mirror the request event name.
-
-### Supported events
-
-- system:ping → payload `{ ts: number }` → returns `{ pong: true, ts, latencyMs }`
-- auth:hello → echo placeholder (identity established at handshake)
-- projects:list → filterable list with cursor pagination; returns `{ items, nextCursor }`
-- projects:get → by `id` or `slug`; returns `{ project | null }`
-- projects:create → authenticated; enforces unique `slug`; sets `ownerId`
-- projects:update → authenticated; owner‑only by default
-- projects:delete → authenticated; owner‑only
-- assets:requestUpload → authenticated; validates size/MIME; returns `{ uploadUrl, objectPath, headers, expiresAt }`
-- assets:confirm → authenticated; persists `Asset` with uploaded object path
-- stats:get → returns a one‑off metrics snapshot
-- stats:subscribe → streams snapshots every `intervalMs` (default 5000)
-
-Rate limiting: sensitive events use an in‑memory limiter keyed by `userId`. Configure with `RATE_LIMIT_RPM`. On limit, the server responds with `system:error` `{ message: "rate_limited" }`.
+Note: CRUD over WebSocket is deprecated; use HTTP endpoints under `/api/v1`.
 
 ## HTTP endpoints
 
