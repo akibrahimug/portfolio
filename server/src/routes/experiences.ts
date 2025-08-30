@@ -32,7 +32,7 @@ router.get('/', async (req: Request, res: Response) => {
   try {
     return res.json(experiences);
   } catch (err) {
-    return res.status(500).json({ error: 'internal_error' });
+    return res.status(500).json({ error: '[[EXPERIENCES_LIST]]-[SERVER]: internal_error' + err });
   }
 });
 
@@ -55,7 +55,9 @@ router.post('/', async (req: Request, res: Response) => {
     } = req.body;
 
     if (!title || !company || !startDate) {
-      return res.status(400).json({ error: 'missing_required_fields' });
+      return res
+        .status(400)
+        .json({ error: '[[EXPERIENCES_CREATE]]-[SERVER]: missing_required_fields' });
     }
 
     const newExperience = {
@@ -77,7 +79,9 @@ router.post('/', async (req: Request, res: Response) => {
     experiences.push(newExperience);
     return res.status(201).json(newExperience);
   } catch (err) {
-    return res.status(400).json({ error: 'invalid_request' });
+    return res
+      .status(400)
+      .json({ error: '[[EXPERIENCES_CREATE]]-[SERVER]: invalid_request' + err });
   }
 });
 

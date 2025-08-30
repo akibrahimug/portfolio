@@ -5,21 +5,6 @@ const nextConfig = {
     remotePatterns: [{ protocol: 'https', hostname: 'storage.googleapis.com' }],
   },
 
-  webpack(config) {
-    // Exclude test files from the build
-    config.module.rules.push({
-      test: /\.test\.(js|jsx|ts|tsx)$/,
-      use: 'ignore-loader',
-    })
-
-    // Exclude all files in __tests__ directories
-    config.module.rules.push({
-      test: /[\\/]__tests__[\\/].+\.(js|jsx|ts|tsx)$/,
-      use: 'ignore-loader',
-    })
-
-    return config
-  },
   // Disable TypeScript type checking in production build to avoid errors
   typescript: {
     // !! WARN !!

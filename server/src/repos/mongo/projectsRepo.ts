@@ -16,15 +16,15 @@ export class MongoProjectsRepo implements ProjectsRepo {
   }
 
   async list(params: {
-    filter?: Partial<ProjectDTO> & { search?: string; tags?: string[] };
+    filter?: Partial<ProjectDTO> & { search?: string };
     limit: number;
     cursor?: string;
   }): Promise<{ items: ProjectDTO[]; nextCursor?: string }> {
     const { filter, limit, cursor } = params;
     const start = Date.now();
     const query: Record<string, unknown> = {};
+    if (filter?.category) query.category = filter.category;
     if (filter?.kind) query.kind = filter.kind;
-    if (filter?.tags?.length) query.tags = { $in: filter.tags } as { $in: string[] };
     if (filter?.search)
       query.title = { $regex: filter.search, $options: 'i' } as {
         $regex: string;
@@ -74,9 +74,8 @@ export class MongoProjectsRepo implements ProjectsRepo {
 
   async create(data: Omit<ProjectDTO, '_id' | 'createdAt' | 'updatedAt'>): Promise<ProjectDTO> {
     const start = Date.now();
-    const exists = await Project.findOne({ slug: data.slug }).lean();
-    if (exists) {
-      log.warn({ op: 'create', slug: data.slug }, 'project slug already exists');
+    const existing = await Project.findOne({ slug: data.slug }).lean();
+    if (existing) {
       throw new Error('slug already exists');
     }
     const doc = await Project.create(data);
@@ -85,7 +84,6 @@ export class MongoProjectsRepo implements ProjectsRepo {
       {
         op: 'create',
         id: String((doc as unknown as { _id: Types.ObjectId })._id),
-        slug: data.slug,
         durationMs: Date.now() - start,
       },
       'project created',

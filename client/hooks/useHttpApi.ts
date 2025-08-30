@@ -63,7 +63,7 @@ function useApiQuery<T>(
         error: err instanceof Error ? err.message : 'Unknown error',
       })
     }
-  }, deps)
+  }, [...deps])
 
   useEffect(() => {
     fetchData()
@@ -118,15 +118,14 @@ function useApiMutation<T, P>(
 // Specific hooks for different API endpoints
 
 export function useProjects(params?: {
-  kind?: string
-  tags?: string
+  category?: string
   search?: string
   limit?: number
   cursor?: string
 }) {
   return useApiQuery(
     () => httpClient.getProjects(params),
-    [params?.kind, params?.tags, params?.search, params?.limit, params?.cursor],
+    [params?.category, params?.search, params?.limit, params?.cursor],
   )
 }
 
@@ -172,14 +171,17 @@ export function useDeleteProject() {
 }
 
 export function useMessages() {
-  const { getAuthToken } = useClerkAuth()
+  const { getAuthToken, isLoaded, isSignedIn } = useClerkAuth()
 
   return useApiQuery(async () => {
+    // Wait until Clerk is loaded to avoid a transient missing token
+    if (!isLoaded) return Promise.resolve({ success: true, data: [] as any })
+
     const token = await getAuthToken()
     return token
       ? httpClient.getMessages(token)
       : Promise.resolve({ success: false, error: 'No auth token' })
-  })
+  }, [isLoaded, isSignedIn])
 }
 
 export function useCreateMessage() {
@@ -214,13 +216,13 @@ export function useTechnologies() {
   return useApiQuery(() => httpClient.getTechnologies())
 }
 
-export function useCreateTechnologies() {
+export function useCreateTechnology() {
   const { getAuthToken } = useClerkAuth()
 
   return useApiMutation(async (tech: Partial<Technology>) => {
     const token = await getAuthToken()
     return token
-      ? httpClient.createTechnologies(tech, token)
+      ? httpClient.createTechnology(tech, token)
       : Promise.resolve({ success: false, error: 'No auth token' })
   })
 }
@@ -296,6 +298,10 @@ export function useResumes() {
   return useApiQuery(() => httpClient.getResumes())
 }
 
+export function useLatestResume() {
+  return useApiQuery(() => httpClient.getLatestResume())
+}
+
 export function usePersonalStatement() {
   return useApiQuery(() => httpClient.getPersonalStatement())
 }
@@ -360,3 +366,5 @@ export function useAssetFolders(prefix?: string) {
       : Promise.resolve({ success: false, error: 'No auth token' })
   }, [prefix])
 }
+
+// TODO: GitHub/Vercel integration hooks can be added here in the future

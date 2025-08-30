@@ -1,106 +1,146 @@
 import React from 'react'
 import { DashboardLayout, Breadcrumb } from '@/components/dashboard/DashboardLayout'
-import { DataTable } from '@/components/dashboard/DataTable'
+import { CardsList } from '@/components/dashboard/CardsList'
 import { Badge } from '@/components/ui/badge'
-import { Technology } from '@/lib/schemas'
 import {
   useTechnologies,
-  useCreateTechnologies,
+  useCreateTechnology,
   useUpdateTechnology,
   useDeleteTechnology,
 } from '@/hooks/useHttpApi'
+import { httpClient } from '@/lib/http-client'
+import { useClerkAuth } from '@/hooks/useClerkAuth'
+import { extractFiles } from '@/lib/file-utils'
+import { columnRenderers } from '@/hooks/useTableHelpers'
+import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { DynamicForm } from '@/components/dashboard/DynamicForm'
+import { getFormConfig } from '@/lib/form-configs'
+import { useDialogState } from '@/hooks/useDialogState'
+import { PencilIcon, PlusIcon, TrashIcon } from '@phosphor-icons/react'
 
 const TechnologiesPage: React.FC = () => {
   const { data: technologiesData, loading, error, refetch } = useTechnologies()
-  const createTechnology = useCreateTechnologies()
+  const createTechnology = useCreateTechnology()
   const updateTechnology = useUpdateTechnology()
   const deleteTechnology = useDeleteTechnology()
+  const { getAuthToken } = useClerkAuth()
 
   const technologies = technologiesData || []
 
-  const handleAdd = async (formData: any) => {
-    try {
-      const result = await createTechnology.mutate(formData)
-      if (result) {
-        refetch() // Refresh the list
-      }
-    } catch (error) {
-      console.error('Error creating technology:', error)
-      throw error
+  const addDialog = useDialogState()
+  const editDialog = useDialogState<any>()
+
+  async function handleAddSubmit(formData: any) {
+    const token = await getAuthToken()
+    if (!token) throw new Error('Not authenticated')
+    const files = extractFiles(formData)
+    const uploads: Record<string, string> = {}
+    for (const [field, file] of files) {
+      const up = await httpClient.uploadAsset(file, { assetType: 'technology' }, token)
+      if (!up.success) throw new Error(up.error || 'Failed to upload icon')
+      uploads[field] = up.data?.publicUrl || ''
     }
+    const payload: any = { ...formData }
+    for (const [field] of files) {
+      const targetField = field.endsWith('File') ? field.slice(0, -4) : field
+      payload[targetField] = uploads[field]
+      delete payload[field]
+    }
+    await createTechnology.mutate(payload)
+    addDialog.close()
+    await refetch()
   }
 
-  const handleEdit = async (id: string, formData: any) => {
-    try {
-      const result = await updateTechnology.mutate({ id, updates: formData })
-      if (result) {
-        refetch()
-      }
-    } catch (error) {
-      console.error('Error updating technology:', error)
-      throw error
+  async function handleEditSubmit(formData: any) {
+    const id = (editDialog.data as any)?._id
+    if (!id) return
+    const token = await getAuthToken()
+    if (!token) throw new Error('Not authenticated')
+    const files = extractFiles(formData)
+    const uploads: Record<string, string> = {}
+    for (const [field, file] of files) {
+      const up = await httpClient.uploadAsset(file, { assetType: 'technology' }, token)
+      if (!up.success) throw new Error(up.error || 'Failed to upload icon')
+      uploads[field] = up.data?.publicUrl || ''
     }
+    const updates: any = { ...formData }
+    for (const [field] of files) {
+      const targetField = field.endsWith('File') ? field.slice(0, -4) : field
+      updates[targetField] = uploads[field]
+      delete updates[field]
+    }
+    await updateTechnology.mutate({ id, updates })
+    editDialog.close()
+    await refetch()
   }
 
-  const handleDelete = async (id: string) => {
-    try {
-      const result = await deleteTechnology.mutate(id)
-      if (result) {
-        refetch()
-      }
-    } catch (error) {
-      console.error('Error deleting technology:', error)
-      throw error
-    }
+  async function handleDelete(id: string) {
+    await deleteTechnology.mutate(id)
+    await refetch()
   }
-
-  const columns = [
-    {
-      key: 'name',
-      label: 'Name',
-      render: (value: string) => <div className='font-medium'>{value}</div>,
-    },
-    {
-      key: 'category',
-      label: 'Category',
-      render: (value: string) => (
-        <Badge variant='outline' className='capitalize'>
-          {value}
+  const buildCard = (item: any) => ({
+    key: item._id || item.id,
+    icon: columnRenderers.image(item.icon, 'icon'),
+    title: (
+      <div>
+        <div className='font-medium'>{item.name}</div>
+      </div>
+    ),
+    meta: (
+      <>
+        <Badge variant='outline' className={`p-1 px-2 bg-${item.color}-100`}>
+          {item.category}
         </Badge>
-      ),
-    },
-    {
-      key: 'complexity',
-      label: 'Complexity',
-      render: (value: string) => {
-        const variants: Record<string, 'default' | 'secondary' | 'destructive'> = {
-          Beginner: 'secondary',
-          Intermediate: 'default',
-          Advanced: 'destructive',
-        }
-        return (
-          <Badge variant={variants[value] || 'secondary'} className='capitalize'>
-            {value}
-          </Badge>
-        )
+      </>
+    ),
+    actions: [
+      {
+        label: 'Edit',
+        icon: <PencilIcon className='w-4 h-4 text-blue-500' />,
+        onClick: () => editDialog.open(item),
       },
-    },
-    {
-      key: 'teamSize',
-      label: 'Team Size',
-      render: (value: string) => <span className='text-sm'>{value}</span>,
-    },
-    {
-      key: 'flexibility',
-      label: 'Flexibility',
-      render: (value: string) => <span className='text-sm'>{value}</span>,
-    },
-    {
-      key: 'timeToImplement',
-      label: 'Implementation Time',
-      render: (value: string) => <span className='text-sm'>{value}</span>,
-    },
-  ]
+      {
+        label: 'Delete',
+        icon: <TrashIcon className='w-4 h-4 text-red-500' />,
+
+        onClick: () => handleDelete(item._id || item.id),
+      },
+    ],
+    fields: [
+      {
+        label: 'Complexity:',
+        value: <span className='text-sm'>{item.complexity}</span>,
+      },
+      { label: 'Learning Source:', value: <span className='text-sm'>{item.learningSource}</span> },
+      {
+        label: 'Confidence Level:',
+        value: <span className='text-sm'>{item.confidenceLevel}</span>,
+      },
+      {
+        label: 'Color:',
+        value: (
+          <div
+            className={`w-26 h-4 rounded-full bg-${item.color}-100 dark:bg-${item.color}-900`}
+          ></div>
+        ),
+      },
+      {
+        label: 'Years of Experience:',
+        value: <span className='text-sm'>{item.yearsOfExperience}</span>,
+      },
+      {
+        label: 'Date Added:',
+        value: <span className='text-sm'>{columnRenderers.date(item.createdAt)}</span>,
+      },
+    ],
+  })
 
   return (
     <DashboardLayout currentSection='technologies'>
@@ -112,24 +152,57 @@ const TechnologiesPage: React.FC = () => {
         </div>
       )}
 
-      <DataTable
-        title='Technologies'
-        description='Manage your technical skills and tools'
-        data={technologies}
-        columns={columns}
-        entityType='technology'
-        onAdd={handleAdd}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        onView={(id) => {
-          const tech = technologies.find((t) => t._id === id)
-          if (tech) {
-            console.log('Viewing technology:', tech)
-          }
-        }}
-        isLoading={loading}
-        addButtonText='Add Technology'
-      />
+      <div className='flex items-center justify-between mb-4'>
+        <div>
+          <h1 className='text-2xl font-bold'>Technologies</h1>
+          <p className='text-sm text-muted-foreground'>Manage your technical skills and tools</p>
+        </div>
+        <Button onClick={() => addDialog.open()}>
+          <PlusIcon className='w-4 h-4' />
+          Add Technology
+        </Button>
+      </div>
+
+      <CardsList items={technologies} isLoading={loading} build={buildCard} />
+
+      <Dialog
+        open={addDialog.isOpen}
+        onOpenChange={(o) => (o ? addDialog.open() : addDialog.close())}
+      >
+        <DialogContent className='max-w-2xl max-h-[80vh] overflow-y-auto'>
+          <DialogHeader>
+            <DialogTitle>Add Technology</DialogTitle>
+            <DialogDescription>Fill in the details to add a technology</DialogDescription>
+          </DialogHeader>
+          <DynamicForm
+            formConfig={getFormConfig('technology') || ({} as any)}
+            onSubmit={handleAddSubmit}
+            onCancel={() => addDialog.close()}
+            isLoading={false}
+          />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={editDialog.isOpen}
+        onOpenChange={(o) => (o ? editDialog.open(editDialog.data) : editDialog.close())}
+      >
+        <DialogContent className='max-w-2xl max-h-[80vh] overflow-y-auto'>
+          <DialogHeader>
+            <DialogTitle>Edit Technology</DialogTitle>
+            <DialogDescription>Update the technology details</DialogDescription>
+          </DialogHeader>
+          {editDialog.data && (
+            <DynamicForm
+              formConfig={getFormConfig('technology') || ({} as any)}
+              defaultValues={editDialog.data}
+              onSubmit={handleEditSubmit}
+              onCancel={() => editDialog.close()}
+              isLoading={false}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   )
 }

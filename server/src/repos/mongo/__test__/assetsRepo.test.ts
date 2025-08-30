@@ -21,12 +21,13 @@ describe('MongoAssetsRepo', () => {
   });
 
   it('creates asset document', async () => {
-    const created = await repo.create({
-      projectId: new mongoose.Types.ObjectId(),
+    const created = await repo.createAsset({
+      projectId: new mongoose.Types.ObjectId().toString(),
       ownerId: 'u1',
       path: 'uploads/x',
       contentType: 'text/plain',
       size: 10,
+      assetType: 'project',
     });
     expect(created.path).toBe('uploads/x');
   });

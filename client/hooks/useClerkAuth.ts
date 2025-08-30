@@ -13,7 +13,8 @@ export function useClerkAuth() {
 
     try {
       // Get the JWT token from Clerk
-      const token = await getToken()
+      // Ensure we request a token for our backend API
+      const token = await getToken({ template: 'portfolio-backend' })
       return token
     } catch (error) {
       console.error('Failed to get auth token:', error)

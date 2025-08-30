@@ -1,7 +1,7 @@
 /**
  * Tests for useClerkAuth hook
  */
-import { renderHook, waitFor } from '@testing-library/react'
+import { renderHook } from '@testing-library/react'
 import { useAuth } from '@clerk/nextjs'
 import { useClerkAuth } from '../useClerkAuth'
 

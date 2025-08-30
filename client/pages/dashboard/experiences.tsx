@@ -23,6 +23,8 @@ import {
 } from '@/hooks/useHttpApi'
 import { Experience } from '@/types/api'
 import { MediaLibraryPicker } from '@/components/ui/media-library-picker'
+import { formatMonthYear, calculateDuration } from '@/lib/formatters'
+import { handleImageError } from '@/lib/image-utils'
 import {
   Plus,
   PencilSimple,
@@ -263,6 +265,9 @@ const ExperienceModal: React.FC<{
                 onSelect={(url) => handleInputChange('companyLogoUrl', url)}
                 filter='image'
                 title='Select Company Logo'
+                uploadOptions={{
+                  assetType: 'experience',
+                }}
               />
             </div>
 
@@ -297,32 +302,6 @@ const ExperienceCard: React.FC<{
   onEdit: () => void
   onDelete: () => void
 }> = ({ experience, onEdit, onDelete }) => {
-  const formatDate = (dateStr: string) => {
-    if (!dateStr) return ''
-    const date = new Date(dateStr + '-01')
-    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short' })
-  }
-
-  const calculateDuration = (start: string, end?: string) => {
-    const startDate = new Date(start + '-01')
-    const endDate = end ? new Date(end + '-01') : new Date()
-
-    const diffInMonths =
-      (endDate.getFullYear() - startDate.getFullYear()) * 12 +
-      (endDate.getMonth() - startDate.getMonth())
-
-    const years = Math.floor(diffInMonths / 12)
-    const months = diffInMonths % 12
-
-    if (years === 0) {
-      return `${months} ${months === 1 ? 'mo' : 'mos'}`
-    } else if (months === 0) {
-      return `${years} ${years === 1 ? 'yr' : 'yrs'}`
-    } else {
-      return `${years} ${years === 1 ? 'yr' : 'yrs'} ${months} ${months === 1 ? 'mo' : 'mos'}`
-    }
-  }
-
   return (
     <Card className='hover:shadow-lg transition-shadow duration-200'>
       <CardContent className='p-6'>
@@ -334,11 +313,7 @@ const ExperienceCard: React.FC<{
                 src={experience.companyLogoUrl}
                 alt={`${experience.company} logo`}
                 className='w-12 h-12 rounded object-cover bg-gray-100'
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement
-                  target.style.display = 'none'
-                  target.nextElementSibling?.classList.remove('hidden')
-                }}
+                onError={handleImageError}
               />
             ) : null}
             <div
@@ -382,8 +357,8 @@ const ExperienceCard: React.FC<{
                   <div className='flex items-center gap-1'>
                     <Calendar className='w-4 h-4' />
                     <span>
-                      {formatDate(experience.startDate)} -{' '}
-                      {experience.current ? 'Present' : formatDate(experience.endDate || '')}
+                      {formatMonthYear(experience.startDate)} -{' '}
+                      {experience.current ? 'Present' : formatMonthYear(experience.endDate || '')}
                       {' · '}
                       {calculateDuration(
                         experience.startDate,
@@ -557,10 +532,7 @@ export default function ExperiencesPage() {
               <p className='text-gray-600 dark:text-gray-400 mb-6'>
                 Start building your professional profile by adding your work experience.
               </p>
-              <Button
-                onClick={handleAddNew}
-                className='bg-black cursor-pointer'
-              >
+              <Button onClick={handleAddNew} className='bg-black cursor-pointer'>
                 <Plus className='w-4 h-4 mr-2' />
                 Add Your First Experience
               </Button>

@@ -10,7 +10,10 @@ const Home: React.FC = () => {
     <>
       <Head>
         <title>Kasoma Ibrahim</title>
-        <meta name='description' content='This is a portfolio showcasing what Kasoma Ibrahim can build and deliver as a Software Engineer' />
+        <meta
+          name='description'
+          content='This is a portfolio showcasing what Kasoma Ibrahim can build and deliver as a Software Engineer'
+        />
         <link rel='icon' href='/favicon.png' />
       </Head>
       <Header />

@@ -13,7 +13,8 @@ let jwks: ReturnType<typeof createRemoteJWKSet> | null = null;
  * Lazily create and cache the JWKS remote set based on config.
  */
 function getJwks() {
-  if (!config.clerk.jwksUrl) throw new Error('CLERK_JWKS_URL (or CLERK_ISSUER) is required');
+  if (!config.clerk.jwksUrl)
+    throw new Error('[[CLERK_JWKS_URL]]-[SERVER]: CLERK_JWKS_URL (or CLERK_ISSUER) is required');
   if (!jwks) jwks = createRemoteJWKSet(new URL(config.clerk.jwksUrl));
   return jwks;
 }

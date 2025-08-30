@@ -8,20 +8,24 @@ export const BaseEntitySchema = z.object({
 })
 
 // Project schemas
-export const ProjectKindSchema = z.enum(['learning', 'frontend', 'fullstack', 'ai_learning'])
 export const ProjectVisibilitySchema = z.enum(['public', 'private'])
-export const ProjectStatusSchema = z.enum(['draft', 'published', 'archived'])
 
 export const ProjectSchema = BaseEntitySchema.extend({
   title: z.string().min(1, 'Title is required').max(100, 'Title must be less than 100 characters'),
-  slug: z.string().min(1, 'Slug is required').max(100, 'Slug must be less than 100 characters'),
-  kind: ProjectKindSchema,
+  // slug/kind removed; use category
   description: z.string().optional(),
   techStack: z.array(z.string()).default([]),
-  tags: z.array(z.string()).default([]),
   heroImageUrl: z.string().nullable().optional(),
+  liveUrl: z.string().url('Must be a valid URL').optional().or(z.literal('')),
+  githubUrl: z.string().url('Must be a valid URL').optional().or(z.literal('')),
+  repoUrl: z.string().url('Must be a valid URL').optional().or(z.literal('')),
+  gradient: z.string().optional(),
+  hasPreview: z.boolean().optional(),
+  category: z.string().optional(),
+  duration: z.string().optional(),
+  teamSize: z.string().optional(),
+  importance: z.enum(['high', 'medium', 'low']).optional(),
   visibility: ProjectVisibilitySchema.default('public'),
-  status: ProjectStatusSchema.default('draft'),
   ownerId: z.string(),
   views: z.number().optional(),
   likes: z.number().optional(),

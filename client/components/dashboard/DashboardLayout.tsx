@@ -16,6 +16,7 @@ import {
   FolderOpen,
   Clock,
   ArrowLeft,
+  User,
 } from '@phosphor-icons/react'
 import { useTheme } from 'next-themes'
 import Link from 'next/link'
@@ -64,6 +65,12 @@ const navItems: NavItem[] = [
     label: 'Badges',
     icon: Medal,
     href: '/dashboard/badges',
+  },
+  {
+    id: 'avatars',
+    label: 'Avatars',
+    icon: User,
+    href: '/dashboard/avatars',
   },
   {
     id: 'technologies',

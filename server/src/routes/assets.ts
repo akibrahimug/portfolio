@@ -1,408 +1,273 @@
 import { Router } from 'express';
-import type { Request, Response } from 'express';
-import { Types } from 'mongoose'; // Add this import
-import config from '../config';
+import { Types } from 'mongoose';
+import { MongoAssetsRepo } from '../repos/mongo/assetsRepo';
 import { buildSchemas } from '../schemas';
 import { authMiddleware } from '../services/auth';
-import { createV4UploadSignedUrl, listBucketFiles, createV4ViewSignedUrl } from '../services/gcs';
-import { Asset } from '../models/Asset';
+import { storage } from '../services/gcs';
+import type { Request, Response } from 'express';
 
 const router = Router();
 const schemas = buildSchemas();
+const assetsRepo = new MongoAssetsRepo();
 
-/** ---------- Small type helpers (avoid `any`) ---------- */
-
-type UnknownRecord = Record<string, unknown>;
-
-function getString(v: unknown): string | undefined {
-  return typeof v === 'string' ? v : undefined;
-}
-
-function getNumber(v: unknown): number | undefined {
-  return typeof v === 'number' && Number.isFinite(v) ? v : undefined;
-}
-
-function getStringArray(v: unknown): string[] {
-  return Array.isArray(v) && v.every((x) => typeof x === 'string') ? (v as string[]) : [];
-}
-
-/** Helper function to validate and convert projectId to ObjectId */
-function validateProjectId(projectId: string): Types.ObjectId {
-  // Check if it's already a valid ObjectId
-  if (Types.ObjectId.isValid(projectId)) {
-    return new Types.ObjectId(projectId);
-  }
-
-  // If it's not a valid ObjectId, create a deterministic ObjectId
-  // This allows string identifiers like 'resume' to have a consistent ObjectId
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const hash = require('crypto')
-    .createHash('md5')
-    .update(`project-${projectId}`)
-    .digest('hex')
-    .substring(0, 24);
-
-  return new Types.ObjectId(hash);
-}
-
-/** Minimal projection of config we actually use, read safely from unknown */
-function readUploadsAllowedMime(cfg: unknown): string[] {
-  const arr = (cfg as UnknownRecord)?.uploads as unknown;
-  return getStringArray((arr as UnknownRecord | undefined)?.allowedMime);
-}
-
-function readUploadsMaxMb(cfg: unknown): number | undefined {
-  const uploads = (cfg as UnknownRecord)?.uploads as unknown;
-  return getNumber((uploads as UnknownRecord | undefined)?.maxMb);
-}
-
-function readGcsBucketUploads(cfg: unknown): string | undefined {
-  const gcs = (cfg as UnknownRecord)?.gcs as unknown;
-  return getString((gcs as UnknownRecord | undefined)?.bucketUploads);
-}
-
-function readGcsPublicBaseUrl(cfg: unknown): string | undefined {
-  const gcs = (cfg as UnknownRecord)?.gcs as unknown;
-  return getString((gcs as UnknownRecord | undefined)?.publicBaseUrl);
-}
-
-/** GCS listing minimal type we consume */
-interface GcsListedFile {
-  name: string;
-  size?: number;
-  updated?: Date | string;
-}
-
-/** Asset document shape we return (minimal) */
-interface AssetDoc {
-  _id: string;
-  projectId: string;
-  ownerId: string;
-  path: string;
-  contentType: string;
-  size: number;
-}
-
-/** Zod-parsed request payloads (narrowed types) */
-interface AssetsRequestUploadParsed {
-  version: 'v1';
-  projectId: string;
-  filename: string;
-  contentType?: string;
-  size: number;
-}
-
-interface AssetsConfirmParsed {
-  version: 'v1';
-  projectId: string;
-  ownerId: string;
-  objectPath: string;
-  contentType: string;
-  size: number;
-}
-
-/** ---------- Bucket + MIME helpers ---------- */
-
-function resolveUploadsBucket(): string | null {
-  const fromConfig = readGcsBucketUploads(config);
-  const fromEnv = process.env.GCS_BUCKET_UPLOADS;
-  const bucket = fromConfig ?? fromEnv ?? null;
-  if (!bucket) {
-    // log once per boot in practice, but harmless here
-    // eslint-disable-next-line no-console
-    console.error(
-      '[assets] No uploads bucket configured. Set config.gcs.bucketUploads or GCS_BUCKET_UPLOADS.',
-    );
-  }
-  return bucket;
-}
-
-/** Robust MIME matcher: supports '*', 'image/*', or exact 'application/pdf'. */
-function isAllowedMime(contentType: string, allowed: string[]): boolean {
-  if (allowed.length === 0) return true; // allow all if not configured
-  const ct = contentType.toLowerCase();
-  if (!ct) return false;
-  if (allowed.includes('*')) return true;
-
-  for (const ruleRaw of allowed) {
-    const rule = ruleRaw.trim().toLowerCase();
-    if (!rule) continue;
-    if (rule === ct) return true;
-    if (rule.endsWith('/*')) {
-      const prefix = rule.slice(0, -2);
-      if (ct.startsWith(`${prefix}/`)) return true;
-    }
-  }
-  return false;
-}
-
-/** Build effective allow-list from config or env with a safe default. */
-function getAllowedMime(): string[] {
-  const cfgList = readUploadsAllowedMime(config);
-  const envList = (process.env.UPLOADS_ALLOWED_MIME || '')
-    .split(',')
-    .map((s) => s.trim())
-    .filter((s) => s.length > 0);
-
-  // If neither provided, use a reasonable default set
-  const defaultList = [
-    // documents
-    'application/pdf',
-    'application/msword',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    // images
-    'image/*',
-    // text
-    'text/plain',
-  ];
-
-  const merged = Array.from(new Set<string>([...cfgList, ...envList]));
-  return merged.length ? merged : defaultList;
-}
-
-/** Infer MIME from filename when file.type is missing/unreliable */
-function inferMimeFromName(name: string): string {
-  const ext = name.split('.').pop()?.toLowerCase() ?? '';
-  switch (ext) {
-    case 'pdf':
-      return 'application/pdf';
-    case 'doc':
-      return 'application/msword';
-    case 'docx':
-      return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-    case 'txt':
-      return 'text/plain';
-    case 'md':
-      return 'text/markdown';
-    case 'png':
-      return 'image/png';
-    case 'jpg':
-    case 'jpeg':
-      return 'image/jpeg';
-    case 'webp':
-      return 'image/webp';
-    case 'gif':
-      return 'image/gif';
-    case 'csv':
-      return 'text/csv';
-    case 'json':
-      return 'application/json';
-    default:
-      return 'application/octet-stream';
-  }
-}
-
-/** Generates a safe object path under uploads/<projectId>/... */
-function buildObjectPath(projectId: string, filename: string): string {
-  const ts = Date.now();
-  // no-useless-escape: use character class without escaping '-'
-  const safeName = filename.replace(/[^\w.-]+/g, '_').replace(/_+/g, '_');
-  const pid = (projectId || 'misc').replace(/[^\w.-]+/g, '_');
-  return `uploads/${pid}/${ts}-${safeName}`;
-}
-
-/** ---------- Routes ---------- */
-
-// POST /assets/request-upload → returns signed URL (auth required)
+// POST /assets/request-upload � get signed URL for direct upload
 router.post('/request-upload', authMiddleware, async (req: Request, res: Response) => {
   try {
-    const userId = (req as unknown as { userId?: string }).userId;
-    if (!userId) return res.status(401).json({ error: 'unauthorized' });
+    const parsed = schemas.AssetsRequestUploadReq.parse({ version: 'v1', ...req.body });
+    const { filename, contentType, folder, assetType } = parsed;
+    const userId = (req as unknown as { userId?: string }).userId || 'anonymous';
 
-    const bucket = resolveUploadsBucket();
-    if (!bucket) return res.status(500).json({ error: 'bucket_not_configured' });
-
-    const allowed = getAllowedMime();
-
-    const parsed = schemas.AssetsRequestUploadReq.parse({
-      version: 'v1',
-      ...req.body,
-    }) as AssetsRequestUploadParsed;
-
-    // Validate projectId (though we don't need it as ObjectId here, just validate)
-    try {
-      validateProjectId(parsed.projectId);
-    } catch (error) {
-      console.warn('[assets] projectId validation error:', error);
-      return res.status(400).json({ 
-        error: 'invalid_project_id', 
-        message: 'Invalid projectId format'
+    if (!process.env.GCS_BUCKET_UPLOADS) {
+      return res.status(500).json({
+        success: false,
+        error: 'GCS bucket not configured',
       });
     }
 
-    const { projectId, filename } = parsed;
-    let { contentType } = parsed;
-    const { size } = parsed; // never reassigned → const
+    const bucket = storage.bucket(process.env.GCS_BUCKET_UPLOADS);
 
-    // Infer contentType if missing/placeholder
-    if (!contentType || contentType === 'application/octet-stream') {
-      contentType = inferMimeFromName(filename);
-    }
+    // Build proper folder structure: assetType/userId/timestamp-filename
+    // This ensures each assetType has its own top-level folder
+    const assetTypeFolder = assetType || 'misc';
+    const subFolder = folder ? `/${folder}` : '';
+    const objectPath = `${assetTypeFolder}${subFolder}/${userId}/${Date.now()}-${filename}`;
+    const file = bucket.file(objectPath);
 
-    const cfgMaxMb = readUploadsMaxMb(config);
-    const maxMb = Number.isFinite(cfgMaxMb as number)
-      ? (cfgMaxMb as number)
-      : Number(process.env.MAX_UPLOAD_MB || 20);
-
-    if (size / (1024 * 1024) > maxMb) {
-      return res.status(413).json({ error: 'file_too_large', maxMb });
-    }
-
-    if (!isAllowedMime(contentType, allowed)) {
-      return res
-        .status(415)
-        .json({ error: 'invalid_content_type', allowed, received: contentType });
-    }
-
-    const objectPath = buildObjectPath(projectId, filename);
-
-    const uploadUrl = await createV4UploadSignedUrl({
-      bucket,
-      objectPath,
+    const [signedUrl] = await file.getSignedUrl({
+      version: 'v4',
+      action: 'write',
+      expires: Date.now() + 15 * 60 * 1000, // 15 minutes
       contentType,
-      expiresInSeconds: 15 * 60, // 15 minutes
     });
 
-    return res.json({
-      uploadUrl,
-      objectPath,
-      headers: { 'Content-Type': contentType },
-      expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
+    res.json({
+      success: true,
+      data: {
+        uploadUrl: signedUrl,
+        objectPath,
+        headers: {
+          'Content-Type': contentType,
+        },
+        expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
+      },
     });
-  } catch (err) {
-    // eslint-disable-next-line no-console
-    console.error('[assets] request-upload error', err);
-    return res.status(400).json({ error: 'invalid_request' });
+    return;
+  } catch (error) {
+    console.error('Asset upload request failed:', error);
+    res.status(400).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Invalid request',
+    });
+    return;
   }
 });
 
-// POST /assets/confirm → persist metadata after client PUT (auth required)
+// POST /assets/confirm confirm upload and create asset record
 router.post('/confirm', authMiddleware, async (req: Request, res: Response) => {
   try {
     const userId = (req as unknown as { userId?: string }).userId;
-    if (!userId) return res.status(401).json({ error: 'unauthorized' });
-
-    const parsed = schemas.AssetsConfirmReq.parse({
-      version: 'v1',
-      ...req.body,
-      ownerId: userId,
-    }) as AssetsConfirmParsed;
-
-    // Validate and convert projectId to a valid ObjectId
-    let validProjectId;
-    try {
-      validProjectId = validateProjectId(parsed.projectId);
-    } catch (error) {
-      console.warn('[assets] projectId validation error:', error);
-      return res.status(400).json({ 
-        error: 'invalid_project_id', 
-        message: 'Invalid projectId format'
-      });
+    if (!userId) {
+      res.status(401).json({ success: false, error: 'Unauthorized' });
+      return;
     }
+    const parsed = schemas.AssetsConfirmReq.parse({ version: 'v1', ownerId: userId, ...req.body });
+    const { objectPath, contentType, size, projectId, assetType } = parsed;
 
-    const assetDoc = (await Asset.create({
-      projectId: validProjectId, // Use the validated ObjectId
-      ownerId: parsed.ownerId,
-      path: parsed.objectPath,
-      contentType: parsed.contentType,
-      size: parsed.size,
-    })) as unknown as AssetDoc;
-    return res.status(201).json({ asset: assetDoc });
-  } catch (err) {
-    // eslint-disable-next-line no-console
-    console.error('[assets] confirm error', err);
-    return res.status(400).json({ error: 'invalid_request' });
+    const asset = await assetsRepo.createAsset({
+      ownerId: userId,
+      projectId,
+      path: objectPath,
+      contentType,
+      size,
+      assetType: assetType || 'project', // Use 'project' as fallback since 'other' is not in enum
+    });
+
+    const publicUrl = `https://storage.googleapis.com/${process.env.GCS_BUCKET_UPLOADS}/${objectPath}`;
+
+    res.json({
+      success: true,
+      data: {
+        asset,
+        publicUrl,
+        viewUrl: publicUrl,
+        assetId: asset._id.toString(),
+      },
+    });
+    return;
+  } catch (error) {
+    console.error('Asset confirm failed:', error);
+    res.status(400).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Invalid request',
+    });
+    return;
   }
 });
 
-// GET /assets/browse → list bucket contents (auth required)
+// GET /assets/browse — list files in uploads bucket (auth required)
 router.get('/browse', authMiddleware, async (req: Request, res: Response) => {
   try {
-    const bucket = resolveUploadsBucket();
-    if (!bucket) return res.status(500).json({ error: 'bucket_not_configured' });
-
-    const prefix =
-      typeof req.query.prefix === 'string' && req.query.prefix.trim()
-        ? req.query.prefix.trim().replace(/^\/+/, '')
-        : '';
-    const maxResults =
-      typeof req.query.limit === 'string' && !Number.isNaN(Number(req.query.limit))
-        ? Math.max(1, Math.min(1000, Number(req.query.limit)))
-        : 200;
-
-    const files = (await listBucketFiles({
-      bucket,
-      prefix,
-      maxResults,
-    })) as unknown as GcsListedFile[];
-
-    const publicBase = readGcsPublicBaseUrl(config);
-    const publicBaseNormalized = publicBase ? publicBase.replace(/\/+$/, '') : undefined;
-    // eslint-disable-next-line no-inner-declarations
-    function formatUpdated(u: Date | string | undefined): string | null {
-      if (!u) return null;
-      return typeof u === 'string' ? u : u.toISOString();
+    if (!process.env.GCS_BUCKET_UPLOADS) {
+      res.status(500).json({ success: false, error: 'GCS bucket not configured' });
+      return;
     }
 
-    const filesWithUrls = await Promise.all(
-      files.map(async (file) => {
-        const viewUrl = await createV4ViewSignedUrl({
-          bucket,
-          objectPath: file.name,
-          expiresInSeconds: 60 * 60, // 1 hour
-        });
-        return {
-          name: file.name,
-          size: file.size ?? 0,
-          updated: formatUpdated(file.updated),
-          signedUrl: viewUrl,
-          publicUrl: publicBaseNormalized ? `${publicBaseNormalized}/${file.name}` : null,
-        };
-      }),
-    );
+    const { prefix = '', limit = 100, type } = schemas.AssetsBrowseQuery.parse(req.query);
+    const bucketName = process.env.GCS_BUCKET_UPLOADS;
 
-    return res.json({
-      items: filesWithUrls,
-      total: files.length,
-      hasMore: files.length === maxResults,
+    const [files] = await storage.bucket(bucketName as string).getFiles({
+      prefix,
+      maxResults: limit,
     });
-  } catch (err) {
-    // eslint-disable-next-line no-console
-    console.error('[assets] browse error', err);
-    return res.status(500).json({ error: 'browse_failed' });
+
+    const mapped = files.map((file) => {
+      const meta = file.metadata as unknown as {
+        contentType?: string;
+        size?: string | number;
+        timeCreated?: string;
+        updated?: string;
+      };
+      const contentType = (meta?.contentType as string) || 'application/octet-stream';
+      const size = parseInt(String(meta?.size ?? '0'));
+      const timeCreated = String(meta?.timeCreated ?? '');
+      const updated = String(meta?.updated ?? '');
+      const publicUrl = `https://storage.googleapis.com/${bucketName}/${file.name}`;
+      const viewUrl = publicUrl;
+      return { name: file.name, size, contentType, timeCreated, updated, publicUrl, viewUrl };
+    });
+
+    const filtered =
+      type === 'image' ? mapped.filter((f) => f.contentType.startsWith('image/')) : mapped;
+
+    res.json({ success: true, data: { files: filtered, total: filtered.length, hasMore: false } });
+    return;
+  } catch (error) {
+    console.error('Browse assets failed:', error);
+    res
+      .status(400)
+      .json({
+        success: false,
+        error: 'Invalid request',
+        data: { files: [], total: 0, hasMore: false },
+      });
+    return;
   }
 });
 
-// GET /assets/folders → list folder structure (auth required)
+// GET /assets/folders — list folder prefixes (auth required)
 router.get('/folders', authMiddleware, async (req: Request, res: Response) => {
   try {
-    const bucket = resolveUploadsBucket();
-    if (!bucket) return res.status(500).json({ error: 'bucket_not_configured' });
+    if (!process.env.GCS_BUCKET_UPLOADS) {
+      res.status(500).json({ success: false, error: 'GCS bucket not configured' });
+      return;
+    }
 
-    const prefix =
-      typeof req.query.prefix === 'string' && req.query.prefix.trim()
-        ? req.query.prefix.trim().replace(/^\/+/, '')
-        : 'uploads/';
+    const { prefix = '' } = schemas.AssetsFoldersQuery.parse(req.query);
+    const bucketName = process.env.GCS_BUCKET_UPLOADS;
+    const normalizedPrefix = prefix ? `${String(prefix).replace(/\/+$/, '')}/` : '';
 
-    const files = (await listBucketFiles({
-      bucket,
-      prefix,
-      maxResults: 1000,
-    })) as unknown as GcsListedFile[];
-
-    const folders = [
-      ...new Set(
-        files
-          .map((file) => file.name.split('/').slice(0, -1).join('/'))
-          .filter((folder) => folder && folder !== prefix),
-      ),
+    // The GCS client returns [files, nextQuery, apiResponse]; we only need apiResponse.prefixes
+    const result = (await storage
+      .bucket(bucketName as string)
+      .getFiles({ prefix: normalizedPrefix, delimiter: '/' })) as unknown as [
+      unknown[],
+      unknown,
+      { prefixes?: string[] },
     ];
+    const apiResponse = result[2] || { prefixes: [] };
+    const rawPrefixes = Array.isArray(apiResponse.prefixes) ? apiResponse.prefixes : [];
+    const folders = rawPrefixes.map((p) => p.replace(/\/$/, ''));
 
-    return res.json({ folders });
-  } catch (err) {
-    // eslint-disable-next-line no-console
-    console.error('Error listing folders:', err);
-    return res.status(500).json({ error: 'folders_failed' });
+    res.json({ success: true, data: { folders: folders || [] } });
+    return;
+  } catch (error) {
+    console.error('List asset folders failed:', error);
+    res.status(400).json({ success: false, error: 'Invalid request', data: { folders: [] } });
+    return;
+  }
+});
+
+// GET /assets/:id get asset by ID
+router.get('/:id', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params as { id: string };
+    if (!Types.ObjectId.isValid(id)) {
+      res.status(400).json({ success: false, error: 'Invalid id' });
+      return;
+    }
+    const asset = await assetsRepo.getAssetById(id);
+    if (!asset) {
+      res.status(404).json({
+        success: false,
+        error: 'Asset not found',
+      });
+      return;
+    }
+
+    res.json({
+      success: true,
+      data: { asset },
+    });
+    return;
+  } catch (error) {
+    console.error('Get asset failed:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error',
+    });
+    return;
+  }
+});
+
+// DELETE /assets/:id delete asset
+router.delete('/:id', authMiddleware, async (req: Request, res: Response) => {
+  try {
+    const userId = (req as unknown as { userId?: string }).userId;
+    const asset = await assetsRepo.getAssetById(req.params.id as string);
+
+    if (!asset) {
+      res.status(404).json({
+        success: false,
+        error: 'Asset not found',
+      });
+      return;
+    }
+
+    if (asset.ownerId !== userId) {
+      res.status(403).json({
+        success: false,
+        error: 'Unauthorized',
+      });
+      return;
+    }
+
+    // Delete from GCS first
+    try {
+      if (process.env.GCS_BUCKET_UPLOADS && asset.path) {
+        const bucket = storage.bucket(process.env.GCS_BUCKET_UPLOADS);
+        const file = bucket.file(asset.path);
+        await file.delete();
+      }
+    } catch (gcsError) {
+      console.warn('Failed to delete file from GCS:', gcsError);
+      // Continue with database deletion even if GCS deletion fails
+    }
+
+    // Delete from database
+    await assetsRepo.deleteAssetById(req.params.id);
+
+    res.json({
+      success: true,
+      data: { ok: true },
+    });
+    return;
+  } catch (error) {
+    console.error('Delete asset failed:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error',
+    });
+    return;
   }
 });
 

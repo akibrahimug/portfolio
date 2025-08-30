@@ -16,6 +16,7 @@ import {
 } from '@phosphor-icons/react'
 import Link from 'next/link'
 import { useProjects, useMessages, useTechnologies, useExperiences } from '@/hooks/useHttpApi'
+import type { Message } from '@/types/api'
 
 const DashboardOverview: React.FC = () => {
   // Use real API data
@@ -29,56 +30,71 @@ const DashboardOverview: React.FC = () => {
   const technologies = technologiesData || []
   const experiences = experiencesData || []
 
-  // Calculate real stats
-  const stats = {
-    projects: {
-      total: projects.length,
-      published: projects.filter((p) => p.status === 'published').length,
-      draft: projects.filter((p) => p.status === 'draft').length,
-    },
-    experiences: {
-      total: experiences.length,
-      current: experiences.filter((e) => e.current).length,
-    },
-    technologies: {
-      total: technologies.length,
-      categories: [...new Set(technologies.map((t) => t.category))].length,
-    },
-    messages: {
-      total: messages.length,
-      unread: messages.length, // All messages are "unread" for now
-    },
-  }
+  // Calculate real stats (memoized to prevent recalculation)
+  const stats = React.useMemo(
+    () => ({
+      projects: {
+        total: projects.length,
+        published: projects.filter((p) => p.status === 'published').length,
+        draft: projects.filter((p) => p.status === 'draft').length,
+      },
+      experiences: {
+        total: experiences.length,
+        current: experiences.filter((e) => e.current).length,
+      },
+      technologies: {
+        total: technologies.length,
+        categories: [...new Set(technologies.map((t) => t.category))].length,
+      },
+      messages: {
+        total: messages.length,
+        unread: messages.length, // All messages are "unread" for now
+      },
+    }),
+    [projects, experiences, technologies, messages],
+  )
 
-  // Generate recent activity from real data
-  const recentActivity = [
-    ...projects.slice(0, 2).map((project, index) => ({
+  // Generate recent activity from real data (memoized to prevent recalculation)
+  const recentActivity = React.useMemo(() => {
+    const activities = []
+
+    // Add up to 2 projects
+    const recentProjects = projects.slice(0, 2).map((project, index) => ({
       id: `project-${index}`,
       type: 'project',
-      title: project.title || project.projectTitle || 'Untitled Project',
+      title: project.title || 'Untitled Project',
       action: project.status === 'published' ? 'published' : 'updated',
       timestamp: new Date(
         project.updatedAt || project.createdAt || Date.now(),
       ).toLocaleDateString(),
       icon: FolderOpen,
-    })),
-    ...messages.slice(0, 2).map((message, index) => ({
+    }))
+    activities.push(...recentProjects)
+
+    // Add up to 2 messages
+    const recentMessages = messages.slice(0, 2).map((message: Message, index: number) => ({
       id: `message-${index}`,
       type: 'message',
       title: `Message from ${message.name}`,
       action: 'received',
       timestamp: new Date(message.createdAt || Date.now()).toLocaleDateString(),
       icon: Clock,
-    })),
-    ...experiences.slice(0, 1).map((experience, index) => ({
+    }))
+    activities.push(...recentMessages)
+
+    // Add 1 experience
+    const recentExperience = experiences.slice(0, 1).map((experience, index) => ({
       id: `experience-${index}`,
       type: 'experience',
       title: `${experience.title} at ${experience.company}`,
       action: experience.current ? 'ongoing' : 'completed',
       timestamp: new Date(experience.startDate || Date.now()).toLocaleDateString(),
       icon: Briefcase,
-    })),
-  ].slice(0, 5) // Limit to 5 most recent items
+    }))
+    activities.push(...recentExperience)
+
+    return activities.slice(0, 5) // Limit to 5 most recent items
+  }, [projects, messages, experiences])
 
   const quickActions = [
     {

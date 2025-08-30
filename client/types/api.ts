@@ -5,25 +5,24 @@
 export interface Project {
   _id: string
   title: string
-  slug: string
-  kind: 'learning' | 'frontend' | 'fullstack' | 'ai_learning'
+  category?: string
   description?: string
   techStack: string[]
-  tags: string[]
+  technologyIds?: string[]
   heroImageUrl?: string | null
+  liveUrl?: string | null
+  repoUrl?: string | null
+  gradient?: string | null
+  hasPreview?: boolean
+  duration?: string | null
+  teamSize?: string | null
+  importance?: 'high' | 'medium' | 'low'
   visibility: 'public' | 'private'
-  status: 'draft' | 'published' | 'archived'
   ownerId: string
   createdAt?: string
   updatedAt?: string
   views?: number
   likes?: number
-  // Legacy fields for backward compatibility
-  projectTitle?: string
-  projectDescription?: string
-  pictureUrl?: string
-  githubUrl?: string
-  liveSiteUrl?: string
 }
 
 export interface Asset {
@@ -200,26 +199,36 @@ export interface ProjectGetResponse {
 // API Request types
 export interface ProjectCreateRequest {
   title: string
-  slug: string
-  kind: Project['kind']
+  category?: string
   description?: string
   techStack?: string[]
-  tags?: string[]
+  technologyIds?: string[]
   heroImageUrl?: string
+  liveUrl?: string
+  repoUrl?: string
+  gradient?: string
+  hasPreview?: boolean
+  duration?: string
+  teamSize?: string
+  importance?: 'high' | 'medium' | 'low'
   visibility?: Project['visibility']
-  status?: Project['status']
 }
 
 export interface ProjectUpdateRequest {
   title?: string
-  slug?: string
-  kind?: Project['kind']
+  category?: string
   description?: string
   techStack?: string[]
-  tags?: string[]
+  technologyIds?: string[]
   heroImageUrl?: string
+  liveUrl?: string
+  repoUrl?: string
+  gradient?: string
+  hasPreview?: boolean
+  duration?: string
+  teamSize?: string
+  importance?: 'high' | 'medium' | 'low'
   visibility?: Project['visibility']
-  status?: Project['status']
 }
 
 export interface AssetUploadRequest {
@@ -227,6 +236,8 @@ export interface AssetUploadRequest {
   filename: string
   contentType: string
   size: number
+  assetType?: string
+  folder?: string
 }
 
 export interface AssetUploadResponse {
@@ -234,6 +245,7 @@ export interface AssetUploadResponse {
   objectPath: string
   headers: Record<string, string>
   expiresAt: string
+  assetId?: string
 }
 
 export interface AssetConfirmRequest {
@@ -241,6 +253,7 @@ export interface AssetConfirmRequest {
   objectPath: string
   contentType: string
   size: number
+  assetType?: string
 }
 
 export interface AssetConfirmResponse {

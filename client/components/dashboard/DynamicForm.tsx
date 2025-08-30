@@ -27,6 +27,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
+import { AssetTrackingProvider, useAssetTrackingContext } from '@/contexts/AssetTrackingContext'
 
 interface DynamicFormProps {
   formConfig: FormSchema
@@ -36,15 +37,17 @@ interface DynamicFormProps {
   isLoading?: boolean
 }
 
-export const DynamicForm: React.FC<DynamicFormProps> = ({
+const DynamicFormInner: React.FC<DynamicFormProps> = ({
   formConfig,
   defaultValues = {},
   onSubmit,
   onCancel,
   isLoading = false,
 }) => {
+  // Access asset tracking from context
+  const { cleanupAssets, clearTracking } = useAssetTrackingContext()
   // Build zod schema dynamically from form config
-  const buildZodSchema = (fields: FormSchema['fields']) => {
+  const buildZodSchema = React.useCallback((fields: FormSchema['fields']) => {
     const schemaObject: Record<string, any> = {}
 
     fields.forEach((field) => {
@@ -150,9 +153,12 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({
     })
 
     return z.object(schemaObject)
-  }
+  }, [])
 
-  const schema = buildZodSchema(formConfig.fields)
+  const schema = React.useMemo(
+    () => buildZodSchema(formConfig.fields),
+    [buildZodSchema, formConfig.fields],
+  )
   type FormData = z.infer<typeof schema>
 
   const form = useForm<FormData>({
@@ -161,354 +167,423 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({
   })
 
   const handleSubmit = (data: FormData) => {
+    // Clear asset tracking on successful submit since form data is being saved
+    clearTracking()
     onSubmit(data)
   }
 
-  const renderField = (field: FormSchema['fields'][0]) => {
-    const fieldName = field.name as keyof FormData
+  const handleCancel = React.useCallback(() => {
+    // Clean up any uploaded assets when form is cancelled
+    cleanupAssets().finally(() => {
+      onCancel?.()
+    })
+  }, [cleanupAssets, onCancel])
 
-    switch (field.type) {
-      case 'text':
-      case 'email':
-      case 'password':
-      case 'url':
-        return (
-          <FormField
-            key={field.name}
-            control={form.control}
-            name={fieldName}
-            render={({ field: formField }) => (
-              <FormItem>
-                <FormLabel>{field.label}</FormLabel>
-                <FormControl>
-                  <Input type={field.type} placeholder={field.placeholder} {...formField} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )
+  // Clean up assets on component unmount (user navigates away)
+  React.useEffect(() => {
+    return () => {
+      cleanupAssets().catch((err) => console.warn('Failed to cleanup assets on unmount:', err))
+    }
+  }, [cleanupAssets])
 
-      case 'number':
-        return (
-          <FormField
-            key={field.name}
-            control={form.control}
-            name={fieldName}
-            render={({ field: formField }) => (
-              <FormItem>
-                <FormLabel>{field.label}</FormLabel>
-                <FormControl>
-                  <Input
-                    type='number'
-                    placeholder={field.placeholder}
-                    {...formField}
-                    onChange={(e) =>
-                      formField.onChange(e.target.value ? Number(e.target.value) : undefined)
-                    }
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )
+  const renderField = React.useCallback(
+    (field: FormSchema['fields'][0]) => {
+      const fieldName = field.name as keyof FormData
 
-      case 'textarea':
-        return (
-          <FormField
-            key={field.name}
-            control={form.control}
-            name={fieldName}
-            render={({ field: formField }) => (
-              <FormItem>
-                <FormLabel>{field.label}</FormLabel>
-                <FormControl>
-                  <Textarea placeholder={field.placeholder} {...formField} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )
-
-      case 'select':
-        return (
-          <FormField
-            key={field.name}
-            control={form.control}
-            name={fieldName}
-            render={({ field: formField }) => (
-              <FormItem>
-                <FormLabel>{field.label}</FormLabel>
-                <Select onValueChange={formField.onChange} value={formField.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue
-                        placeholder={field.placeholder || `Select ${field.label.toLowerCase()}`}
-                      />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {field.options?.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )
-
-      case 'multiselect':
-        return (
-          <FormField
-            key={field.name}
-            control={form.control}
-            name={fieldName}
-            render={({ field: formField }) => {
-              const [inputValue, setInputValue] = React.useState('')
-              const [showSuggestions, setShowSuggestions] = React.useState(false)
-
-              const filteredOptions =
-                field.options?.filter(
-                  (option) =>
-                    option.label.toLowerCase().includes(inputValue.toLowerCase()) &&
-                    !formField.value?.includes(option.value),
-                ) || []
-
-              const addTag = (value: string) => {
-                if (value.trim() && !formField.value?.includes(value.trim())) {
-                  const newValue = [...(formField.value || []), value.trim()]
-                  formField.onChange(newValue)
-                }
-                setInputValue('')
-                setShowSuggestions(false)
-              }
-
-              const handleKeyDown = (e: React.KeyboardEvent) => {
-                if (e.key === 'Enter' || e.key === ',') {
-                  e.preventDefault()
-                  addTag(inputValue)
-                } else if (e.key === 'Backspace' && !inputValue && formField.value?.length) {
-                  const newValue = formField.value.slice(0, -1)
-                  formField.onChange(newValue)
-                }
-              }
-
-              return (
+      switch (field.type) {
+        case 'text':
+        case 'email':
+        case 'password':
+        case 'url':
+          return (
+            <FormField
+              key={field.name}
+              control={form.control}
+              name={fieldName}
+              render={({ field: formField }) => (
                 <FormItem>
                   <FormLabel>{field.label}</FormLabel>
                   <FormControl>
-                    <div className='space-y-2'>
-                      {/* Display selected tags */}
-                      <div className='flex flex-wrap gap-2'>
-                        {formField.value?.map((item: string, index: number) => (
-                          <Badge
-                            key={index}
-                            variant='secondary'
-                            className='flex items-center gap-1'
-                          >
-                            {item}
-                            <X
-                              className='h-3 w-3 cursor-pointer'
-                              onClick={() => {
-                                const newValue =
-                                  formField.value?.filter((_: any, i: number) => i !== index) || []
-                                formField.onChange(newValue)
-                              }}
-                            />
-                          </Badge>
-                        ))}
-                      </div>
+                    <Input
+                      type={field.type}
+                      placeholder={field.placeholder}
+                      value={(formField.value as any) ?? ''}
+                      onChange={formField.onChange}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )
 
-                      {/* Input field with suggestions */}
-                      <div className='relative'>
-                        <Input
-                          value={inputValue}
-                          onChange={(e) => {
-                            setInputValue(e.target.value)
-                            setShowSuggestions(e.target.value.length > 0)
-                          }}
-                          onKeyDown={handleKeyDown}
-                          onFocus={() => setShowSuggestions(inputValue.length > 0)}
-                          onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                          placeholder={`Type to add ${field.label.toLowerCase()}... (Press Enter or comma to add)`}
+        case 'number':
+          return (
+            <FormField
+              key={field.name}
+              control={form.control}
+              name={fieldName}
+              render={({ field: formField }) => (
+                <FormItem>
+                  <FormLabel>{field.label}</FormLabel>
+                  <FormControl>
+                    <Input
+                      type='number'
+                      placeholder={field.placeholder}
+                      value={
+                        formField.value === undefined || formField.value === null
+                          ? ''
+                          : (formField.value as any)
+                      }
+                      onChange={(e) =>
+                        formField.onChange(
+                          e.target.value === '' ? undefined : Number(e.target.value),
+                        )
+                      }
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )
+
+        case 'textarea':
+          return (
+            <FormField
+              key={field.name}
+              control={form.control}
+              name={fieldName}
+              render={({ field: formField }) => (
+                <FormItem>
+                  <FormLabel>{field.label}</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder={field.placeholder}
+                      value={(formField.value as any) ?? ''}
+                      onChange={formField.onChange}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )
+
+        case 'select':
+          return (
+            <FormField
+              key={field.name}
+              control={form.control}
+              name={fieldName}
+              render={({ field: formField }) => (
+                <FormItem>
+                  <FormLabel>{field.label}</FormLabel>
+                  <Select
+                    onValueChange={formField.onChange}
+                    value={(formField.value as any) ?? undefined}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue
+                          placeholder={field.placeholder || `Select ${field.label.toLowerCase()}`}
                         />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {field.options?.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )
 
-                        {/* Suggestions dropdown */}
-                        {showSuggestions && filteredOptions.length > 0 && (
-                          <div className='absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-40 overflow-y-auto'>
-                            {filteredOptions.map((option) => (
-                              <div
-                                key={option.value}
-                                className='px-3 py-2 hover:bg-gray-100 cursor-pointer text-sm'
-                                onClick={() => addTag(option.value)}
-                              >
-                                {option.label}
-                              </div>
-                            ))}
+        case 'multiselect':
+          return (
+            <FormField
+              key={field.name}
+              control={form.control}
+              name={fieldName}
+              render={({ field: formField }) => {
+                const [inputValue, setInputValue] = React.useState('')
+                const [showSuggestions, setShowSuggestions] = React.useState(false)
+
+                const filteredOptions = React.useMemo(
+                  () =>
+                    field.options?.filter(
+                      (option) =>
+                        option.label.toLowerCase().includes(inputValue.toLowerCase()) &&
+                        !formField.value?.includes(option.value),
+                    ) || [],
+                  [field.options, inputValue, formField.value],
+                )
+
+                const addTag = (value: string) => {
+                  if (value.trim() && !formField.value?.includes(value.trim())) {
+                    const newValue = [...(formField.value || []), value.trim()]
+                    formField.onChange(newValue)
+                  }
+                  setInputValue('')
+                  setShowSuggestions(false)
+                }
+
+                const handleKeyDown = (e: React.KeyboardEvent) => {
+                  if (e.key === 'Enter' || e.key === ',') {
+                    e.preventDefault()
+                    addTag(inputValue)
+                  } else if (e.key === 'Backspace' && !inputValue && formField.value?.length) {
+                    const newValue = formField.value.slice(0, -1)
+                    formField.onChange(newValue)
+                  }
+                }
+
+                return (
+                  <FormItem>
+                    <FormLabel>{field.label}</FormLabel>
+                    <FormControl>
+                      <div className='space-y-2'>
+                        {/* Display selected tags */}
+                        <div className='flex flex-wrap gap-2'>
+                          {(formField.value || []).map((item: string, index: number) => (
+                            <Badge
+                              key={index}
+                              variant='secondary'
+                              className='flex items-center gap-1'
+                            >
+                              {item}
+                              <X
+                                className='h-3 w-3 cursor-pointer'
+                                onClick={() => {
+                                  const newValue =
+                                    formField.value?.filter((_: any, i: number) => i !== index) ||
+                                    []
+                                  formField.onChange(newValue)
+                                }}
+                              />
+                            </Badge>
+                          ))}
+                        </div>
+
+                        {/* Input field with suggestions */}
+                        <div className='relative'>
+                          <Input
+                            value={inputValue}
+                            onChange={(e) => {
+                              setInputValue(e.target.value)
+                              setShowSuggestions(e.target.value.length > 0)
+                            }}
+                            onKeyDown={handleKeyDown}
+                            onFocus={() => setShowSuggestions(inputValue.length > 0)}
+                            onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                            placeholder={`Type to add ${field.label.toLowerCase()}... (Press Enter or comma to add)`}
+                          />
+
+                          {/* Suggestions dropdown */}
+                          {showSuggestions && filteredOptions.length > 0 && (
+                            <div className='absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-40 overflow-y-auto'>
+                              {filteredOptions.map((option) => (
+                                <div
+                                  key={option.value}
+                                  className='px-3 py-2 hover:bg-gray-100 cursor-pointer text-sm'
+                                  onClick={() => addTag(option.value)}
+                                >
+                                  {option.label}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Helper text */}
+                        <p className='text-xs text-muted-foreground'>
+                          Type freely and press Enter or comma to add. Click suggestions to use
+                          them.
+                        </p>
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )
+              }}
+            />
+          )
+
+        case 'image':
+          return (
+            <FormField
+              key={field.name}
+              control={form.control}
+              name={fieldName}
+              render={({ field: formField }) => {
+                const [isPickerOpen, setIsPickerOpen] = React.useState(false)
+                const hasPreview = !!form.watch('hasPreview' as any)
+
+                return (
+                  <FormItem>
+                    <FormLabel>{field.label}</FormLabel>
+                    <FormControl>
+                      <div className='space-y-3'>
+                        {/* Current image preview */}
+                        {formField.value && !hasPreview && (
+                          <div className='relative inline-block'>
+                            <img
+                              src={formField.value}
+                              alt='Selected image'
+                              className='w-32 h-32 object-cover rounded-lg border'
+                            />
+                            <Button
+                              type='button'
+                              variant='destructive'
+                              size='sm'
+                              className='absolute -top-2 -right-2 h-6 w-6 rounded-full p-0'
+                              onClick={() => formField.onChange('')}
+                              disabled={hasPreview}
+                            >
+                              <X className='h-3 w-3' />
+                            </Button>
                           </div>
                         )}
+
+                        {/* Selection buttons */}
+                        <div className='flex gap-2'>
+                          <Button
+                            type='button'
+                            variant='outline'
+                            onClick={() => setIsPickerOpen(true)}
+                            className='cursor-pointer'
+                            disabled={hasPreview}
+                          >
+                            <Image className='w-4 h-4 mr-2' />
+                            {formField.value ? 'Change Image' : 'Select Image'}
+                          </Button>
+
+                          {/* Manual URL input as alternative */}
+                          <div className='flex-1'>
+                            <Input
+                              placeholder='Or paste image URL directly...'
+                              value={formField.value || ''}
+                              onChange={(e) => formField.onChange(e.target.value)}
+                              disabled={hasPreview}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Media Library Picker */}
+                        <MediaLibraryPicker
+                          isOpen={isPickerOpen}
+                          onClose={() => setIsPickerOpen(false)}
+                          onSelect={(url) => {
+                            formField.onChange(url)
+                            setIsPickerOpen(false)
+                          }}
+                          filter='image'
+                          title={`Select ${field.label}`}
+                          uploadOptions={
+                            formConfig.id === 'technology'
+                              ? {
+                                  assetType: 'technology',
+                                }
+                              : formConfig.id === 'project'
+                              ? {
+                                  assetType: 'project',
+                                }
+                              : formConfig.id === 'experience'
+                              ? {
+                                  assetType: 'experience',
+                                }
+                              : undefined
+                          }
+                          disabled={hasPreview}
+                        />
                       </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )
+              }}
+            />
+          )
 
-                      {/* Helper text */}
-                      <p className='text-xs text-muted-foreground'>
-                        Type freely and press Enter or comma to add. Click suggestions to use them.
-                      </p>
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )
-            }}
-          />
-        )
-
-      case 'image':
-        return (
-          <FormField
-            key={field.name}
-            control={form.control}
-            name={fieldName}
-            render={({ field: formField }) => {
-              const [isPickerOpen, setIsPickerOpen] = React.useState(false)
-
-              return (
+        case 'date':
+          return (
+            <FormField
+              key={field.name}
+              control={form.control}
+              name={fieldName}
+              render={({ field: formField }) => (
                 <FormItem>
                   <FormLabel>{field.label}</FormLabel>
                   <FormControl>
-                    <div className='space-y-3'>
-                      {/* Current image preview */}
-                      {formField.value && (
-                        <div className='relative inline-block'>
-                          <img
-                            src={formField.value}
-                            alt='Selected image'
-                            className='w-32 h-32 object-cover rounded-lg border'
-                          />
-                          <Button
-                            type='button'
-                            variant='destructive'
-                            size='sm'
-                            className='absolute -top-2 -right-2 h-6 w-6 rounded-full p-0'
-                            onClick={() => formField.onChange('')}
-                          >
-                            <X className='h-3 w-3' />
-                          </Button>
-                        </div>
-                      )}
-
-                      {/* Selection buttons */}
-                      <div className='flex gap-2'>
-                        <Button
-                          type='button'
-                          variant='outline'
-                          onClick={() => setIsPickerOpen(true)}
-                          className='cursor-pointer'
-                        >
-                          <Image className='w-4 h-4 mr-2' />
-                          {formField.value ? 'Change Image' : 'Select Image'}
-                        </Button>
-
-                        {/* Manual URL input as alternative */}
-                        <div className='flex-1'>
-                          <Input
-                            placeholder='Or paste image URL directly...'
-                            value={formField.value || ''}
-                            onChange={(e) => formField.onChange(e.target.value)}
-                          />
-                        </div>
-                      </div>
-
-                      {/* Media Library Picker */}
-                      <MediaLibraryPicker
-                        isOpen={isPickerOpen}
-                        onClose={() => setIsPickerOpen(false)}
-                        onSelect={(url) => formField.onChange(url)}
-                        filter='image'
-                        title={`Select ${field.label}`}
-                      />
-                    </div>
+                    <Input
+                      type='date'
+                      value={(formField.value as any) ?? ''}
+                      onChange={formField.onChange}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
-              )
-            }}
-          />
-        )
+              )}
+            />
+          )
 
-      case 'date':
-        return (
-          <FormField
-            key={field.name}
-            control={form.control}
-            name={fieldName}
-            render={({ field: formField }) => (
-              <FormItem>
-                <FormLabel>{field.label}</FormLabel>
-                <FormControl>
-                  <Input type='date' {...formField} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )
+        case 'checkbox':
+          return (
+            <FormField
+              key={field.name}
+              control={form.control}
+              name={fieldName}
+              render={({ field: formField }) => (
+                <FormItem className='flex flex-row items-start space-x-3 space-y-0'>
+                  <FormControl>
+                    <Checkbox checked={!!formField.value} onCheckedChange={formField.onChange} />
+                  </FormControl>
+                  <div className='space-y-1 leading-none'>
+                    <FormLabel>{field.label}</FormLabel>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )
 
-      case 'checkbox':
-        return (
-          <FormField
-            key={field.name}
-            control={form.control}
-            name={fieldName}
-            render={({ field: formField }) => (
-              <FormItem className='flex flex-row items-start space-x-3 space-y-0'>
-                <FormControl>
-                  <Checkbox checked={formField.value} onCheckedChange={formField.onChange} />
-                </FormControl>
-                <div className='space-y-1 leading-none'>
+        case 'file':
+          return (
+            <FormField
+              key={field.name}
+              control={form.control}
+              name={fieldName}
+              render={({ field: formField }) => (
+                <FormItem>
                   <FormLabel>{field.label}</FormLabel>
-                </div>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )
+                  <FormControl>
+                    <Input
+                      type='file'
+                      onChange={(e) => {
+                        const file = e.target.files?.[0]
+                        if (file) {
+                          formField.onChange(file.name)
+                        }
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )
 
-      case 'file':
-        return (
-          <FormField
-            key={field.name}
-            control={form.control}
-            name={fieldName}
-            render={({ field: formField }) => (
-              <FormItem>
-                <FormLabel>{field.label}</FormLabel>
-                <FormControl>
-                  <Input
-                    type='file'
-                    onChange={(e) => {
-                      const file = e.target.files?.[0]
-                      if (file) {
-                        formField.onChange(file.name)
-                      }
-                    }}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )
-
-      default:
-        return null
-    }
-  }
+        default:
+          return null
+      }
+    },
+    [form.control, form.watch, formConfig.id],
+  )
 
   return (
     <div className='space-y-6'>
@@ -528,7 +603,7 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({
               {isLoading ? 'Saving...' : formConfig.submitText}
             </Button>
             {onCancel && (
-              <Button type='button' variant='outline' onClick={onCancel}>
+              <Button type='button' variant='outline' onClick={handleCancel}>
                 {formConfig.cancelText}
               </Button>
             )}
@@ -536,5 +611,14 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({
         </form>
       </Form>
     </div>
+  )
+}
+
+// Wrapper component with AssetTrackingProvider
+export const DynamicForm: React.FC<DynamicFormProps> = (props) => {
+  return (
+    <AssetTrackingProvider>
+      <DynamicFormInner {...props} />
+    </AssetTrackingProvider>
   )
 }

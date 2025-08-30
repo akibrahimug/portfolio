@@ -44,6 +44,10 @@ const EnvSchema = z.object({
     .string()
     .transform((v) => (v ? parseInt(v, 10) : NaN))
     .optional(),
+  // TODO: Integrations (GitHub/Vercel) tokens can be added in the future
+  GITHUB_TOKEN: z.string().optional(),
+  VERCEL_TOKEN: z.string().optional(),
+  VERCEL_TEAM_ID: z.string().optional(),
 });
 
 const raw = EnvSchema.parse(process.env);
@@ -56,7 +60,7 @@ function parseCsv(value?: string): string[] | undefined {
     .filter(Boolean);
 }
 
-const wsOrigins = parseCsv(raw.WS_ORIGINS) ?? ['*'] ;
+const wsOrigins = parseCsv(raw.WS_ORIGINS) ?? ['*'];
 
 /**
  * Resolve the Mongo connection string with fallbacks:
@@ -127,6 +131,12 @@ const config = {
     rpm: Number.isNaN(raw.RATE_LIMIT_RPM as unknown as number)
       ? 120
       : (raw.RATE_LIMIT_RPM as unknown as number),
+  },
+  // TODO: Add integrations configuration when enabling GitHub/Vercel features
+  integrations: {
+    githubToken: raw.GITHUB_TOKEN,
+    vercelToken: raw.VERCEL_TOKEN,
+    vercelTeamId: raw.VERCEL_TEAM_ID,
   },
 };
 

@@ -4,7 +4,7 @@
  */
 import { Storage } from '@google-cloud/storage';
 
-const storage = new Storage();
+export const storage = new Storage();
 
 /**
  * Create a V4 signed PUT URL for a specific object path and content type.
@@ -69,4 +69,35 @@ export async function createV4ViewSignedUrl(params: {
   };
   const [url] = await storage.bucket(bucket).file(objectPath).getSignedUrl(options);
   return url;
+}
+
+export async function deleteObject(params: { bucket: string; objectPath: string }) {
+  const { bucket, objectPath } = params;
+  // Ignore "not found" so DB cleanup still succeeds if the file was already gone
+  await storage.bucket(bucket).file(objectPath).delete({ ignoreNotFound: true });
+}
+
+export function toBucketAndKey(input: string, fallbackBucket?: string) {
+  const clean = input.split('?')[0].split('#')[0];
+
+  if (/^https?:\/\//i.test(clean)) {
+    const u = new URL(clean);
+    if (u.hostname === 'storage.googleapis.com') {
+      const parts = u.pathname.replace(/^\/+/, '').split('/');
+      const bucket = parts.shift() || '';
+      return { bucket, key: parts.join('/') };
+    }
+    const m = u.hostname.match(/^(.+)\.storage\.googleapis\.com$/);
+    if (m) return { bucket: m[1], key: u.pathname.replace(/^\/+/, '') };
+    throw new Error('unsupported_gcs_url');
+  }
+
+  if (clean.startsWith('gs://')) {
+    const rest = clean.slice(5);
+    const [bucket, ...parts] = rest.split('/');
+    return { bucket, key: parts.join('/') };
+  }
+
+  if (!fallbackBucket) throw new Error('missing_bucket');
+  return { bucket: fallbackBucket, key: clean.replace(/^\/+/, '') };
 }

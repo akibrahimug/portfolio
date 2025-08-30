@@ -1,7 +1,10 @@
 import React from 'react'
 import { DashboardLayout, Breadcrumb } from '@/components/dashboard/DashboardLayout'
-import { DataTable } from '@/components/dashboard/DataTable'
+// TODO: Replace DataTable usage with ChatList (implemented below)
+import { ChatList } from '@/components/dashboard/ChatList'
 import { useMessages, useDeleteMessage } from '@/hooks/useHttpApi'
+import { formatDateTime, truncateText } from '@/lib/formatters'
+import { useCrudOperations } from '@/hooks/useCrudOperations'
 
 const MessagesPage: React.FC = () => {
   const { data: messagesData, loading, error, refetch } = useMessages()
@@ -10,48 +13,13 @@ const MessagesPage: React.FC = () => {
 
   const messages = messagesData || []
 
-  const handleDelete = async (id: string) => {
-    try {
-      const result = await deleteMessage.mutate(id)
-      if (result) {
-        refetch()
-      }
-    } catch (error) {
-      console.error('Error deleting message:', error)
-      throw error
-    }
-  }
+  const { handleDelete } = useCrudOperations({
+    entityType: 'message',
+    deleteMutation: deleteMessage.mutate,
+    onSuccess: refetch,
+  })
 
-  const columns = [
-    {
-      key: 'name',
-      label: 'Name',
-      render: (value: string) => <div className='font-medium'>{value}</div>,
-    },
-    {
-      key: 'email',
-      label: 'Email',
-      render: (value: string) => <div className='text-sm text-gray-600'>{value}</div>,
-    },
-    {
-      key: 'message',
-      label: 'Message',
-      render: (value: string) => (
-        <div className='max-w-[250px] truncate' title={value}>
-          {value.length > 50 ? `${value.substring(0, 50)}...` : value}
-        </div>
-      ),
-    },
-    {
-      key: 'createdAt',
-      label: 'Received',
-      render: (value: string) => (
-        <div className='text-sm'>
-          {new Date(value).toLocaleDateString()} {new Date(value).toLocaleTimeString()}
-        </div>
-      ),
-    },
-  ]
+  // Note: ChatList replaces the previous table view with a conversational list
 
   return (
     <DashboardLayout currentSection='messages'>
@@ -63,22 +31,22 @@ const MessagesPage: React.FC = () => {
         </div>
       )}
 
-      <DataTable
-        title='Contact Messages'
-        description='Messages received through your portfolio contact form'
-        data={messages}
-        columns={columns}
-        entityType='message'
+      <div className='mb-2'>
+        <h1 className='text-xl font-semibold'>Contact Messages</h1>
+        <p className='text-sm text-muted-foreground'>Messages received through your contact form</p>
+      </div>
+
+      <ChatList
+        items={messages as any}
+        isLoading={loading}
         onDelete={handleDelete}
         onView={(id) => {
-          const message = messages.find((m) => m._id === id)
+          const message = (messages as any).find((m: any) => m._id === id)
           if (message) {
-            // For now, just log. In a real app, this could open a detailed view
-            console.log('Viewing message:', message)
+            // View message functionality would go here
           }
         }}
-        isLoading={loading}
-        searchable={true}
+        renderMeta={(m) => <span>Received {formatDateTime(m.createdAt)}</span>}
       />
     </DashboardLayout>
   )

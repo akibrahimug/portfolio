@@ -201,6 +201,10 @@ describe('HttpClient', () => {
       const experienceData = {
         title: 'Developer',
         company: 'Tech Corp',
+        employmentType: 'Full-time' as const,
+        location: 'Remote',
+        locationType: 'Remote' as const,
+        description: 'Working as a developer',
         startDate: '2023-01-01',
         current: true,
         skills: ['JavaScript', 'React'],
@@ -244,7 +248,7 @@ describe('HttpClient', () => {
         proficiency: 8,
       }
 
-      const result = await httpClient.createTechnologies(technologyData, 'auth-token')
+      const result = await httpClient.createTechnology(technologyData, 'auth-token')
 
       expect(result.success).toBe(true)
       expect(result.data).toEqual({ technology: mockTechnology })

@@ -2,7 +2,7 @@
  * Zod Schemas for all entities and WebSocket event payloads (v1).
  *
  * Provides:
- * - Entity schemas: Project, Asset
+ * - Entity schemas: Project, Asset, Technology
  * - Request/Response schemas for each `event`
  * - Version enforcement via `{ version: 'v1' }` in all request payloads
  *
@@ -19,15 +19,26 @@ export function buildSchemas() {
   // Domain entity: Project
   const Project = z.object({
     _id: z.any().optional(),
-    title: z.string(),
     slug: z.string(),
-    kind: z.enum(['learning', 'frontend', 'fullstack', 'ai_learning']),
+    title: z.string(),
+    // Keep legacy `kind` for compatibility while also supporting `category`
+    kind: z.string().optional(),
     description: z.string().optional(),
     techStack: z.array(z.string()).default([]),
     tags: z.array(z.string()).default([]),
+    technologyIds: z.array(z.string()).default([]),
     heroImageUrl: z.string().nullable().optional(),
+    liveUrl: z.string().url().or(z.literal('')).optional(),
+    githubUrl: z.string().url().or(z.literal('')).optional(),
+    repoUrl: z.string().url().or(z.literal('')).optional(),
+    gradient: z.string().optional(),
+    hasPreview: z.boolean().optional(),
+    category: z.string().optional(),
+    duration: z.string().optional(),
+    teamSize: z.string().optional(),
+    status: z.enum(['draft', 'published', 'archived']).optional(),
+    importance: z.enum(['high', 'medium', 'low']).optional(),
     visibility: z.enum(['public', 'private']).default('public'),
-    status: z.enum(['draft', 'published', 'archived']).default('draft'),
     ownerId: z.string(),
     createdAt: z.string().optional(),
     updatedAt: z.string().optional(),
@@ -58,7 +69,7 @@ export function buildSchemas() {
     filter: z
       .object({
         kind: Project.shape.kind.optional(),
-        tags: z.array(z.string()).optional(),
+        category: Project.shape.category.optional(),
         search: z.string().optional(),
       })
       .optional(),
@@ -68,23 +79,30 @@ export function buildSchemas() {
   const ProjectsListRes = z.object({ items: z.array(Project), nextCursor: z.string().optional() });
 
   // projects:get request/response
-  const ProjectsGetReq = versionSchema.extend({
-    id: z.string().optional(),
-    slug: z.string().optional(),
-  });
+  const ProjectsGetReq = versionSchema.extend({ id: z.string().optional() });
   const ProjectsGetRes = z.object({ project: Project.nullable() });
 
   // projects:create – input DTO and wrappers
   const ProjectCreate = Project.pick({
-    title: true,
     slug: true,
+    title: true,
     kind: true,
     description: true,
     techStack: true,
     tags: true,
+    technologyIds: true,
     heroImageUrl: true,
-    visibility: true,
+    liveUrl: true,
+    githubUrl: true,
+    repoUrl: true,
+    gradient: true,
+    hasPreview: true,
+    category: true,
+    duration: true,
+    teamSize: true,
     status: true,
+    importance: true,
+    visibility: true,
   }).extend({ ownerId: z.string() });
   const ProjectsCreateReq = versionSchema.extend({ data: ProjectCreate });
   const ProjectsCreateRes = z.object({ project: Project });
@@ -104,6 +122,20 @@ export function buildSchemas() {
     filename: z.string(),
     contentType: z.string(),
     size: z.number(),
+    folder: z.string().optional(),
+    assetType: z
+      .enum([
+        'project',
+        'resume',
+        'technology',
+        'media',
+        'avatar',
+        'badge',
+        'certification',
+        'experience',
+        'other',
+      ])
+      .optional(),
   });
   const AssetsRequestUploadRes = z.object({
     uploadUrl: z.string(),
@@ -119,8 +151,46 @@ export function buildSchemas() {
     contentType: z.string(),
     size: z.number(),
     ownerId: z.string(),
+    assetType: z
+      .enum([
+        'project',
+        'resume',
+        'technology',
+        'media',
+        'avatar',
+        'badge',
+        'certification',
+        'experience',
+        'other',
+      ])
+      .optional(),
   });
   const AssetsConfirmRes = z.object({ asset: Asset });
+
+  // assets:browse – query string validation
+  const AssetsBrowseQuery = z.object({
+    prefix: z.string().optional(),
+    limit: z
+      .preprocess(
+        (v) => (typeof v === 'string' ? Number(v) : v),
+        z.number().int().positive().max(1000),
+      )
+      .optional(),
+    type: z.enum(['image']).optional(),
+  });
+
+  // assets:folders – query string validation
+  const AssetsFoldersQuery = z.object({
+    prefix: z.string().optional(),
+  });
+
+  // assets:edit
+  const AssetsEditReq = versionSchema.extend({ id: z.string(), data: Asset.partial() });
+  const AssetsEditRes = z.object({ asset: Asset });
+
+  // assets:delete
+  const AssetsDeleteReq = versionSchema.extend({ id: z.string() });
+  const AssetsDeleteRes = z.object({ ok: z.literal(true) });
 
   // stats:get
   const StatsGetReq = versionSchema;
@@ -138,6 +208,26 @@ export function buildSchemas() {
   // system:ping
   const SystemPingReq = versionSchema.extend({ ts: z.number() });
   const SystemPingRes = z.object({ pong: z.literal(true), ts: z.number(), latencyMs: z.number() });
+
+  // technologies:list
+  const TechnologiesListReq = versionSchema;
+  const TechnologiesListRes = z.object({ technologies: z.array(z.any()) });
+
+  // technologies:get
+  const TechnologiesGetReq = versionSchema.extend({ id: z.string() });
+  const TechnologiesGetRes = z.object({ technology: z.any() });
+
+  // technologies:create
+  const TechnologiesCreateReq = versionSchema.extend({ data: z.any() });
+  const TechnologiesCreateRes = z.object({ technology: z.any() });
+
+  // technologies:update
+  const TechnologiesUpdateReq = versionSchema.extend({ id: z.string(), data: z.any().optional() });
+  const TechnologiesUpdateRes = z.object({ technology: z.any() });
+
+  // technologies:delete
+  const TechnologiesDeleteReq = versionSchema.extend({ id: z.string() });
+  const TechnologiesDeleteRes = z.object({ ok: z.literal(true) });
 
   return {
     Project,
@@ -158,11 +248,27 @@ export function buildSchemas() {
     AssetsRequestUploadRes,
     AssetsConfirmReq,
     AssetsConfirmRes,
+    AssetsEditReq,
+    AssetsEditRes,
+    AssetsDeleteReq,
+    AssetsDeleteRes,
+    AssetsBrowseQuery,
+    AssetsFoldersQuery,
     StatsGetReq,
     StatsGetRes,
     StatsSubscribeReq,
     SystemPingReq,
     SystemPingRes,
+    TechnologiesListReq,
+    TechnologiesListRes,
+    TechnologiesGetReq,
+    TechnologiesGetRes,
+    TechnologiesCreateReq,
+    TechnologiesCreateRes,
+    TechnologiesUpdateReq,
+    TechnologiesUpdateRes,
+    TechnologiesDeleteReq,
+    TechnologiesDeleteRes,
   };
 }
 

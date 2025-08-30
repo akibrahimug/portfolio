@@ -13,11 +13,16 @@ export async function authMiddleware(req: Request, res: Response, next: NextFunc
   try {
     const header = req.headers.authorization || '';
     const token = header.startsWith('Bearer ') ? header.slice('Bearer '.length) : undefined;
-    if (!token) return res.status(401).json({ error: 'missing_token' });
+    if (!token)
+      return res
+        .status(401)
+        .json({ error: '[[AUTH_ERROR_MIDDLEWARE]]-[HAPPENING ON SERVER]: missing_token' + res });
     const claims = await verifyTokenOrThrow(token);
     (req as unknown as { userId?: string }).userId = claims.sub as string | undefined;
     return next();
   } catch (err) {
-    return res.status(403).json({ error: 'forbidden' });
+    return res
+      .status(403)
+      .json({ error: '[[AUTH_ERROR_MIDDLEWARE]]-[HAPPENING ON SERVER]: forbidden' + err });
   }
 }

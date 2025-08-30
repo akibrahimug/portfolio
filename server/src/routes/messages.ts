@@ -18,7 +18,7 @@ router.get('/', authMiddleware, async (req: Request, res: Response) => {
   try {
     return res.json(messages);
   } catch (err) {
-    return res.status(500).json({ error: 'internal_error' });
+    return res.status(500).json({ error: '[[MESSAGES_LIST]]-[SERVER]: internal_error' });
   }
 });
 
@@ -28,7 +28,9 @@ router.post('/', async (req: Request, res: Response) => {
     const { name, email, message } = req.body;
 
     if (!name || !email || !message) {
-      return res.status(400).json({ error: 'missing_required_fields' });
+      return res
+        .status(400)
+        .json({ error: '[[MESSAGES_CREATE]]-[SERVER]: missing_required_fields' });
     }
 
     const newMessage = {
@@ -42,7 +44,7 @@ router.post('/', async (req: Request, res: Response) => {
     messages.push(newMessage);
     return res.status(201).json(newMessage);
   } catch (err) {
-    return res.status(400).json({ error: 'invalid_request' });
+    return res.status(400).json({ error: '[[MESSAGES_CREATE]]-[SERVER]: invalid_request' });
   }
 });
 
@@ -53,13 +55,13 @@ router.delete('/:id', authMiddleware, async (req: Request, res: Response) => {
     const index = messages.findIndex((msg) => msg._id === id);
 
     if (index === -1) {
-      return res.status(404).json({ error: 'message_not_found' });
+      return res.status(404).json({ error: '[[MESSAGES_DELETE]]-[SERVER]: message_not_found' });
     }
 
     messages.splice(index, 1);
     return res.json({ ok: true });
   } catch (err) {
-    return res.status(500).json({ error: 'internal_error' });
+    return res.status(500).json({ error: '[[MESSAGES_DELETE]]-[SERVER]: internal_error' + err });
   }
 });
 

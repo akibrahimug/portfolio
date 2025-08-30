@@ -65,40 +65,42 @@ async function main() {
   const app = express();
   app.disable('x-powered-by');
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      // allow same-origin requests (no Origin header) and any localhost:* in dev
-      if (!origin) return callback(null, true)
-      if (/^http:\/\/localhost:\d+$/.test(origin)) return callback(null, true)
+  app.use(
+    cors({
+      origin: (origin, callback) => {
+        // allow same-origin requests (no Origin header) and any localhost:* in dev
+        if (!origin) return callback(null, true);
+        if (/^http:\/\/localhost:\d+$/.test(origin)) return callback(null, true);
 
-      // config.wsOrigins is a string[] (e.g. ['http://localhost:3000', '*'])
-      if (Array.isArray(config.wsOrigins)) {
-        if (config.wsOrigins.includes('*') || config.wsOrigins.includes(origin)) {
-          return callback(null, true)
+        // config.wsOrigins is a string[] (e.g. ['http://localhost:3000', '*'])
+        if (Array.isArray(config.wsOrigins)) {
+          if (config.wsOrigins.includes('*') || config.wsOrigins.includes(origin)) {
+            return callback(null, true);
+          }
         }
-      }
 
-      return callback(new Error('Not allowed by CORS'))
-    },
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: false,
-    preflightContinue: false,
-    optionsSuccessStatus: 204,
-  }),
-)
+        return callback(new Error('Not allowed by CORS'));
+      },
+      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization'],
+      credentials: false,
+      preflightContinue: false,
+      optionsSuccessStatus: 204,
+    }),
+  );
 
-// explicit OPTIONS handler (sometimes needed in dev)
-app.options('*', cors({
-  origin: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: false,
-  preflightContinue: false,
-  optionsSuccessStatus: 204,
-}))
-
+  // explicit OPTIONS handler (sometimes needed in dev)
+  app.options(
+    '*',
+    cors({
+      origin: true,
+      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization'],
+      credentials: false,
+      preflightContinue: false,
+      optionsSuccessStatus: 204,
+    }),
+  );
 
   // Parse JSON bodies for HTTP API endpoints
   app.use(express.json());
@@ -128,7 +130,7 @@ app.options('*', cors({
     } as const;
     log.info({ route: 'healthz', ip: req.ip }, 'healthz');
     res.status(200).json(payload);
-  }); 
+  });
 
   app.get(`${config.apiBase}/readyz`, (req, res) => {
     // Consider ready when Mongoose is connected and the process is responsive
@@ -166,6 +168,9 @@ app.options('*', cors({
   // Ensure DB indexes are created for performance/uniqueness
   await new (await import('./repos/mongo/projectsRepo')).MongoProjectsRepo().ensureIndexes();
   await new (await import('./repos/mongo/assetsRepo')).MongoAssetsRepo().ensureIndexes();
+  await new (
+    await import('./repos/mongo/technologiesRepo')
+  ).MongoTechnologiesRepo().ensureIndexes();
 
   // Start optional OTEL metrics if configured
   // startMetrics(); // Temporarily disabled due to Node version constraint
