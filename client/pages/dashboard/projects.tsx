@@ -10,6 +10,7 @@ import {
   useUpdateProject,
   useTechnologies,
 } from '@/hooks/useHttpApi'
+import { usePortfolioProjects } from '@/hooks/usePortfolio'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -35,9 +36,23 @@ const ProjectsPage: React.FC = () => {
   const editDialog = useDialogState<any>()
   const { getAuthToken } = useClerkAuth()
   const { data: technologiesData } = useTechnologies()
+
+  // Portfolio projects hook for triggering refetch for the main site
+  const { refetch: refetchPortfolioProjects } = usePortfolioProjects()
+
   // TODO: In the future, load GitHub repos and Vercel projects to populate dropdowns for links
 
   const projects = projectsData?.items || []
+  
+  // Debug logging for projects data
+  console.log('📊 Current projects data:', {
+    total: projects.length,
+    loading,
+    error,
+    firstProject: projects[0]?.title,
+    lastProject: projects[projects.length - 1]?.title,
+    projectIds: projects.map(p => p._id || p.id)
+  })
 
   const addDialog = useDialogState()
 
@@ -63,9 +78,75 @@ const ProjectsPage: React.FC = () => {
       payload[targetField] = uploads[field]
       delete payload[field]
     }
-    await createProject.mutate(payload as any)
+
+    // Generate slug from title if not provided
+    if (!payload.slug && payload.title) {
+      payload.slug = payload.title
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+        .replace(/\s+/g, '-') // Replace spaces with hyphens
+        .replace(/-+/g, '-') // Replace multiple hyphens with single
+        .trim()
+    }
+
+    // previewType is now supported in server schema
+
+    // Ensure proper default values for URLs
+    if (!payload.liveUrl) payload.liveUrl = ''
+    if (!payload.repoUrl) payload.repoUrl = ''
+    if (!payload.githubUrl) payload.githubUrl = ''
+
+    // Set default values for portfolio visibility
+    if (!payload.status) payload.status = 'published'
+    if (!payload.visibility) payload.visibility = 'public'
+    if (!payload.previewType) payload.previewType = 'platform'
+
+    // Log the payload being sent to server
+    console.log('📤 Sending project data to server:', {
+      payload,
+      requiredFields: {
+        slug: payload.slug,
+        title: payload.title,
+        ownerId: 'will be added by server',
+      },
+      payloadKeys: Object.keys(payload),
+    })
+
+    // Create the project
+    console.log('🔄 Creating project...')
+    const createdProject = await createProject.mutate(payload as any)
+    console.log('✅ Project created:', createdProject)
     addDialog.close()
+
+    // Immediately fetch and display the new project
+    console.log('🔄 Refetching projects data...')
     await refetch()
+    console.log('✅ Projects data refetched')
+
+    // Also refetch portfolio projects for the main site and log the new project
+    console.log('🔄 Refetching portfolio projects...')
+    await refetchPortfolioProjects()
+    console.log('✅ Portfolio projects refetched')
+
+    // Log the new project data for the projects section
+    const projectData = createdProject?.project || createdProject
+    console.log('🚀 New project added to portfolio:', {
+      id: projectData?._id,
+      title: projectData?.title || payload.title,
+      slug: projectData?.slug || payload.slug,
+      category: projectData?.category || payload.category,
+      techStack: projectData?.techStack || payload.techStack,
+      description: projectData?.description || payload.description,
+      liveUrl: projectData?.liveUrl || payload.liveUrl,
+      githubUrl: projectData?.githubUrl || payload.githubUrl,
+      repoUrl: projectData?.repoUrl || payload.repoUrl,
+      heroImageUrl: projectData?.heroImageUrl || payload.heroImageUrl,
+      visibility: projectData?.visibility || payload.visibility,
+      status: projectData?.status || payload.status,
+      ownerId: projectData?.ownerId,
+      createdAt: projectData?.createdAt || new Date().toISOString(),
+      rawResponse: createdProject, // For debugging
+    })
   }
   async function handleEditSubmit(formData: any) {
     const id = (editDialog.data as any)?._id
@@ -75,8 +156,8 @@ const ProjectsPage: React.FC = () => {
     const files = extractFiles(formData)
     const uploads: Record<string, string> = {}
     for (const [field, file] of files) {
-      const up = await httpClient.uploadAsset(file, { assetType: 'technology' }, token)
-      if (!up.success) throw new Error(up.error || 'Failed to upload icon')
+      const up = await httpClient.uploadAsset(file, { assetType: 'project' }, token)
+      if (!up.success) throw new Error(up.error || 'Failed to upload image')
       uploads[field] = up.data?.publicUrl || ''
     }
     const updates: any = { ...formData }
@@ -85,14 +166,45 @@ const ProjectsPage: React.FC = () => {
       updates[targetField] = uploads[field]
       delete updates[field]
     }
-    await updateProject.mutate({ id, updates })
+
+    // Update the project
+    console.log('🔄 Updating project...', { id, updates })
+    const updatedProject = await updateProject.mutate({ id, updates })
+    console.log('✅ Project updated:', updatedProject)
     editDialog.close()
+
+    // Immediately refresh dashboard
+    console.log('🔄 Refetching projects data after edit...')
     await refetch()
+    console.log('✅ Projects data refetched after edit')
+
+    // Also refetch portfolio projects for the main site and log the update
+    console.log('🔄 Refetching portfolio projects after edit...')
+    await refetchPortfolioProjects()
+    console.log('✅ Portfolio projects refetched after edit')
+
+    // Log the updated project data
+    console.log('✏️ Project updated in portfolio:', {
+      id,
+      updates,
+      updatedAt: new Date().toISOString(),
+    })
   }
 
   async function handleDelete(id: string) {
     await deleteProject.mutate(id)
+
+    // Immediately refresh dashboard
     await refetch()
+
+    // Also refetch portfolio projects for the main site and log the deletion
+    await refetchPortfolioProjects()
+
+    // Log the deleted project
+    console.log('🗑️ Project deleted from portfolio:', {
+      id,
+      deletedAt: new Date().toISOString(),
+    })
   }
 
   const buildCard = (item: any) => ({

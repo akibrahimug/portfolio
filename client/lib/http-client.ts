@@ -30,7 +30,16 @@ import type {
 } from '@/types/api'
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
-type AssetUploadKind = 'project' | 'resume' | 'technology' | 'media' | 'avatar' | 'badge' | 'certification' | 'experience' | 'other'
+type AssetUploadKind =
+  | 'project'
+  | 'resume'
+  | 'technology'
+  | 'media'
+  | 'avatar'
+  | 'badge'
+  | 'certification'
+  | 'experience'
+  | 'other'
 
 interface RequestOptions {
   method?: HttpMethod
@@ -234,7 +243,13 @@ class HttpClient {
     token: string,
     onProgress?: (percent: number) => void,
   ): Promise<
-    ApiResponse<{ asset: Asset; publicUrl: string; viewUrl: string; objectPath: string; assetId?: string }>
+    ApiResponse<{
+      asset: Asset
+      publicUrl: string
+      viewUrl: string
+      objectPath: string
+      assetId?: string
+    }>
   > {
     try {
       const contentType = file.type || inferMimeFromName(file.name)
@@ -242,7 +257,7 @@ class HttpClient {
         { projectId: opts.projectId, assetType: opts.assetType },
         'misc',
       )
-      
+
       // The server will organize by assetType automatically
       // Only use folder for sub-organization within the assetType
       const effectiveFolder = opts.folder // Let the server handle assetType organization
@@ -313,15 +328,17 @@ class HttpClient {
         assetType: opts.assetType, // Include assetType in confirm request
       })
 
-      const confirmed = await this.request<{ asset: Asset; publicUrl: string; viewUrl: string; assetId?: string }>(
-        '/assets/confirm',
-        {
-          method: 'POST',
-          body: confirmBody,
-          requiresAuth: true,
-          token,
-        },
-      )
+      const confirmed = await this.request<{
+        asset: Asset
+        publicUrl: string
+        viewUrl: string
+        assetId?: string
+      }>('/assets/confirm', {
+        method: 'POST',
+        body: confirmBody,
+        requiresAuth: true,
+        token,
+      })
       if (!confirmed.success) return confirmed as any
 
       const confirmedPayload = (confirmed.data as any) || {}
@@ -445,7 +462,7 @@ class HttpClient {
   ): Promise<ApiResponse<{ project: Project }>> {
     return this.request('/projects', {
       method: 'POST',
-      body: project,
+      body: { version: 'v1', data: project },
       requiresAuth: true,
       token,
     })
@@ -458,7 +475,7 @@ class HttpClient {
   ): Promise<ApiResponse<{ project: Project }>> {
     return this.request(`/projects/${id}`, {
       method: 'PATCH',
-      body: updates,
+      body: { version: 'v1', id, data: updates },
       requiresAuth: true,
       token,
     })
@@ -467,6 +484,7 @@ class HttpClient {
   async deleteProject(id: string, token: string): Promise<ApiResponse<{ ok: boolean }>> {
     return this.request(`/projects/${id}`, {
       method: 'DELETE',
+      body: { version: 'v1', id },
       requiresAuth: true,
       token,
     })
@@ -480,15 +498,17 @@ class HttpClient {
     token?: string,
   ): Promise<
     ApiResponse<{
-      files: Array<{
-        name: string
-        size: number
-        contentType: string
-        timeCreated: string
-        updated: string
-        publicUrl: string
-        viewUrl: string
-      }>
+      data: {
+        files: Array<{
+          name: string
+          size: number
+          contentType: string
+          timeCreated: string
+          updated: string
+          publicUrl: string
+          viewUrl: string
+        }>
+      }
       total: number
       hasMore: boolean
     }>

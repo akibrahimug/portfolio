@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { DashboardLayout, Breadcrumb } from '@/components/dashboard/DashboardLayout'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -34,6 +34,7 @@ import {
   Calendar,
   Buildings,
   LinkedinLogo,
+  X,
 } from '@phosphor-icons/react'
 
 interface ExperienceFormData {
@@ -53,9 +54,77 @@ interface ExperienceFormData {
   startDate: string
   endDate: string
   current: boolean
-  skills: string
+  skills: string[]
   companyLogoUrl: string
   linkedinUrl: string
+}
+
+const SkillsInput: React.FC<{
+  skills: string[]
+  onChange: (skills: string[]) => void
+}> = ({ skills, onChange }) => {
+  const [inputValue, setInputValue] = useState('')
+
+  const addSkill = (skill: string) => {
+    const trimmedSkill = skill.trim()
+    if (trimmedSkill && !skills.includes(trimmedSkill)) {
+      onChange([...skills, trimmedSkill])
+    }
+    setInputValue('')
+  }
+
+  const removeSkill = (indexToRemove: number) => {
+    onChange(skills.filter((_, index) => index !== indexToRemove))
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault()
+      addSkill(inputValue)
+    } else if (e.key === 'Backspace' && !inputValue && skills.length > 0) {
+      removeSkill(skills.length - 1)
+    }
+  }
+
+  const handleInputBlur = () => {
+    if (inputValue.trim()) {
+      addSkill(inputValue)
+    }
+  }
+
+  return (
+    <div className='space-y-2'>
+      {/* Display selected skills */}
+      <div className='flex flex-wrap gap-2'>
+        {skills.map((skill, index) => (
+          <Badge
+            key={index}
+            variant='secondary'
+            className='flex items-center gap-1 px-2 py-1'
+          >
+            {skill}
+            <X
+              className='h-3 w-3 cursor-pointer hover:text-red-500'
+              onClick={() => removeSkill(index)}
+            />
+          </Badge>
+        ))}
+      </div>
+      
+      {/* Input field */}
+      <Input
+        value={inputValue}
+        onChange={(e) => setInputValue(e.target.value)}
+        onKeyDown={handleKeyDown}
+        onBlur={handleInputBlur}
+        placeholder='Type a skill and press Enter or comma to add it...'
+      />
+      
+      <p className='text-xs text-gray-500 mt-1'>
+        Press Enter, comma, or click away to add a skill. Backspace to remove the last skill.
+      </p>
+    </div>
+  )
 }
 
 const ExperienceModal: React.FC<{
@@ -63,30 +132,72 @@ const ExperienceModal: React.FC<{
   onClose: () => void
   experience?: Experience
   onSubmit: (data: ExperienceFormData) => void
-}> = ({ isOpen, onClose, experience, onSubmit }) => {
+  isLoading?: boolean
+}> = ({ isOpen, onClose, experience, onSubmit, isLoading = false }) => {
   const [formData, setFormData] = useState<ExperienceFormData>({
-    title: experience?.title || '',
-    company: experience?.company || '',
-    employmentType: experience?.employmentType || 'Full-time',
-    location: experience?.location || '',
-    locationType: experience?.locationType || 'On-site',
-    description: experience?.description || '',
-    startDate: experience?.startDate || '',
-    endDate: experience?.endDate || '',
-    current: experience?.current || false,
-    skills: experience?.skills?.join(', ') || '',
-    companyLogoUrl: experience?.companyLogoUrl || '',
-    linkedinUrl: experience?.linkedinUrl || '',
+    title: '',
+    company: '',
+    employmentType: 'Full-time',
+    location: '',
+    locationType: 'On-site',
+    description: '',
+    startDate: '',
+    endDate: '',
+    current: false,
+    skills: [],
+    companyLogoUrl: '',
+    linkedinUrl: '',
   })
   const [isImagePickerOpen, setIsImagePickerOpen] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Update form data when experience prop changes
+  useEffect(() => {
+    if (experience) {
+      setFormData({
+        title: experience.title || '',
+        company: experience.company || '',
+        employmentType: experience.employmentType || 'Full-time',
+        location: experience.location || '',
+        locationType: experience.locationType || 'On-site',
+        description: experience.description || '',
+        startDate: experience.startDate || '',
+        endDate: experience.endDate || '',
+        current: experience.current || false,
+        skills: experience.skills || [],
+        companyLogoUrl: experience.companyLogoUrl || '',
+        linkedinUrl: experience.linkedinUrl || '',
+      })
+    } else {
+      // Reset form for new experience
+      setFormData({
+        title: '',
+        company: '',
+        employmentType: 'Full-time',
+        location: '',
+        locationType: 'On-site',
+        description: '',
+        startDate: '',
+        endDate: '',
+        current: false,
+        skills: [],
+        companyLogoUrl: '',
+        linkedinUrl: '',
+      })
+    }
+  }, [experience])
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    onSubmit(formData)
-    onClose()
+    try {
+      await onSubmit(formData)
+      // Don't close here - parent component handles closing after refetch
+    } catch (error) {
+      console.error('Form submission failed:', error)
+      // Keep modal open on error
+    }
   }
 
-  const handleInputChange = (field: keyof ExperienceFormData, value: string | boolean) => {
+  const handleInputChange = (field: keyof ExperienceFormData, value: string | boolean | string[]) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
@@ -229,11 +340,9 @@ const ExperienceModal: React.FC<{
             {/* Skills */}
             <div>
               <Label htmlFor='skills'>Skills</Label>
-              <Input
-                id='skills'
-                value={formData.skills}
-                onChange={(e) => handleInputChange('skills', e.target.value)}
-                placeholder='Ex: React, TypeScript, Node.js (comma separated)'
+              <SkillsInput
+                skills={formData.skills}
+                onChange={(skills) => handleInputChange('skills', skills)}
               />
             </div>
 
@@ -287,8 +396,12 @@ const ExperienceModal: React.FC<{
             <Button type='button' variant='outline' onClick={onClose}>
               Cancel
             </Button>
-            <Button type='submit' className='bg-black cursor-pointer'>
-              {experience ? 'Update' : 'Add'} Experience
+            <Button 
+              type='submit' 
+              className='bg-black cursor-pointer'
+              disabled={isLoading}
+            >
+              {isLoading ? 'Saving...' : (experience ? 'Update' : 'Add')} Experience
             </Button>
           </div>
         </form>
@@ -301,7 +414,8 @@ const ExperienceCard: React.FC<{
   experience: Experience
   onEdit: () => void
   onDelete: () => void
-}> = ({ experience, onEdit, onDelete }) => {
+  isDeleting?: boolean
+}> = ({ experience, onEdit, onDelete, isDeleting = false }) => {
   return (
     <Card className='hover:shadow-lg transition-shadow duration-200'>
       <CardContent className='p-6'>
@@ -388,6 +502,7 @@ const ExperienceCard: React.FC<{
                   size='sm'
                   onClick={onDelete}
                   className='h-8 w-8 p-0 text-red-600 hover:text-red-700'
+                  disabled={isDeleting}
                 >
                   <Trash className='h-4 w-4' />
                 </Button>
@@ -436,28 +551,48 @@ export default function ExperiencesPage() {
   const [editingExperience, setEditingExperience] = useState<Experience | undefined>()
 
   const experiences = experiencesData || []
+  
+  // Debug logging for experiences data
+  console.log('📊 Current experiences data:', {
+    total: experiences.length,
+    loading,
+    error,
+    firstExperience: experiences[0]?.title,
+    lastExperience: experiences[experiences.length - 1]?.title,
+    experienceIds: experiences.map(e => e._id)
+  })
 
   const handleSubmit = async (formData: ExperienceFormData) => {
     try {
       const experienceData = {
         ...formData,
-        skills: formData.skills
-          .split(',')
-          .map((skill) => skill.trim())
-          .filter(Boolean),
+        skills: formData.skills.filter(Boolean),
         current: formData.current,
         endDate: formData.current ? undefined : formData.endDate,
       }
 
+      console.log('🔄 Saving experience...', { editingExperience: !!editingExperience, experienceData })
+
       if (editingExperience) {
-        await updateExperience.mutate({ id: editingExperience._id, updates: experienceData })
+        console.log('🔄 Updating experience...')
+        const result = await updateExperience.mutate({ id: editingExperience._id, updates: experienceData })
+        console.log('✅ Experience updated:', result)
       } else {
-        await createExperience.mutate(experienceData)
+        console.log('🔄 Creating experience...')
+        const result = await createExperience.mutate(experienceData)
+        console.log('✅ Experience created:', result)
       }
-      refetch()
+      
+      console.log('🔄 Refetching experiences...')
+      await refetch()
+      console.log('✅ Experiences refetched')
+      
+      // Close modal after successful save and refetch
+      setIsModalOpen(false)
       setEditingExperience(undefined)
     } catch (err) {
-      console.error('Error saving experience:', err)
+      console.error('❌ Error saving experience:', err)
+      throw err // Re-throw to keep modal open on error
     }
   }
 
@@ -467,11 +602,16 @@ export default function ExperiencesPage() {
   }
 
   const handleDelete = async (experienceId: string) => {
+    if (!window.confirm('Are you sure you want to delete this experience?')) {
+      return
+    }
+    
     try {
       await deleteExperience.mutate(experienceId)
-      refetch()
+      await refetch()
     } catch (err) {
       console.error('Error deleting experience:', err)
+      alert('Failed to delete experience. Please try again.')
     }
   }
 
@@ -545,6 +685,7 @@ export default function ExperiencesPage() {
               experience={experience}
               onEdit={() => handleEdit(experience)}
               onDelete={() => handleDelete(experience._id)}
+              isDeleting={deleteExperience.loading}
             />
           ))
         )}
@@ -559,6 +700,7 @@ export default function ExperiencesPage() {
         }}
         experience={editingExperience}
         onSubmit={handleSubmit}
+        isLoading={updateExperience.loading || createExperience.loading}
       />
     </DashboardLayout>
   )

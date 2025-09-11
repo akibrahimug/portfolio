@@ -1,8 +1,150 @@
 import type { ApiResponse } from '@/types/api'
-import type { PortfolioCategoryMap } from '@/types/portfolio'
+import type { PortfolioCategoryMap, PortfolioProject } from '@/types/portfolio'
+import { httpClient } from './http-client'
 
 export async function fetchPortfolioData(): Promise<ApiResponse<PortfolioCategoryMap>> {
-  // Dummy data mirrored from design, centralized for future DB replacement
+  try {
+    console.log('🔄 Fetching portfolio data from API...')
+    console.log('📍 API Base URL:', process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000')
+    
+    // Fetch real projects from API
+    const response = await httpClient.getProjects()
+    
+    console.log('📊 API Response:', {
+      success: response.success,
+      error: response.error,
+      hasData: !!response.data,
+      dataType: typeof response.data,
+      dataKeys: response.data ? Object.keys(response.data) : [],
+      hasItems: !!response.data?.items,
+      itemCount: response.data?.items?.length || 0,
+      rawResponse: response,
+    })
+    
+    if (response.data?.items) {
+      console.log('📋 Projects from API:', response.data.items.map(p => ({ 
+        id: p._id, 
+        title: p.title, 
+        category: p.category, 
+        status: p.status, 
+        visibility: p.visibility 
+      })))
+    }
+    
+    if (!response.success) {
+      console.warn('⚠️ API call failed:', response.error)
+      return getDummyPortfolioData()
+    }
+    
+    if (!response.data?.items) {
+      console.warn('⚠️ No items in API response, using dummy data')
+      return getDummyPortfolioData()
+    }
+
+    // Transform API projects to portfolio format and group by category
+    const allProjects = response.data.items
+    console.log('🔍 Filtering projects:', {
+      total: allProjects.length,
+      publicProjects: allProjects.filter(p => p.visibility === 'public').length,
+      publishedProjects: allProjects.filter(p => p.status === 'published').length,
+      publicAndPublished: allProjects.filter(p => p.visibility === 'public' && p.status === 'published').length
+    })
+    
+    const filteredProjects = allProjects.filter(project => {
+      const isPublic = project.visibility === 'public'
+      const isPublished = project.status === 'published'
+      console.log(`📋 Project "${project.title}": visibility=${project.visibility}, status=${project.status}, included=${isPublic && isPublished}`)
+      return isPublic && isPublished
+    })
+    
+    const projects = filteredProjects
+      .map(transformToPortfolioProject)
+      .filter(project => project !== null) as PortfolioProject[]
+
+    console.log('✅ Transformed projects:', projects.map(p => ({ id: p.id, title: p.title, category: p.category })))
+
+    // Group projects by category
+    const categorizedProjects: PortfolioCategoryMap = {
+      'AI Learning/Exploration': projects.filter(p => p.category === 'AI Learning/Exploration'),
+      'Frontend/UI/UX': projects.filter(p => p.category === 'Frontend/UI/UX'), 
+      'Full Stack': projects.filter(p => p.category === 'Full Stack'),
+      'Fun/Sandbox': projects.filter(p => p.category === 'Fun/Sandbox'),
+    }
+
+    console.log('📂 Categorized projects:', {
+      'AI Learning/Exploration': categorizedProjects['AI Learning/Exploration'].length,
+      'Frontend/UI/UX': categorizedProjects['Frontend/UI/UX'].length,
+      'Full Stack': categorizedProjects['Full Stack'].length,
+      'Fun/Sandbox': categorizedProjects['Fun/Sandbox'].length,
+    })
+
+    // Fill empty categories with dummy data if no real projects exist
+    const finalData = fillWithDummyData(categorizedProjects)
+    
+    console.log('🎯 Final portfolio data categories:', Object.keys(finalData).map(cat => ({
+      category: cat,
+      count: finalData[cat as keyof PortfolioCategoryMap].length,
+      realProjects: finalData[cat as keyof PortfolioCategoryMap].filter(p => !p.id.startsWith('dummy-')).length
+    })))
+    
+    return Promise.resolve({ success: true, data: finalData })
+  } catch (error) {
+    console.warn('Failed to fetch portfolio projects, using dummy data:', error)
+    return getDummyPortfolioData()
+  }
+}
+
+function transformToPortfolioProject(apiProject: any): PortfolioProject | null {
+  if (!apiProject.title || !apiProject.category) return null
+  
+  return {
+    id: apiProject._id || apiProject.id,
+    title: apiProject.title,
+    description: apiProject.description || 'No description available',
+    techStack: apiProject.techStack || [],
+    duration: apiProject.duration || 'Not specified',
+    teamSize: apiProject.teamSize || 'Not specified',
+    importance: apiProject.importance || 'medium',
+    liveUrl: apiProject.liveUrl || '#',
+    repoUrl: apiProject.repoUrl || apiProject.githubUrl || '#',
+    gradient: apiProject.gradient || 'from-gray-700 to-gray-800',
+    hasPreview: apiProject.hasPreview || false,
+    previewType: apiProject.previewType || 'platform',
+    category: apiProject.category as PortfolioProject['category'],
+  }
+}
+
+function fillWithDummyData(realData: PortfolioCategoryMap): PortfolioCategoryMap {
+  const dummyData = getDummyPortfolioData().data!
+  
+  // For each category, if it's empty or has fewer than 2 projects, add some dummy data
+  const categories = Object.keys(realData) as (keyof PortfolioCategoryMap)[]
+  
+  categories.forEach(category => {
+    const realProjects = realData[category] || []
+    const dummyProjects = dummyData[category] || []
+    
+    // Keep real projects first, then add dummy projects to fill gaps
+    if (realProjects.length === 0) {
+      realData[category] = dummyProjects
+    } else if (realProjects.length < 2) {
+      // Mix real with dummy, but mark dummy projects clearly
+      const filteredDummy = dummyProjects
+        .slice(0, 3 - realProjects.length)
+        .map(dummy => ({
+          ...dummy,
+          id: `dummy-${dummy.id}`,
+          title: `${dummy.title} (Demo)`,
+        }))
+      realData[category] = [...realProjects, ...filteredDummy]
+    }
+  })
+  
+  return realData
+}
+
+function getDummyPortfolioData(): ApiResponse<PortfolioCategoryMap> {
+  // Keep original dummy data as fallback
   const data: PortfolioCategoryMap = {
     'AI Learning/Exploration': [
       {
@@ -18,7 +160,7 @@ export async function fetchPortfolioData(): Promise<ApiResponse<PortfolioCategor
         repoUrl: '#',
         gradient: 'from-red-600 to-red-700',
         hasPreview: true,
-        previewType: 'image',
+        previewType: 'platform',
         category: 'AI Learning/Exploration',
       },
       {
@@ -34,7 +176,7 @@ export async function fetchPortfolioData(): Promise<ApiResponse<PortfolioCategor
         repoUrl: '#',
         gradient: 'from-gray-800 to-gray-900',
         hasPreview: true,
-        previewType: 'chart',
+        previewType: 'platform',
         category: 'AI Learning/Exploration',
       },
       {
@@ -50,7 +192,7 @@ export async function fetchPortfolioData(): Promise<ApiResponse<PortfolioCategor
         repoUrl: '#',
         gradient: 'from-gray-700 to-gray-800',
         hasPreview: true,
-        previewType: 'dashboard',
+        previewType: 'platform',
         category: 'AI Learning/Exploration',
       },
     ],
@@ -68,7 +210,7 @@ export async function fetchPortfolioData(): Promise<ApiResponse<PortfolioCategor
         repoUrl: '#',
         gradient: 'from-red-600 to-red-700',
         hasPreview: true,
-        previewType: 'components',
+        previewType: 'platform',
         category: 'Frontend/UI/UX',
       },
       {
@@ -84,7 +226,7 @@ export async function fetchPortfolioData(): Promise<ApiResponse<PortfolioCategor
         repoUrl: '#',
         gradient: 'from-gray-700 to-gray-800',
         hasPreview: true,
-        previewType: 'visualization',
+        previewType: 'platform',
         category: 'Frontend/UI/UX',
       },
       {
@@ -100,7 +242,7 @@ export async function fetchPortfolioData(): Promise<ApiResponse<PortfolioCategor
         repoUrl: '#',
         gradient: 'from-gray-800 to-gray-900',
         hasPreview: true,
-        previewType: 'ecommerce',
+        previewType: 'platform',
         category: 'Frontend/UI/UX',
       },
     ],
@@ -150,7 +292,7 @@ export async function fetchPortfolioData(): Promise<ApiResponse<PortfolioCategor
         repoUrl: '#',
         gradient: 'from-gray-700 to-gray-800',
         hasPreview: true,
-        previewType: 'game',
+        previewType: 'platform',
         category: 'Fun/Sandbox',
       },
       {
@@ -166,7 +308,7 @@ export async function fetchPortfolioData(): Promise<ApiResponse<PortfolioCategor
         repoUrl: '#',
         gradient: 'from-gray-700 to-gray-800',
         hasPreview: true,
-        previewType: 'music',
+        previewType: 'platform',
         category: 'Fun/Sandbox',
       },
       {
@@ -182,7 +324,7 @@ export async function fetchPortfolioData(): Promise<ApiResponse<PortfolioCategor
         repoUrl: '#',
         gradient: 'from-gray-700 to-gray-800',
         hasPreview: true,
-        previewType: 'ar',
+        previewType: 'platform',
         category: 'Fun/Sandbox',
       },
     ],

@@ -12,24 +12,15 @@ const BadgesPage: React.FC = () => {
   const [loading, setLoading] = React.useState(false)
   const fileInputRef = React.useRef<HTMLInputElement | null>(null)
 
-  async function fetchBadges() {
+  const refreshBadges = React.useCallback(async () => {
     try {
-      setLoading(true)
-      const token = await getAuthToken()
-      if (!token) throw new Error('Not authenticated')
-      const resp = await httpClient.browseAssets({ prefix: 'badges' }, token)
-      if (resp.success) {
-        const files = (resp.data as any)?.files || []
-        setBadges(files.map((f: any) => ({ publicUrl: f.publicUrl, name: f.name })))
-      }
-    } finally {
-      setLoading(false)
+      const res = await httpClient.getBadges()
+      console.log('res', res)
+      if (res.success) setBadges(res)
+      else console.warn('Failed to load badges:', res.error)
+    } catch (e) {
+      console.error('Failed to load badges', e)
     }
-  }
-
-  React.useEffect(() => {
-    fetchBadges()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   async function handleUpload(file: File) {
@@ -37,7 +28,7 @@ const BadgesPage: React.FC = () => {
     if (!token) throw new Error('Not authenticated')
     const up = await httpClient.uploadAsset(file, { assetType: 'badge' }, token)
     if (!up.success) throw new Error(up.error || 'Failed to upload badge')
-    await fetchBadges()
+    await refreshBadges()
   }
 
   // Badges currently stored as uploaded images under media/badges/* in GCS via assets endpoints

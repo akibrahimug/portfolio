@@ -28,7 +28,7 @@ const NavButtons = () => {
       <div className='flex w-full sm:w-auto rounded-full shadow-sm overflow-hidden '>
         {/* Contact Me */}
         <Button
-          className='flex-1 h-10 px-4  rounded-none border-r text-left justify-start font-normal hover:bg-gray-100 hover:text-gray-900 transition-colors cursor-pointer'
+          className='flex-1 h-10 px-4 rounded-none border-r text-left justify-start font-normal bg-white text-gray-900 hover:bg-gray-100 hover:text-gray-900 transition-colors cursor-pointer'
           onClick={handleEmail}
         >
           Email Me
@@ -37,7 +37,7 @@ const NavButtons = () => {
         {/* TechStack */}
         <Button
           variant='ghost'
-          className='flex-1 h-10 px-4 rounded-none border-r text-left justify-start  text-red-600 font-extralight hover:bg-gray-100 hover:text-red-700 transition-colors cursor-pointer '
+          className='flex-1 h-10 px-4 rounded-none border-r text-left justify-start text-gray-700 font-extralight hover:bg-gray-100 hover:text-gray-900 transition-colors cursor-pointer '
           value='TechStack'
           onClick={scrollToProjects}
         >
@@ -59,7 +59,7 @@ const NavButtons = () => {
             href='https://github.com/akibrahimug'
             target='_blank'
             rel='noopener noreferrer'
-            className='absolute right-5 transform translate-x-1/2 border p-3 rounded-3xl bg-black text-white hover:scale-110 transition-transform delay-[0.1s]'
+            className='absolute right-5 transform translate-x-1/2 border border-white/10 p-3 rounded-3xl bg-gradient-to-br from-gray-800 to-gray-900 text-white hover:from-gray-700 hover:to-gray-800 hover:scale-110 transition-transform duration-200'
             aria-label='GitHub Profile'
           >
             <GithubLogo className='w-5 h-5 ' />

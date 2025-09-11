@@ -27,6 +27,11 @@ const projectSchema = new Schema(
     gradient: { type: String, default: '' },
     // Optional preview metadata
     hasPreview: { type: Boolean, default: false },
+    previewType: { 
+      type: String, 
+      enum: ['image', 'components', 'visualization', 'platform', 'game', 'music', 'ar', 'chart', 'dashboard', 'ecommerce', 'other'], 
+      default: 'platform' 
+    },
     // Optional display/category metadata
     category: { type: String, default: '' },
     // Optional timeline/team metadata
@@ -56,6 +61,7 @@ export interface ProjectDocument extends Document {
   repoUrl?: string | null;
   gradient?: string | null;
   hasPreview?: boolean;
+  previewType?: 'image' | 'components' | 'visualization' | 'platform' | 'game' | 'music' | 'ar' | 'chart' | 'dashboard' | 'ecommerce' | 'other';
   category?: string | null;
   duration?: string | null;
   teamSize?: string | null;

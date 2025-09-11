@@ -400,12 +400,14 @@ export const formConfigs: Record<string, Form> = {
         type: 'select',
         required: true,
         options: [
-          { label: 'Frontend', value: 'frontend' },
+          { label: 'Frontend/UI/UX', value: 'Frontend/UI/UX' },
+          { label: 'Full Stack', value: 'Full Stack' },
+          { label: 'AI Learning/Exploration', value: 'AI Learning/Exploration' },
+          { label: 'Fun/Sandbox', value: 'Fun/Sandbox' },
           { label: 'Backend', value: 'backend' },
           { label: 'Database', value: 'database' },
           { label: 'DevOps', value: 'devops' },
           { label: 'Mobile', value: 'mobile' },
-          { label: 'AI/ML', value: 'ai-ml' },
           { label: 'Other', value: 'other' },
         ],
         validation: {

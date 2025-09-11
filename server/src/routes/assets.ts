@@ -13,11 +13,17 @@ const assetsRepo = new MongoAssetsRepo();
 // POST /assets/request-upload � get signed URL for direct upload
 router.post('/request-upload', authMiddleware, async (req: Request, res: Response) => {
   try {
+    console.log('=== UPLOAD REQUEST ===');
+    console.log('Request body:', req.body);
+    
     const parsed = schemas.AssetsRequestUploadReq.parse({ version: 'v1', ...req.body });
     const { filename, contentType, folder, assetType } = parsed;
     const userId = (req as unknown as { userId?: string }).userId || 'anonymous';
 
+    console.log('Parsed request:', { filename, contentType, folder, assetType, userId });
+
     if (!process.env.GCS_BUCKET_UPLOADS) {
+      console.error('GCS bucket not configured');
       return res.status(500).json({
         success: false,
         error: 'GCS bucket not configured',
@@ -33,12 +39,17 @@ router.post('/request-upload', authMiddleware, async (req: Request, res: Respons
     const objectPath = `${assetTypeFolder}${subFolder}/${userId}/${Date.now()}-${filename}`;
     const file = bucket.file(objectPath);
 
+    console.log('Generating signed URL for:', { bucket: process.env.GCS_BUCKET_UPLOADS, objectPath, contentType });
+    
     const [signedUrl] = await file.getSignedUrl({
       version: 'v4',
       action: 'write',
       expires: Date.now() + 15 * 60 * 1000, // 15 minutes
       contentType,
     });
+
+    console.log('Signed URL generated successfully');
+    console.log('Upload URL length:', signedUrl.length);
 
     res.json({
       success: true,
@@ -65,13 +76,19 @@ router.post('/request-upload', authMiddleware, async (req: Request, res: Respons
 // POST /assets/confirm confirm upload and create asset record
 router.post('/confirm', authMiddleware, async (req: Request, res: Response) => {
   try {
+    console.log('=== CONFIRM UPLOAD ===');
+    console.log('Request body:', req.body);
+    
     const userId = (req as unknown as { userId?: string }).userId;
     if (!userId) {
+      console.error('Unauthorized confirm request');
       res.status(401).json({ success: false, error: 'Unauthorized' });
       return;
     }
     const parsed = schemas.AssetsConfirmReq.parse({ version: 'v1', ownerId: userId, ...req.body });
     const { objectPath, contentType, size, projectId, assetType } = parsed;
+
+    console.log('Confirming upload:', { objectPath, contentType, size, projectId, assetType, userId });
 
     const asset = await assetsRepo.createAsset({
       ownerId: userId,
@@ -83,6 +100,9 @@ router.post('/confirm', authMiddleware, async (req: Request, res: Response) => {
     });
 
     const publicUrl = `https://storage.googleapis.com/${process.env.GCS_BUCKET_UPLOADS}/${objectPath}`;
+
+    console.log('Asset created successfully:', asset._id);
+    console.log('Public URL:', publicUrl);
 
     res.json({
       success: true,
