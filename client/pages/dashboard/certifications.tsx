@@ -1,18 +1,29 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useCallback, useEffect } from 'react'
 import { useAuth } from '@clerk/nextjs'
 import { DashboardLayout, Breadcrumb } from '@/components/dashboard/DashboardLayout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Certificate, Clock, UploadSimple } from '@phosphor-icons/react'
-import { httpClient } from '@/lib/http-client'
+import {
+  Certificate,
+  Clock,
+  UploadSimple,
+  FileText,
+  Download,
+  Eye,
+  Calendar,
+  Trash,
+  CheckCircle,
+} from '@phosphor-icons/react'
+import { httpClient, assetPublicUrl, downloadToDisk } from '@/lib/http-client'
+import Link from 'next/link'
 
 const CertificationsPage: React.FC = () => {
   const { getToken, isSignedIn } = useAuth()
   const inputRef = useRef<HTMLInputElement | null>(null)
 
-  // TODO: Connect to real API when certifications endpoint is implemented
-  const certifications: any[] = []
+  // Certification state
+  const [certifications, setCertifications] = useState<any[]>([])
 
   // Upload states
   const [uploading, setUploading] = useState(false)
@@ -25,6 +36,48 @@ const CertificationsPage: React.FC = () => {
   const template = process.env.NEXT_PUBLIC_CLERK_JWT_TEMPLATE || 'backend'
 
   const openPicker = () => inputRef.current?.click()
+
+  const refreshCertifications = useCallback(async () => {
+    try {
+      const token = await getToken({ template })
+      if (!token) {
+        console.log('❌ No auth token available')
+        return
+      }
+
+      const res = await httpClient.browseAssets({}, token)
+
+      if (res.success) {
+        // Filter for certification files
+        const certificationFiles =
+          res.data?.data?.files?.filter((file: any) => file.name.startsWith('certification/')) || []
+
+        // Transform the files to match our certification structure
+        const certFiles = certificationFiles.map((file: any) => ({
+          _id: file.name.replace(/[^a-zA-Z0-9]/g, '_'), // Create unique ID from filename
+          name: file.name.split('/').pop()?.replace(/^\d+-/, '') || file.name, // Remove timestamp prefix
+          size: file.size,
+          contentType: file.contentType,
+          createdAt: file.timeCreated,
+          updatedAt: file.updated,
+          path: file.name,
+          objectPath: file.name,
+          publicUrl: file.publicUrl,
+          viewUrl: file.viewUrl,
+        }))
+
+        setCertifications(certFiles)
+      } else {
+        console.warn('❌ Failed to load certifications:', res.error)
+      }
+    } catch (e) {
+      console.error('❌ Failed to load certifications', e)
+    }
+  }, [getToken, template])
+
+  useEffect(() => {
+    if (isSignedIn) refreshCertifications()
+  }, [isSignedIn, refreshCertifications])
 
   const doUpload = async (file: File) => {
     setError(null)
@@ -47,14 +100,36 @@ const CertificationsPage: React.FC = () => {
       )
       if (!result.success) throw new Error(result.error || 'Upload failed')
 
-      setUploaded(result.data!.asset)
+      setUploaded(result?.data?.asset)
       setProgress(100)
+      await refreshCertifications() // Refresh the list
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Upload failed')
     } finally {
       setUploading(false)
       setTimeout(() => setProgress(null), 800)
     }
+  }
+
+  const handleDelete = async () => {
+    try {
+      const token = await getToken({ template })
+      if (!token) throw new Error('Not authenticated.')
+
+      await refreshCertifications()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to delete certification')
+    }
+  }
+
+  const handlePreview = (certification: any) => {
+    const url = assetPublicUrl(String(certification.objectPath ?? certification.path ?? ''))
+    window.open(url, '_blank', 'noopener,noreferrer')
+  }
+
+  const handleDownload = async (certification: any) => {
+    const url = assetPublicUrl(String(certification.objectPath ?? certification.path ?? ''))
+    await downloadToDisk(url, certification.name || 'certification.pdf')
   }
 
   return (
@@ -128,33 +203,90 @@ const CertificationsPage: React.FC = () => {
           </Card>
         )}
 
-        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
-          {certifications.map((cert) => (
-            <Card key={cert._id} className='hover:shadow-lg transition-shadow'>
-              <CardHeader className='pb-3'>
-                <div className='flex items-center justify-between'>
-                  <Certificate className='h-8 w-8 text-blue-600' />
-                  <Badge variant={cert.status === 'Active' ? 'default' : 'secondary'}>
-                    {cert.status}
-                  </Badge>
-                </div>
-                <CardTitle className='text-lg'>{cert.name}</CardTitle>
-                <p className='text-sm text-gray-600 dark:text-gray-400'>{cert.provider}</p>
-              </CardHeader>
-              <CardContent>
-                <div className='space-y-2 text-sm'>
-                  <div className='flex items-center gap-2'>
-                    <Clock className='h-4 w-4 text-gray-500' />
-                    <span>Earned: {new Date(cert.earnedDate).toLocaleDateString()}</span>
+        <div className='space-y-4'>
+          {certifications.map((cert) => {
+            let href = ''
+            try {
+              href = assetPublicUrl(String(cert.objectPath ?? cert.path ?? ''))
+            } catch {
+              href = ''
+            }
+
+            const isPdf =
+              cert.contentType === 'application/pdf' || cert.name.toLowerCase().endsWith('.pdf')
+
+            return (
+              <Card className='hover:shadow-lg transition-shadow relative' key={cert._id}>
+                <CardHeader>
+                  <div className='flex items-start justify-between'>
+                    <div className='flex items-center gap-4'>
+                      <div className='h-12 w-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center'>
+                        {isPdf ? (
+                          <FileText className='h-6 w-6 text-blue-600 dark:text-blue-400' />
+                        ) : (
+                          <Certificate className='h-6 w-6 text-blue-600 dark:text-blue-400' />
+                        )}
+                      </div>
+                      <div>
+                        <CardTitle className='text-lg'>{cert.name}</CardTitle>
+                        <div className='flex items-center gap-4 mt-2 '>
+                          <Badge variant='secondary'>{isPdf ? 'PDF' : 'Image'}</Badge>
+                          <span className='text-xs text-gray-500'>
+                            {(cert.size / (1024 * 1024)).toFixed(2)} MB
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className='flex items-center gap-2'>
+                      <Button variant='outline' size='sm' onClick={() => handleDelete()}>
+                        <Trash className='h-4 w-4 mr-2 text-red-500' />
+                        Delete
+                      </Button>
+
+                      <Link
+                        href={href || '#'}
+                        className='text-black hover:bg-gray-100 flex items-center gap-1 border border-gray-300 rounded-md px-2 py-1 text-sm font-medium'
+                        target='_blank'
+                        rel='noopener noreferrer'
+                        onClick={(e) => {
+                          if (!href) e.preventDefault()
+                          handlePreview(cert)
+                        }}
+                      >
+                        <Eye className='h-4 w-4 mr-2 text-green-500' />
+                        Preview
+                      </Link>
+
+                      <Button variant='outline' size='sm' onClick={() => handleDownload(cert)}>
+                        <Download className='h-4 w-4 mr-2 text-blue-500' />
+                        Download
+                      </Button>
+                    </div>
+                  </div>
+                </CardHeader>
+
+                <CardContent>
+                  <div className='grid grid-cols-1 md:grid-cols-3 gap-4 text-sm'>
+                    <div className='flex items-center gap-2'>
+                      <Calendar className='h-4 w-4 text-gray-500' />
+                      <span>Uploaded: {new Date(cert.createdAt).toLocaleDateString()}</span>
+                    </div>
+                    <div className='flex items-center gap-2 text-gray-500'>
+                      <span>Stored at: {cert.path}</span>
+                    </div>
                   </div>
                   <div className='flex items-center gap-2'>
-                    <Clock className='h-4 w-4 text-gray-500' />
-                    <span>Expires: {new Date(cert.expiryDate).toLocaleDateString()}</span>
+                    <Badge variant='outline' className='text-xs '>
+                      Certification
+                    </Badge>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+
+                  {/* Status indicator - similar to resume's public/private indicator */}
+                  <span className='bg-gradient-to-t from-blue-400 to-cyan-200 absolute top-0 right-0 h-full w-3 rounded-r-md' />
+                </CardContent>
+              </Card>
+            )
+          })}
         </div>
 
         {certifications.length === 0 && (

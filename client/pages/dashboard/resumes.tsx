@@ -220,6 +220,14 @@ export default function ResumesPage() {
                           <CardTitle className='text-lg'>{resume.name}</CardTitle>
                           <div className='flex items-center gap-4 mt-2'>
                             <Badge variant='secondary'>PDF</Badge>
+                            <div className='flex items-center gap-2'>
+                              <Badge
+                                className='cursor-pointer p-1 px-2'
+                                onClick={() => handlePublic(resume._id)}
+                              >
+                                {resume.isPublic ? 'Public' : 'Private'}
+                              </Badge>
+                            </div>
                             <span className='text-xs text-gray-500'>
                               {(resume.size / (1024 * 1024)).toFixed(2)} MB
                             </span>
@@ -270,14 +278,6 @@ export default function ResumesPage() {
                       </div>
                       <div className='flex items-center gap-2 text-gray-500'>
                         <span>Stored at: {resume.path}</span>
-                      </div>
-                      <div className='flex items-center gap-2'>
-                        <Badge
-                          className='cursor-pointer p-1 px-2'
-                          onClick={() => handlePublic(resume._id)}
-                        >
-                          {resume.isPublic ? 'Public' : 'Private'}
-                        </Badge>
                       </div>
                     </div>
 

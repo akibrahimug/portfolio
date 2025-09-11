@@ -3,8 +3,17 @@
  * The server never proxies file bytes; it only issues a short-lived PUT URL.
  */
 import { Storage } from '@google-cloud/storage';
+import path from 'path';
 
-export const storage = new Storage();
+// Initialize Google Cloud Storage with explicit credentials
+const projectId = process.env.GCP_PROJECT_ID;
+const keyFilename = process.env.GOOGLE_APPLICATION_CREDENTIALS || 
+                   path.join(process.cwd(), 'sa.json'); // Default to sa.json in project root
+
+export const storage = new Storage({
+  projectId,
+  keyFilename,
+});
 
 /**
  * Create a V4 signed PUT URL for a specific object path and content type.

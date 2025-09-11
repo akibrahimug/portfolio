@@ -93,7 +93,7 @@ export default function TechStackScroll() {
       <div className='container mx-auto px-4'>
         <div className='text-center mb-8' ref={containerRef}>
           <MotionH2
-            className='text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4'
+            className='text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-500 dark:text-gray-400 mb-4'
             initial={{ opacity: 0, y: 20 }}
             animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ duration: 0.6 }}
@@ -101,7 +101,7 @@ export default function TechStackScroll() {
             My Tech Stack
           </MotionH2>
           <MotionP
-            className='text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto mb-6'
+            className='text-lg text-muted-foreground max-w-2xl mx-auto mb-6'
             initial={{ opacity: 0, y: 20 }}
             animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ duration: 0.6, delay: 0.2 }}
@@ -167,7 +167,7 @@ export default function TechStackScroll() {
                 <div className='absolute right-0 top-0 bottom-0 w-24 z-10 bg-gradient-to-l from-white to-transparent dark:from-gray-900 dark:to-transparent pointer-events-none' />
 
                 {row1.length > 0 && (
-                  <MarqueeSlider duration={25}>
+                  <MarqueeSlider duration={60}>
                     {row1.map((tech) => (
                       <TechCard
                         key={tech.name}
@@ -178,7 +178,7 @@ export default function TechStackScroll() {
                   </MarqueeSlider>
                 )}
                 {row2.length > 0 && (
-                  <MarqueeSlider duration={30} reverse>
+                  <MarqueeSlider duration={80} reverse>
                     {row2.map((tech) => (
                       <TechCard
                         key={tech.name}
@@ -189,7 +189,7 @@ export default function TechStackScroll() {
                   </MarqueeSlider>
                 )}
                 {row3.length > 0 && (
-                  <MarqueeSlider duration={20}>
+                  <MarqueeSlider duration={70}>
                     {row3.map((tech) => (
                       <TechCard
                         key={tech.name}

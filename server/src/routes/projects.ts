@@ -63,8 +63,8 @@ router.post('/', authMiddleware, async (req: Request, res: Response) => {
     if (!userId)
       return res.status(401).json({ error: '[[PROJECTS_CREATE]]-[SERVER]: unauthorized' });
     const parsed = schemas.ProjectsCreateReq.parse({
-      version: 'v1',
-      data: { ...req.body, ownerId: userId },
+      version: req.body.version || 'v1',
+      data: { ...(req.body.data || req.body), ownerId: userId },
     });
     // Normalize legacy githubUrl -> repoUrl if provided
     if (
@@ -92,7 +92,8 @@ router.post('/', authMiddleware, async (req: Request, res: Response) => {
     const project = await Project.create({ ...parsed.data, technologyIds });
     return res.status(201).json({ project });
   } catch (err) {
-    return res.status(400).json({ error: '[[PROJECTS_CREATE]]-[SERVER]: invalid_request' + err });
+    console.error('Project creation failed:', err);
+    return res.status(400).json({ error: '[[PROJECTS_CREATE]]-[SERVER]: invalid_request', details: err instanceof Error ? err.message : String(err) });
   }
 });
 

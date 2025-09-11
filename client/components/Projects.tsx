@@ -21,12 +21,12 @@ const Projects: React.FC = () => {
   )
 
   return (
-    <div id='projects' className='min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8'>
+    <div id='projects' className='min-h-screen p-4 sm:p-6 lg:p-8'>
       <div className='text-center mb-8 sm:mb-12'>
-        <h1 className='text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-800 mb-4'>
-          Project Portfolio
+        <h1 className='text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-500 dark:text-gray-400 mb-4'>
+          Projects
         </h1>
-        <p className='text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto px-4'>
+        <p className='text-lg text-muted-foreground max-w-2xl mx-auto mb-6'>
           Exploring the intersection of creativity and technology through innovative projects
         </p>
       </div>
@@ -50,10 +50,6 @@ const Projects: React.FC = () => {
               onHover={setHoveredCard}
             />
           ))}
-      </div>
-
-      <div className='text-center mt-16 py-8'>
-        <p className='text-gray-600'>Built with React, Tailwind CSS, and lots of ☕</p>
       </div>
     </div>
   )

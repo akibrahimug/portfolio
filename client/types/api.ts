@@ -4,6 +4,7 @@
 
 export interface Project {
   _id: string
+  slug?: string
   title: string
   category?: string
   description?: string
@@ -11,12 +12,15 @@ export interface Project {
   technologyIds?: string[]
   heroImageUrl?: string | null
   liveUrl?: string | null
+  githubUrl?: string | null
   repoUrl?: string | null
   gradient?: string | null
   hasPreview?: boolean
+  previewType?: 'image' | 'components' | 'visualization' | 'platform' | 'game' | 'music' | 'ar' | 'chart' | 'dashboard' | 'ecommerce' | 'other'
   duration?: string | null
   teamSize?: string | null
   importance?: 'high' | 'medium' | 'low'
+  status?: 'draft' | 'published' | 'archived'
   visibility: 'public' | 'private'
   ownerId: string
   createdAt?: string
@@ -199,34 +203,42 @@ export interface ProjectGetResponse {
 // API Request types
 export interface ProjectCreateRequest {
   title: string
+  slug?: string
   category?: string
   description?: string
   techStack?: string[]
   technologyIds?: string[]
   heroImageUrl?: string
   liveUrl?: string
+  githubUrl?: string
   repoUrl?: string
   gradient?: string
   hasPreview?: boolean
+  previewType?: Project['previewType']
   duration?: string
   teamSize?: string
   importance?: 'high' | 'medium' | 'low'
+  status?: 'draft' | 'published' | 'archived'
   visibility?: Project['visibility']
 }
 
 export interface ProjectUpdateRequest {
   title?: string
+  slug?: string
   category?: string
   description?: string
   techStack?: string[]
   technologyIds?: string[]
   heroImageUrl?: string
   liveUrl?: string
+  githubUrl?: string
   repoUrl?: string
   gradient?: string
   hasPreview?: boolean
+  previewType?: Project['previewType']
   duration?: string
   teamSize?: string
+  status?: 'draft' | 'published' | 'archived'
   importance?: 'high' | 'medium' | 'low'
   visibility?: Project['visibility']
 }
