@@ -1,7 +1,7 @@
 /**
  * Context for sharing asset tracking between form components
  */
-import React, { createContext, useContext } from 'react'
+import React, { createContext, useContext, useMemo } from 'react'
 import { useAssetTracking } from '@/hooks/useAssetTracking'
 
 interface AssetTrackingContextType {
@@ -16,8 +16,16 @@ const AssetTrackingContext = createContext<AssetTrackingContextType | null>(null
 export function AssetTrackingProvider({ children }: { children: React.ReactNode }) {
   const assetTracking = useAssetTracking()
 
+  // Memoize the context value to prevent unnecessary re-renders
+  const contextValue = useMemo(() => assetTracking, [
+    assetTracking.trackAsset,
+    assetTracking.clearTracking,
+    assetTracking.cleanupAssets,
+    assetTracking.uploadedAssets,
+  ])
+
   return (
-    <AssetTrackingContext.Provider value={assetTracking}>
+    <AssetTrackingContext.Provider value={contextValue}>
       {children}
     </AssetTrackingContext.Provider>
   )

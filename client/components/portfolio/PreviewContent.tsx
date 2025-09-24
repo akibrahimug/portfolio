@@ -3,9 +3,22 @@ import type { PortfolioPreviewType } from '@/types/portfolio'
 
 interface PreviewContentProps {
   previewType?: PortfolioPreviewType
+  heroImageUrl?: string
 }
 
-export const PreviewContent: React.FC<PreviewContentProps> = ({ previewType }) => {
+export const PreviewContent: React.FC<PreviewContentProps> = ({ previewType, heroImageUrl }) => {
+  // If we have an image URL, show the image regardless of previewType
+  if (heroImageUrl) {
+    return (
+      <div className='bg-white/95 p-3 rounded-lg shadow-lg h-36 overflow-hidden'>
+        <img
+          src={heroImageUrl}
+          alt='Project preview'
+          className='w-full h-full object-cover rounded'
+        />
+      </div>
+    )
+  }
   switch (previewType) {
     case 'platform':
       return (

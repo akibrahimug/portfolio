@@ -4,64 +4,45 @@ import { httpClient } from './http-client'
 
 export async function fetchPortfolioData(): Promise<ApiResponse<PortfolioCategoryMap>> {
   try {
-    console.log('🔄 Fetching portfolio data from API...')
-    console.log('📍 API Base URL:', process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000')
     
     // Fetch real projects from API
     const response = await httpClient.getProjects()
-    
-    console.log('📊 API Response:', {
-      success: response.success,
-      error: response.error,
-      hasData: !!response.data,
-      dataType: typeof response.data,
-      dataKeys: response.data ? Object.keys(response.data) : [],
-      hasItems: !!response.data?.items,
-      itemCount: response.data?.items?.length || 0,
-      rawResponse: response,
-    })
-    
-    if (response.data?.items) {
-      console.log('📋 Projects from API:', response.data.items.map(p => ({ 
-        id: p._id, 
-        title: p.title, 
-        category: p.category, 
-        status: p.status, 
-        visibility: p.visibility 
-      })))
-    }
-    
+
     if (!response.success) {
       console.warn('⚠️ API call failed:', response.error)
-      return getDummyPortfolioData()
+      // Return empty categories instead of dummy data when API fails
+      return { success: true, data: {
+        'AI Learning/Exploration': [],
+        'Frontend/UI/UX': [],
+        'Full Stack': [],
+        'Fun/Sandbox': [],
+      }}
     }
-    
+
     if (!response.data?.items) {
-      console.warn('⚠️ No items in API response, using dummy data')
-      return getDummyPortfolioData()
+      console.warn('⚠️ No items in API response')
+      // Return empty categories instead of dummy data when no items
+      return { success: true, data: {
+        'AI Learning/Exploration': [],
+        'Frontend/UI/UX': [],
+        'Full Stack': [],
+        'Fun/Sandbox': [],
+      }}
     }
 
     // Transform API projects to portfolio format and group by category
     const allProjects = response.data.items
-    console.log('🔍 Filtering projects:', {
-      total: allProjects.length,
-      publicProjects: allProjects.filter(p => p.visibility === 'public').length,
-      publishedProjects: allProjects.filter(p => p.status === 'published').length,
-      publicAndPublished: allProjects.filter(p => p.visibility === 'public' && p.status === 'published').length
-    })
+
     
     const filteredProjects = allProjects.filter(project => {
       const isPublic = project.visibility === 'public'
       const isPublished = project.status === 'published'
-      console.log(`📋 Project "${project.title}": visibility=${project.visibility}, status=${project.status}, included=${isPublic && isPublished}`)
       return isPublic && isPublished
     })
     
     const projects = filteredProjects
       .map(transformToPortfolioProject)
       .filter(project => project !== null) as PortfolioProject[]
-
-    console.log('✅ Transformed projects:', projects.map(p => ({ id: p.id, title: p.title, category: p.category })))
 
     // Group projects by category
     const categorizedProjects: PortfolioCategoryMap = {
@@ -71,32 +52,26 @@ export async function fetchPortfolioData(): Promise<ApiResponse<PortfolioCategor
       'Fun/Sandbox': projects.filter(p => p.category === 'Fun/Sandbox'),
     }
 
-    console.log('📂 Categorized projects:', {
-      'AI Learning/Exploration': categorizedProjects['AI Learning/Exploration'].length,
-      'Frontend/UI/UX': categorizedProjects['Frontend/UI/UX'].length,
-      'Full Stack': categorizedProjects['Full Stack'].length,
-      'Fun/Sandbox': categorizedProjects['Fun/Sandbox'].length,
-    })
-
-    // Fill empty categories with dummy data if no real projects exist
-    const finalData = fillWithDummyData(categorizedProjects)
+    // Only show real projects, don't fill with dummy data
+    const finalData = categorizedProjects
     
-    console.log('🎯 Final portfolio data categories:', Object.keys(finalData).map(cat => ({
-      category: cat,
-      count: finalData[cat as keyof PortfolioCategoryMap].length,
-      realProjects: finalData[cat as keyof PortfolioCategoryMap].filter(p => !p.id.startsWith('dummy-')).length
-    })))
     
     return Promise.resolve({ success: true, data: finalData })
   } catch (error) {
-    console.warn('Failed to fetch portfolio projects, using dummy data:', error)
-    return getDummyPortfolioData()
+    console.warn('Failed to fetch portfolio projects:', error)
+    // Return empty categories instead of dummy data when there's an error
+    return { success: true, data: {
+      'AI Learning/Exploration': [],
+      'Frontend/UI/UX': [],
+      'Full Stack': [],
+      'Fun/Sandbox': [],
+    }}
   }
 }
 
 function transformToPortfolioProject(apiProject: any): PortfolioProject | null {
   if (!apiProject.title || !apiProject.category) return null
-  
+
   return {
     id: apiProject._id || apiProject.id,
     title: apiProject.title,
@@ -110,6 +85,7 @@ function transformToPortfolioProject(apiProject: any): PortfolioProject | null {
     gradient: apiProject.gradient || 'from-gray-700 to-gray-800',
     hasPreview: apiProject.hasPreview || false,
     previewType: apiProject.previewType || 'platform',
+    heroImageUrl: apiProject.heroImageUrl || undefined,
     category: apiProject.category as PortfolioProject['category'],
   }
 }

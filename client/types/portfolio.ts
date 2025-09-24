@@ -23,6 +23,7 @@ export interface PortfolioProject {
   gradient: string
   hasPreview?: boolean
   previewType?: PortfolioPreviewType
+  heroImageUrl?: string
   category: 'AI Learning/Exploration' | 'Frontend/UI/UX' | 'Full Stack' | 'Fun/Sandbox'
 }
 

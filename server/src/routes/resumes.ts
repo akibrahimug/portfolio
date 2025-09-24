@@ -77,10 +77,9 @@ router.patch('/:id', authMiddleware, async (req: Request, res: Response) => {
   }
 });
 
-// List (already exists in your code, just ensure it returns isPublic)
-router.get('/resumes', authMiddleware, async (req, res) => {
-  const userId = (req as unknown as { userId?: string }).userId;
-  const items = await Asset.find({ ownerId: userId, assetType: 'resume' }).sort({ createdAt: -1 });
+// List resumes (public access)
+router.get('/resumes', async (req, res) => {
+  const items = await Asset.find({ assetType: 'resume' }).sort({ createdAt: -1 });
   res.json({ items }); // includes isPublic
 });
 

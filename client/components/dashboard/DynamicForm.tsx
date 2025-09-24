@@ -430,7 +430,7 @@ const DynamicFormInner: React.FC<DynamicFormProps> = ({
                     <FormControl>
                       <div className='space-y-3'>
                         {/* Current image preview */}
-                        {formField.value && !hasPreview && (
+                        {formField.value && hasPreview && (
                           <div className='relative inline-block'>
                             <img
                               src={formField.value}
@@ -443,35 +443,31 @@ const DynamicFormInner: React.FC<DynamicFormProps> = ({
                               size='sm'
                               className='absolute -top-2 -right-2 h-6 w-6 rounded-full p-0'
                               onClick={() => formField.onChange('')}
-                              disabled={hasPreview}
+                              disabled={!hasPreview}
                             >
                               <X className='h-3 w-3' />
                             </Button>
                           </div>
                         )}
 
-                        {/* Selection buttons */}
-                        <div className='flex gap-2'>
+                        {/* Simple URL input only */}
+                        <div className='space-y-2'>
+                          <Input
+                            placeholder='Enter image URL...'
+                            value={formField.value || ''}
+                            onChange={(e) => formField.onChange(e.target.value)}
+                            disabled={!hasPreview}
+                          />
                           <Button
                             type='button'
                             variant='outline'
                             onClick={() => setIsPickerOpen(true)}
                             className='cursor-pointer'
-                            disabled={hasPreview}
+                            disabled={!hasPreview}
                           >
                             <Image className='w-4 h-4 mr-2' />
-                            {formField.value ? 'Change Image' : 'Select Image'}
+                            {formField.value ? 'Change Image' : 'Browse Images'}
                           </Button>
-
-                          {/* Manual URL input as alternative */}
-                          <div className='flex-1'>
-                            <Input
-                              placeholder='Or paste image URL directly...'
-                              value={formField.value || ''}
-                              onChange={(e) => formField.onChange(e.target.value)}
-                              disabled={hasPreview}
-                            />
-                          </div>
                         </div>
 
                         {/* Media Library Picker */}
@@ -499,7 +495,7 @@ const DynamicFormInner: React.FC<DynamicFormProps> = ({
                                 }
                               : undefined
                           }
-                          disabled={hasPreview}
+                          disabled={!hasPreview}
                         />
                       </div>
                     </FormControl>

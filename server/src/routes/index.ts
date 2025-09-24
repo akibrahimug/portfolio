@@ -5,6 +5,7 @@ import messagesRouter from './messages';
 import technologiesRouter from './technologies';
 import experiencesRouter from './experiences';
 import resumesRouter from './resumes';
+import badgesRouter from './badges';
 
 const router = Router();
 
@@ -15,6 +16,7 @@ router.use('/messages', messagesRouter);
 router.use('/technologies', technologiesRouter);
 router.use('/experiences', experiencesRouter);
 router.use('/resumes', resumesRouter);
+router.use('/badges', badgesRouter);
 // TODO: Integrations (GitHub, Vercel) routes can be added here in the future
 
 // Health check endpoint
@@ -34,6 +36,7 @@ router.get('/', (req, res) => {
       technologies: '/api/v1/technologies',
       experiences: '/api/v1/experiences',
       resumes: '/api/v1/resumes',
+      badges: '/api/v1/badges',
       // TODO: integrations: '/api/v1/integrations'
     },
     documentation: 'See README.md for detailed API documentation',

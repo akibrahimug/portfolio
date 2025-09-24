@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,41 +34,47 @@ type Methodology = {
   timeToImplement: 'Short' | 'Medium' | 'Long'
 }
 
-const Methodologies = () => {
+const MethodologiesComponent = () => {
   // State for selected methodologies to compare
   const [selectedMethodologies, setSelectedMethodologies] = useState<string[]>([])
   const [isCompareDialogOpen, setIsCompareDialogOpen] = useState(false)
   // Add state to control dropdown open state
   const [dropdownOpen, setDropdownOpen] = useState(false)
 
-  // Development methodologies with additional comparison data
-  const methodologies: Methodology[] = methods.methods as Methodology[]
+  // Memoize methodologies data to prevent unnecessary re-parsing
+  const methodologies: Methodology[] = useMemo(() => methods.methods as Methodology[], [])
 
-  const categoryColors: Record<string, string> = {
-    process: 'bg-green-100 text-green-800',
-    principle: 'bg-blue-100 text-blue-800',
-    paradigm: 'bg-purple-100 text-purple-800',
-    architecture: 'bg-yellow-100 text-yellow-800',
-    technology: 'bg-red-100 text-red-800',
-    design: 'bg-violet-100 text-violet-800',
-  }
+  // Memoize category colors object
+  const categoryColors: Record<string, string> = useMemo(
+    () => ({
+      process: 'bg-green-100 text-green-800',
+      principle: 'bg-blue-100 text-blue-800',
+      paradigm: 'bg-purple-100 text-purple-800',
+      architecture: 'bg-yellow-100 text-yellow-800',
+      technology: 'bg-red-100 text-red-800',
+      design: 'bg-violet-100 text-violet-800',
+    }),
+    [],
+  )
 
-  // Group methodologies by category
-  const groupedMethodologies = methodologies.reduce((acc, methodology) => {
-    if (!acc[methodology.category]) {
-      acc[methodology.category] = []
-    }
-    acc[methodology.category].push(methodology)
-    return acc
-  }, {} as Record<string, typeof methodologies>)
+  // Memoize grouped methodologies to prevent unnecessary re-computation
+  const groupedMethodologies = useMemo(() => {
+    return methodologies.reduce((acc, methodology) => {
+      if (!acc[methodology.category]) {
+        acc[methodology.category] = []
+      }
+      acc[methodology.category].push(methodology)
+      return acc
+    }, {} as Record<string, typeof methodologies>)
+  }, [methodologies])
 
-  // Format category name for display (capitalize first letter)
-  const formatCategoryName = (category: string) => {
+  // Memoize format category name function
+  const formatCategoryName = useCallback((category: string) => {
     return category.charAt(0).toUpperCase() + category.slice(1)
-  }
+  }, [])
 
-  // Toggle methodology selection for comparison
-  const toggleMethodologySelection = (methodologyName: string) => {
+  // Memoize toggle methodology selection callback
+  const toggleMethodologySelection = useCallback((methodologyName: string) => {
     setSelectedMethodologies((prev) => {
       if (prev.includes(methodologyName)) {
         return prev.filter((name) => name !== methodologyName)
@@ -80,26 +86,26 @@ const Methodologies = () => {
         return prev
       }
     })
-  }
+  }, [])
 
-  // Get selected methodology objects
-  const getSelectedMethodologyObjects = () => {
+  // Memoize selected methodology objects computation
+  const selectedMethodologyObjects = useMemo(() => {
     return methodologies.filter((m) => selectedMethodologies.includes(m.name))
-  }
+  }, [methodologies, selectedMethodologies])
 
-  // Handle compare button click
-  const handleCompareClick = () => {
+  // Memoize compare button click handler
+  const handleCompareClick = useCallback(() => {
     if (selectedMethodologies.length >= 2) {
       // Close dropdown before opening dialog to remove underlying overlay
       setDropdownOpen(false)
       setIsCompareDialogOpen(true)
     }
-  }
+  }, [selectedMethodologies.length])
 
-  // Handle dialog close
-  const handleDialogOpenChange = (open: boolean) => {
+  // Memoize dialog close handler
+  const handleDialogOpenChange = useCallback((open: boolean) => {
     setIsCompareDialogOpen(open)
-  }
+  }, [])
 
   return (
     <div className='m-2 md:mr-10 items-center justify-end'>
@@ -181,7 +187,7 @@ const Methodologies = () => {
 
           <div className='mt-4 overflow-x-auto'>
             <MethodologyComparisonTable
-              methodologies={getSelectedMethodologyObjects()}
+              methodologies={selectedMethodologyObjects}
               categoryColors={categoryColors}
             />
           </div>
@@ -192,43 +198,49 @@ const Methodologies = () => {
 }
 
 // Comparison table component
-const MethodologyComparisonTable = ({
+const MethodologyComparisonTableComponent = ({
   methodologies,
   categoryColors,
 }: {
   methodologies: Methodology[]
   categoryColors: Record<string, string>
 }) => {
-  // Comparison criteria
-  const criteria = [
-    { key: 'category', label: 'Category' },
-    { key: 'description', label: 'Description' },
-    { key: 'complexity', label: 'Complexity' },
-    { key: 'teamSize', label: 'Team Size' },
-    { key: 'flexibility', label: 'Flexibility' },
-    { key: 'timeToImplement', label: 'Time to Implement' },
-  ]
+  // Memoize comparison criteria
+  const criteria = useMemo(
+    () => [
+      { key: 'category', label: 'Category' },
+      { key: 'description', label: 'Description' },
+      { key: 'complexity', label: 'Complexity' },
+      { key: 'teamSize', label: 'Team Size' },
+      { key: 'flexibility', label: 'Flexibility' },
+      { key: 'timeToImplement', label: 'Time to Implement' },
+    ],
+    [],
+  )
 
-  // Helper function to render cell content based on criteria
-  const renderCellContent = (methodology: Methodology, criteriaKey: string) => {
-    const value = methodology[criteriaKey as keyof Methodology]
+  // Memoize helper function to render cell content based on criteria
+  const renderCellContent = useCallback(
+    (methodology: Methodology, criteriaKey: string) => {
+      const value = methodology[criteriaKey as keyof Methodology]
 
-    if (criteriaKey === 'category') {
-      return (
-        <Badge
-          variant='outline'
-          className={cn('text-xs font-normal border', categoryColors[value as string])}
-        >
-          {value}
-        </Badge>
-      )
-    }
+      if (criteriaKey === 'category') {
+        return (
+          <Badge
+            variant='outline'
+            className={cn('text-xs font-normal border', categoryColors[value as string])}
+          >
+            {value}
+          </Badge>
+        )
+      }
 
-    return value
-  }
+      return value
+    },
+    [categoryColors],
+  )
 
-  // Helper function to get background color for complexity, flexibility, etc.
-  const getValueColor = (value: string) => {
+  // Memoize helper function to get background color for complexity, flexibility, etc.
+  const getValueColor = useCallback((value: string) => {
     switch (value) {
       case 'Low':
         return 'bg-green-50 text-green-700'
@@ -243,7 +255,7 @@ const MethodologyComparisonTable = ({
       default:
         return ''
     }
-  }
+  }, [])
 
   return (
     <div className='w-full'>
@@ -297,4 +309,7 @@ const MethodologyComparisonTable = ({
   )
 }
 
+const MethodologyComparisonTable = React.memo(MethodologyComparisonTableComponent)
+
+const Methodologies = React.memo(MethodologiesComponent)
 export default Methodologies

@@ -5,8 +5,8 @@ import { authMiddleware as requireAuth } from '../services/auth';
 
 const router = Router();
 
-// GET /experiences → list all experiences (public)
-router.get('/', async (req: Request, res: Response) => {
+// GET /experiences → list all experiences (requires auth)
+router.get('/', requireAuth, async (req: Request, res: Response) => {
   try {
     const experiences = await Experience.find({ visibility: 'public' })
       .sort({ createdAt: -1 });
@@ -88,7 +88,20 @@ router.put('/:id', requireAuth, async (req: Request, res: Response) => {
       linkedinUrl,
     } = req.body;
 
-    const updateData: any = {};
+    const updateData: Partial<{
+      title: string;
+      company: string;
+      employmentType: string;
+      location: string;
+      locationType: string;
+      description: string;
+      startDate: string;
+      endDate: string | null;
+      current: boolean;
+      skills: string[];
+      companyLogoUrl: string;
+      linkedinUrl: string;
+    }> = {};
     
     if (title !== undefined) updateData.title = title;
     if (company !== undefined) updateData.company = company;

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import type { PortfolioProject } from '@/types/portfolio'
 import { PortfolioCard } from '@/components/portfolio/PortfolioCard'
 
@@ -25,13 +25,15 @@ function getGridLayout(category: PortfolioSectionProps['category']): string {
   }
 }
 
-export const PortfolioSection: React.FC<PortfolioSectionProps> = ({
+const PortfolioSectionComponent: React.FC<PortfolioSectionProps> = ({
   category,
   CategoryIcon,
   projects,
   hoveredId,
   onHover,
 }) => {
+  const gridLayout = useMemo(() => getGridLayout(category), [category])
+
   return (
     <div className='space-y-4 sm:space-y-6'>
       <div className='flex items-center gap-3 mb-4 sm:mb-6'>
@@ -47,7 +49,7 @@ export const PortfolioSection: React.FC<PortfolioSectionProps> = ({
         <div className='flex-1 h-px bg-gray-300 ml-4 sm:ml-8' />
       </div>
 
-      <div className={getGridLayout(category)}>
+      <div className={gridLayout}>
         {projects.map((project) => (
           <PortfolioCard
             key={project.id}
@@ -61,3 +63,5 @@ export const PortfolioSection: React.FC<PortfolioSectionProps> = ({
     </div>
   )
 }
+
+export const PortfolioSection = React.memo(PortfolioSectionComponent)

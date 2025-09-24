@@ -213,7 +213,14 @@ export function useDeleteMessage() {
 }
 
 export function useTechnologies() {
-  return useApiQuery(() => httpClient.getTechnologies())
+  const { getAuthToken } = useClerkAuth()
+
+  return useApiQuery(async () => {
+    const token = await getAuthToken()
+    return token
+      ? httpClient.getTechnologies(token)
+      : Promise.resolve({ success: false, error: 'No auth token' })
+  })
 }
 
 export function useCreateTechnology() {
@@ -254,11 +261,25 @@ export function useCertifications() {
 }
 
 export function useBadges() {
-  return useApiQuery(() => httpClient.getBadges())
+  const { getAuthToken } = useClerkAuth()
+
+  return useApiQuery(async () => {
+    const token = await getAuthToken()
+    return token
+      ? httpClient.getBadges(token)
+      : Promise.resolve({ success: false, error: 'No auth token' })
+  })
 }
 
 export function useExperiences() {
-  return useApiQuery(() => httpClient.getExperiences())
+  const { getAuthToken } = useClerkAuth()
+
+  return useApiQuery(async () => {
+    const token = await getAuthToken()
+    return token
+      ? httpClient.getExperiences(token)
+      : Promise.resolve({ success: false, error: 'No auth token' })
+  })
 }
 
 export function useCreateExperience() {

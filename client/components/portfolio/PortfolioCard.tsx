@@ -10,25 +10,29 @@ interface PortfolioCardProps {
   onHover: (id: string | null) => void
 }
 
-function getCardSize(projectId: string): string {
-  // Remove row-span to allow content-driven height and prevent overlap
-  const map: Record<string, string> = {
-    'ai-1': 'col-span-1 sm:col-span-2 lg:col-span-3',
-    'ai-2': 'col-span-1 sm:col-span-2 lg:col-span-2',
-    'ai-3': 'col-span-1 sm:col-span-1 lg:col-span-1',
-    'fe-1': 'col-span-1 sm:col-span-2 lg:col-span-2',
-    'fe-2': 'col-span-1 sm:col-span-1 lg:col-span-1',
-    'fe-3': 'col-span-1 sm:col-span-1 lg:col-span-1',
-    'fs-1': 'col-span-1 sm:col-span-2 lg:col-span-2',
-    'fs-2': 'col-span-1 sm:col-span-1 lg:col-span-1',
-    'fun-1': 'col-span-1 sm:col-span-1 lg:col-span-1',
-    'fun-2': 'col-span-1 sm:col-span-1 lg:col-span-1',
-    'fun-3': 'col-span-1 sm:col-span-1 lg:col-span-1',
+function getCardSize(project: PortfolioProject): string {
+  // Fun/Sandbox cards should all be uniform small size
+  if (project.category === 'Fun/Sandbox') {
+    return 'col-span-1'
   }
-  return map[projectId] || 'col-span-1'
+
+  // For other categories, base size on importance and gradient color
+  const hasRedGradient = project.gradient.includes('red')
+  const importance = project.importance
+
+  if (importance === 'high' && hasRedGradient) {
+    // Biggest cards: high importance + red gradient
+    return 'col-span-1 sm:col-span-2 lg:col-span-3'
+  } else if (importance === 'high' || importance === 'medium') {
+    // Medium cards: high importance (no red) or medium importance
+    return 'col-span-1 sm:col-span-2 lg:col-span-2'
+  } else {
+    // Small cards: low importance
+    return 'col-span-1'
+  }
 }
 
-export const PortfolioCard: React.FC<PortfolioCardProps> = ({
+const PortfolioCardComponent: React.FC<PortfolioCardProps> = ({
   project,
   categoryIcon: Icon,
   hoveredId,
@@ -39,7 +43,7 @@ export const PortfolioCard: React.FC<PortfolioCardProps> = ({
   return (
     <div
       className={`${getCardSize(
-        project.id,
+        project,
       )} group relative overflow-hidden rounded-2xl bg-gradient-to-br min-h-[550px] ${
         project.gradient
       } p-4 sm:p-6 transition-all duration-500 cursor-pointer border border-gray-200 
@@ -129,7 +133,7 @@ export const PortfolioCard: React.FC<PortfolioCardProps> = ({
         {project.hasPreview && (
           <div className='my-4'>
             <div className='bg-gradient-to-r from-white/10 to-white/5 p-3 rounded-xl backdrop-blur-sm border border-white/20 transition-all duration-500 hover:scale-105'>
-              <PreviewContent previewType={project.previewType} />
+              <PreviewContent previewType={project.previewType} heroImageUrl={project.heroImageUrl} />
             </div>
           </div>
         )}
@@ -153,27 +157,43 @@ export const PortfolioCard: React.FC<PortfolioCardProps> = ({
         <div className='mb-3 sm:mb-4'>
           <div className='flex flex-wrap gap-1'>
             {project.techStack
-              .slice(0, ['ai-1', 'fs-1'].includes(project.id) ? 5 : ['ai-2', 'fe-1'].includes(project.id) ? 4 : 3)
+              .slice(
+                0,
+                ['ai-1', 'fs-1'].includes(project.id)
+                  ? 5
+                  : ['ai-2', 'fe-1'].includes(project.id)
+                  ? 4
+                  : 3,
+              )
               .map((tech, index) => (
                 <span
                   key={index}
                   className={`px-2 py-1 bg-white/25 backdrop-blur-sm rounded-lg text-xs font-medium transition-all duration-500 hover:bg-white/40 border border-white/10 ${
-                    isHovered
-                      ? 'bg-white/35 border-white/30 shadow-lg brightness-110'
-                      : ''
+                    isHovered ? 'bg-white/35 border-white/30 shadow-lg brightness-110' : ''
                   }`}
                   style={{ transitionDelay: isHovered ? `${index * 100}ms` : '0ms' }}
                 >
                   {tech}
                 </span>
               ))}
-            {project.techStack.length > (['ai-1', 'fs-1'].includes(project.id) ? 5 : ['ai-2', 'fe-1'].includes(project.id) ? 4 : 3) && (
+            {project.techStack.length >
+              (['ai-1', 'fs-1'].includes(project.id)
+                ? 5
+                : ['ai-2', 'fe-1'].includes(project.id)
+                ? 4
+                : 3) && (
               <span
                 className={`px-2 py-1 bg-white/15 backdrop-blur-sm rounded-lg text-xs border border-white/10 transition-all duration-500 ${
                   isHovered ? 'bg-white/25 brightness-110' : ''
                 }`}
               >
-                +{project.techStack.length - (['ai-1', 'fs-1'].includes(project.id) ? 5 : ['ai-2', 'fe-1'].includes(project.id) ? 4 : 3)}
+                +
+                {project.techStack.length -
+                  (['ai-1', 'fs-1'].includes(project.id)
+                    ? 5
+                    : ['ai-2', 'fe-1'].includes(project.id)
+                    ? 4
+                    : 3)}
               </span>
             )}
           </div>
@@ -290,3 +310,5 @@ export const PortfolioCard: React.FC<PortfolioCardProps> = ({
     </div>
   )
 }
+
+export const PortfolioCard = React.memo(PortfolioCardComponent)

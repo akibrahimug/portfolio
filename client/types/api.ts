@@ -16,7 +16,18 @@ export interface Project {
   repoUrl?: string | null
   gradient?: string | null
   hasPreview?: boolean
-  previewType?: 'image' | 'components' | 'visualization' | 'platform' | 'game' | 'music' | 'ar' | 'chart' | 'dashboard' | 'ecommerce' | 'other'
+  previewType?:
+    | 'image'
+    | 'components'
+    | 'visualization'
+    | 'platform'
+    | 'game'
+    | 'music'
+    | 'ar'
+    | 'chart'
+    | 'dashboard'
+    | 'ecommerce'
+    | 'other'
   duration?: string | null
   teamSize?: string | null
   importance?: 'high' | 'medium' | 'low'

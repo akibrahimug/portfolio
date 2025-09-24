@@ -15,7 +15,7 @@ router.post('/request-upload', authMiddleware, async (req: Request, res: Respons
   try {
     console.log('=== UPLOAD REQUEST ===');
     console.log('Request body:', req.body);
-    
+
     const parsed = schemas.AssetsRequestUploadReq.parse({ version: 'v1', ...req.body });
     const { filename, contentType, folder, assetType } = parsed;
     const userId = (req as unknown as { userId?: string }).userId || 'anonymous';
@@ -39,8 +39,12 @@ router.post('/request-upload', authMiddleware, async (req: Request, res: Respons
     const objectPath = `${assetTypeFolder}${subFolder}/${userId}/${Date.now()}-${filename}`;
     const file = bucket.file(objectPath);
 
-    console.log('Generating signed URL for:', { bucket: process.env.GCS_BUCKET_UPLOADS, objectPath, contentType });
-    
+    console.log('Generating signed URL for:', {
+      bucket: process.env.GCS_BUCKET_UPLOADS,
+      objectPath,
+      contentType,
+    });
+
     const [signedUrl] = await file.getSignedUrl({
       version: 'v4',
       action: 'write',
@@ -76,9 +80,6 @@ router.post('/request-upload', authMiddleware, async (req: Request, res: Respons
 // POST /assets/confirm confirm upload and create asset record
 router.post('/confirm', authMiddleware, async (req: Request, res: Response) => {
   try {
-    console.log('=== CONFIRM UPLOAD ===');
-    console.log('Request body:', req.body);
-    
     const userId = (req as unknown as { userId?: string }).userId;
     if (!userId) {
       console.error('Unauthorized confirm request');
@@ -88,7 +89,6 @@ router.post('/confirm', authMiddleware, async (req: Request, res: Response) => {
     const parsed = schemas.AssetsConfirmReq.parse({ version: 'v1', ownerId: userId, ...req.body });
     const { objectPath, contentType, size, projectId, assetType } = parsed;
 
-    console.log('Confirming upload:', { objectPath, contentType, size, projectId, assetType, userId });
 
     const asset = await assetsRepo.createAsset({
       ownerId: userId,
@@ -100,9 +100,6 @@ router.post('/confirm', authMiddleware, async (req: Request, res: Response) => {
     });
 
     const publicUrl = `https://storage.googleapis.com/${process.env.GCS_BUCKET_UPLOADS}/${objectPath}`;
-
-    console.log('Asset created successfully:', asset._id);
-    console.log('Public URL:', publicUrl);
 
     res.json({
       success: true,
@@ -124,7 +121,7 @@ router.post('/confirm', authMiddleware, async (req: Request, res: Response) => {
   }
 });
 
-// GET /assets/browse — list files in uploads bucket (auth required)
+// GET /assets/browse — list files in uploads bucket (requires auth)
 router.get('/browse', authMiddleware, async (req: Request, res: Response) => {
   try {
     if (!process.env.GCS_BUCKET_UPLOADS) {
@@ -163,18 +160,16 @@ router.get('/browse', authMiddleware, async (req: Request, res: Response) => {
     return;
   } catch (error) {
     console.error('Browse assets failed:', error);
-    res
-      .status(400)
-      .json({
-        success: false,
-        error: 'Invalid request',
-        data: { files: [], total: 0, hasMore: false },
-      });
+    res.status(400).json({
+      success: false,
+      error: 'Invalid request',
+      data: { files: [], total: 0, hasMore: false },
+    });
     return;
   }
 });
 
-// GET /assets/folders — list folder prefixes (auth required)
+// GET /assets/folders — list folder prefixes (requires auth)
 router.get('/folders', authMiddleware, async (req: Request, res: Response) => {
   try {
     if (!process.env.GCS_BUCKET_UPLOADS) {
