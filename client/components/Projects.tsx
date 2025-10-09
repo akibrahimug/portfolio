@@ -44,16 +44,22 @@ const ProjectsComponent: React.FC = () => {
       <div className='max-w-6xl mx-auto space-y-8 sm:space-y-12'>
         {!loading &&
           data &&
-          categories.map((category) => (
-            <PortfolioSection
-              key={category}
-              category={category}
-              CategoryIcon={categoryIcons[category]}
-              projects={data[category]}
-              hoveredId={hoveredCard}
-              onHover={handleHover}
-            />
-          ))}
+          categories.map((category) => {
+            const projects = data[category]
+            // Only render section if it has projects
+            if (!projects || projects.length === 0) return null
+
+            return (
+              <PortfolioSection
+                key={category}
+                category={category}
+                CategoryIcon={categoryIcons[category]}
+                projects={projects}
+                hoveredId={hoveredCard}
+                onHover={handleHover}
+              />
+            )
+          })}
       </div>
     </div>
   )

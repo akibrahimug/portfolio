@@ -84,7 +84,6 @@ function transformToPortfolioProject(apiProject: any): PortfolioProject | null {
     repoUrl: apiProject.repoUrl || apiProject.githubUrl || '#',
     gradient: apiProject.gradient || 'from-gray-700 to-gray-800',
     hasPreview: apiProject.hasPreview || false,
-    previewType: apiProject.previewType || 'platform',
     heroImageUrl: apiProject.heroImageUrl || undefined,
     category: apiProject.category as PortfolioProject['category'],
   }
@@ -134,9 +133,8 @@ function getDummyPortfolioData(): ApiResponse<PortfolioCategoryMap> {
         importance: 'high',
         liveUrl: '#',
         repoUrl: '#',
-        gradient: 'from-red-600 to-red-700',
+        gradient: 'from-brand-600 to-brand-700',
         hasPreview: true,
-        previewType: 'platform',
         category: 'AI Learning/Exploration',
       },
       {
@@ -152,7 +150,6 @@ function getDummyPortfolioData(): ApiResponse<PortfolioCategoryMap> {
         repoUrl: '#',
         gradient: 'from-gray-800 to-gray-900',
         hasPreview: true,
-        previewType: 'platform',
         category: 'AI Learning/Exploration',
       },
       {
@@ -168,7 +165,6 @@ function getDummyPortfolioData(): ApiResponse<PortfolioCategoryMap> {
         repoUrl: '#',
         gradient: 'from-gray-700 to-gray-800',
         hasPreview: true,
-        previewType: 'platform',
         category: 'AI Learning/Exploration',
       },
     ],
@@ -184,9 +180,8 @@ function getDummyPortfolioData(): ApiResponse<PortfolioCategoryMap> {
         importance: 'high',
         liveUrl: '#',
         repoUrl: '#',
-        gradient: 'from-red-600 to-red-700',
+        gradient: 'from-brand-600 to-brand-700',
         hasPreview: true,
-        previewType: 'platform',
         category: 'Frontend/UI/UX',
       },
       {
@@ -202,7 +197,6 @@ function getDummyPortfolioData(): ApiResponse<PortfolioCategoryMap> {
         repoUrl: '#',
         gradient: 'from-gray-700 to-gray-800',
         hasPreview: true,
-        previewType: 'platform',
         category: 'Frontend/UI/UX',
       },
       {
@@ -218,7 +212,6 @@ function getDummyPortfolioData(): ApiResponse<PortfolioCategoryMap> {
         repoUrl: '#',
         gradient: 'from-gray-800 to-gray-900',
         hasPreview: true,
-        previewType: 'platform',
         category: 'Frontend/UI/UX',
       },
     ],
@@ -234,9 +227,8 @@ function getDummyPortfolioData(): ApiResponse<PortfolioCategoryMap> {
         importance: 'high',
         liveUrl: '#',
         repoUrl: '#',
-        gradient: 'from-red-600 to-red-700',
+        gradient: 'from-brand-600 to-brand-700',
         hasPreview: true,
-        previewType: 'platform',
         category: 'Full Stack',
       },
       {
@@ -268,7 +260,6 @@ function getDummyPortfolioData(): ApiResponse<PortfolioCategoryMap> {
         repoUrl: '#',
         gradient: 'from-gray-700 to-gray-800',
         hasPreview: true,
-        previewType: 'platform',
         category: 'Fun/Sandbox',
       },
       {
@@ -284,7 +275,6 @@ function getDummyPortfolioData(): ApiResponse<PortfolioCategoryMap> {
         repoUrl: '#',
         gradient: 'from-gray-700 to-gray-800',
         hasPreview: true,
-        previewType: 'platform',
         category: 'Fun/Sandbox',
       },
       {
@@ -300,7 +290,6 @@ function getDummyPortfolioData(): ApiResponse<PortfolioCategoryMap> {
         repoUrl: '#',
         gradient: 'from-gray-700 to-gray-800',
         hasPreview: true,
-        previewType: 'platform',
         category: 'Fun/Sandbox',
       },
     ],

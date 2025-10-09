@@ -93,7 +93,7 @@ export default function ProfileDesc({ certified }: ProfileDescProps) {
           ) : (
             <SlideUp className='space-y-2 text-center md:text-left'>
               <h2 className='text-2xl md:text-3xl font-medium'>
-                Hi, I&apos;m <span className='text-red-600 font-semibold'>Ibrahim</span> a
+                Hi, I&apos;m <span className='text-brand-600 font-semibold'>Ibrahim</span> a
               </h2>
               <h1 className='text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold tracking-tight text-gray-500 leading-tight'>
                 FULLSTACK
@@ -112,14 +112,14 @@ export default function ProfileDesc({ certified }: ProfileDescProps) {
             <SlideUp delay={200} className='flex flex-wrap justify-center md:justify-start gap-4'>
               <Button
                 onClick={handleEmail}
-                className='bg-red-500 hover:bg-red-600 text-white rounded-[11px] px-4 hover:scale-125 transition-transform duration-700'
+                className='bg-brand-500 hover:bg-brand-600 text-white rounded-[11px] px-4 hover:scale-125 transition-transform duration-700'
               >
                 Let&apos;s talk
                 <PaperPlaneTilt className='ml-2 h-4 w-4' />
               </Button>
               <Button
                 variant='ghost'
-                className='rounded-full text-gray-700 hover:bg-transparent hover:scale-125 transition-transform duration-700'
+                className='rounded-full text-gray-800 hover:bg-transparent hover:scale-125 hover:text-brand-600 transition-all duration-700'
                 onClick={scrollToProjects}
               >
                 Portfolio
@@ -137,7 +137,7 @@ export default function ProfileDesc({ certified }: ProfileDescProps) {
             </div>
           ) : (
             <SlideUp delay={400} className='flex justify-center md:justify-start space-x-4'>
-              <div className='hidden md:flex items-center text-gray-500 text-sm mr-3 pr-4 border-r border-gray-300/60'>
+              <div className='hidden md:flex items-center text-gray-600 text-sm mr-3 pr-4 border-r border-gray-300/60'>
                 Check out my
               </div>
 
@@ -148,7 +148,7 @@ export default function ProfileDesc({ certified }: ProfileDescProps) {
                     href={link.url}
                     target='_blank'
                     rel='noopener noreferrer'
-                    className='flex items-center justify-center h-12 w-12 rounded-full bg-white/80 text-gray-800 border border-gray-200/80 backdrop-blur-sm shadow-sm transition-transform duration-300 hover:scale-110'
+                    className='flex items-center justify-center h-12 w-12 rounded-full bg-white/80 text-gray-800 border border-gray-200/80 backdrop-blur-sm shadow-sm transition-all duration-300 hover:scale-110 hover:bg-brand-50 hover:text-brand-600 hover:border-brand-200'
                     aria-label={link.label}
                   >
                     {index === 2 ? (
@@ -187,14 +187,14 @@ export default function ProfileDesc({ certified }: ProfileDescProps) {
               {certified.map((item, index) => (
                 <div
                   key={index}
-                  className='group flex items-center text-gray-500 text-sm transition-all hover:translate-x-1'
+                  className='group flex items-center text-gray-600 text-sm transition-all hover:translate-x-1'
                   tabIndex={0}
                 >
                   <CheckCircle
                     aria-hidden
-                    className='mr-2 h-4 w-4 flex-shrink-0 text-gray-300 transition-transform duration-200 group-hover:scale-110 group-hover:text-gray-400 group-focus:scale-110 group-focus:text-gray-400'
+                    className='mr-2 h-4 w-4 flex-shrink-0 text-gray-300 transition-all duration-200 group-hover:scale-110 group-hover:text-brand-500 group-focus:scale-110 group-focus:text-brand-500'
                   />
-                  <span className='transition-colors duration-200 group-hover:text-gray-700 group-focus:text-gray-700'>
+                  <span className='transition-colors duration-200 group-hover:text-gray-800 group-focus:text-gray-800'>
                     {item}
                   </span>
                 </div>

@@ -46,21 +46,26 @@ const mockExperience: Experience = {
   skills: ['React', 'TypeScript', 'Node.js'],
   companyLogoUrl: 'https://example.com/logo.png',
   linkedinUrl: 'https://linkedin.com/company/tech-corp',
-  ownerId: 'user123'
+  ownerId: 'user123',
+  createdAt: '2024-01-01T00:00:00Z',
+  updatedAt: '2024-01-01T00:00:00Z'
 }
 
 const mockTechnology: Technology = {
   _id: '1',
   name: 'React',
   category: 'frontend',
-  proficiency: 'advanced',
   description: 'JavaScript library for building user interfaces',
+  complexity: 'Advanced',
+  teamSize: 'Small Team',
+  flexibility: 'High',
+  timeToImplement: '2-4 weeks',
+  proficiency: 8,
+  yearsOfExperience: 3,
   iconUrl: 'https://example.com/react-icon.png',
-  websiteUrl: 'https://reactjs.org',
-  experience: 24,
-  lastUsed: '2024-01',
-  featured: true,
-  ownerId: 'user123'
+  ownerId: 'user123',
+  createdAt: '2024-01-01T00:00:00Z',
+  updatedAt: '2024-01-01T00:00:00Z'
 }
 
 const mockMessage: Message = {
@@ -70,7 +75,8 @@ const mockMessage: Message = {
   subject: 'Test Subject',
   message: 'Test message content',
   status: 'unread',
-  priority: 'medium',
+  priority: 'normal',
+  source: 'web',
   createdAt: '2024-01-01T00:00:00Z',
   updatedAt: '2024-01-01T00:00:00Z'
 }
@@ -313,10 +319,13 @@ describe('CRUD Operations Integration Tests', () => {
       const newTechData = {
         name: 'Vue.js',
         category: 'frontend' as const,
-        proficiency: 'intermediate' as const,
         description: 'Progressive JavaScript framework',
-        experience: 6,
-        featured: false
+        complexity: 'Intermediate' as const,
+        teamSize: 'Individual' as const,
+        flexibility: 'Medium' as const,
+        timeToImplement: '1-2 weeks',
+        proficiency: 6,
+        yearsOfExperience: 2
       }
 
       let createResponse: any
@@ -337,9 +346,10 @@ describe('CRUD Operations Integration Tests', () => {
       const { result: updateResult } = renderHook(() => useUpdateTechnology())
 
       const updateData = {
-        proficiency: 'expert' as const,
-        featured: true,
-        experience: 30
+        proficiency: 9,
+        complexity: 'Expert' as const,
+        teamSize: 'Large Team' as const,
+        yearsOfExperience: 5
       }
 
       let updateResponse: any
@@ -389,7 +399,7 @@ describe('CRUD Operations Integration Tests', () => {
           _id: nextId.toString(),
           ...data,
           status: 'unread' as const,
-          priority: 'medium' as const,
+          priority: 'normal' as const,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
         } as Message
@@ -449,7 +459,7 @@ describe('CRUD Operations Integration Tests', () => {
           _id: '2',
           ...newMessageData,
           status: 'unread',
-          priority: 'medium'
+          priority: 'normal'
         })
       )
 

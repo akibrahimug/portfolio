@@ -24,7 +24,7 @@ const Avarta: React.FC = () => {
             blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkbHB0eH/xAAVAQEBAQEAAAAAAAAAAAAAAAAAAQIF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bvZ6kvJuyxwXO0/T9GD7j7HQ7x39BHPPPOqMFJlQNrGNNSNjd5f5qvPPPPKqMFAcI+w+x0OsA=='"
           />
         </div>
-        <span className='font-semibold absolute w-[219px] right-10 top-[90px] text-lg hidden xl:block text-gray-600'>
+        <span className='font-semibold absolute w-[219px] right-10 top-[90px] text-lg hidden xl:block text-gray-700'>
           {'"Let\'s create an amazing web experince together."'}
         </span>
         <div className='absolute top-[250px] right-16 hidden xl:block'>
@@ -32,7 +32,7 @@ const Avarta: React.FC = () => {
             type='button'
             onClick={scrollToProjects}
             aria-label='Scroll to projects'
-            className='group text-gray-400 hover:text-gray-600 transition-colors'
+            className='group text-gray-400 hover:text-brand-500 transition-colors'
           >
             <div className='flex flex-col items-center'>
               <div
@@ -49,7 +49,7 @@ const Avarta: React.FC = () => {
                   className='absolute left-1/2 -translate-x-1/2 h-3 w-3 rounded-full bg-current'
                   style={{
                     animation: 'scrollBounce 2s ease-in-out infinite',
-                    animationFillMode: 'both'
+                    animationFillMode: 'both',
                   }}
                 />
               </div>
@@ -58,7 +58,7 @@ const Avarta: React.FC = () => {
                 style={{
                   writingMode: 'vertical-rl',
                   textOrientation: 'mixed',
-                  animation: 'textGlow 2.5s ease-in-out infinite alternate'
+                  animation: 'textGlow 2.5s ease-in-out infinite alternate',
                 }}
                 className='mt-2 text-sm tracking-wider'
               >
@@ -69,7 +69,7 @@ const Avarta: React.FC = () => {
                   writingMode: 'vertical-rl',
                   textOrientation: 'mixed',
                   animation: 'textGlow 2.5s ease-in-out infinite alternate',
-                  animationDelay: '0.3s'
+                  animationDelay: '0.3s',
                 }}
                 className='text-sm tracking-wider'
               >
@@ -78,7 +78,8 @@ const Avarta: React.FC = () => {
 
               <style jsx>{`
                 @keyframes scrollBounce {
-                  0%, 100% {
+                  0%,
+                  100% {
                     transform: translateX(-50%) translateY(0px);
                     opacity: 1;
                   }
@@ -105,7 +106,8 @@ const Avarta: React.FC = () => {
                 }
 
                 @keyframes mouseFloat {
-                  0%, 100% {
+                  0%,
+                  100% {
                     transform: translateY(0px) scale(1);
                     opacity: 0.7;
                   }

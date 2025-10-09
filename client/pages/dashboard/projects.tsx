@@ -60,7 +60,6 @@ const ProjectsPage: React.FC = () => {
         .trim()
     }
 
-    // previewType is now supported in server schema
 
     // Ensure proper default values for URLs
     if (!payload.liveUrl) payload.liveUrl = ''
@@ -70,12 +69,20 @@ const ProjectsPage: React.FC = () => {
     // Set default values for portfolio visibility
     if (!payload.status) payload.status = 'published'
     if (!payload.visibility) payload.visibility = 'public'
-    if (!payload.previewType) payload.previewType = 'platform'
 
     // Log the payload being sent to server
+    console.log('📤 Sending payload to server:', payload)
 
     // Create the project
-    const createdProject = await createProject.mutate(payload as any)
+    let createdProject
+    try {
+      createdProject = await createProject.mutate(payload as any)
+      console.log('✅ Project created successfully:', createdProject)
+    } catch (error) {
+      console.error('❌ Project creation failed:', error)
+      throw error
+    }
+
     addDialog.close()
 
     // Immediately fetch and display the new project
@@ -85,30 +92,40 @@ const ProjectsPage: React.FC = () => {
     await refetchPortfolioProjects()
 
     // Log the new project data for the projects section
-    createdProject?.project || createdProject
+    return createdProject?.project || createdProject
   }
   async function handleEditSubmit(formData: any) {
-    const id = (editDialog.data as any)?._id
-    if (!id) return
-    const token = await getAuthToken()
-    if (!token) throw new Error('Not authenticated')
-    const updates: any = { ...formData }
-    console.log('📝 Project form data being sent:', {
-      hasPreview: updates.hasPreview,
-      heroImageUrl: updates.heroImageUrl,
-      title: updates.title
-    })
+    try {
+      console.log('🔄 Starting project update...', formData)
+      const id = (editDialog.data as any)?._id
+      if (!id) {
+        console.error('❌ No project ID found')
+        return
+      }
+      const token = await getAuthToken()
+      if (!token) throw new Error('Not authenticated')
+      const updates: any = { ...formData }
+      console.log('📝 Project form data being sent:', {
+        hasPreview: updates.hasPreview,
+        heroImageUrl: updates.heroImageUrl,
+        title: updates.title,
+        id: id
+      })
 
-    // Update the project
-    const updatedProject = await updateProject.mutate({ id, updates })
-    console.log('✅ Project updated:', updatedProject)
-    editDialog.close()
+      // Update the project
+      const updatedProject = await updateProject.mutate({ id, updates })
+      console.log('✅ Project updated:', updatedProject)
+      editDialog.close()
 
-    // Immediately refresh dashboard
-    await refetch()
+      // Immediately refresh dashboard
+      await refetch()
 
-    // Also refetch portfolio projects for the main site and log the update
-    await refetchPortfolioProjects()
+      // Also refetch portfolio projects for the main site and log the update
+      await refetchPortfolioProjects()
+    } catch (error) {
+      console.error('❌ Project update failed:', error)
+      throw error
+    }
   }
 
   async function handleDelete(id: string) {

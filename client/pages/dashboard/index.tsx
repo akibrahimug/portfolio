@@ -39,7 +39,7 @@ const DashboardOverview: React.FC = () => {
   const technologies = technologiesData || []
   const experiences = experiencesData || []
   const certifications = certificationsData?.items || []
-  const badges = badgesData?.data?.badges || []
+  const badges = badgesData?.badges || []
 
   // Calculate real stats (memoized to prevent recalculation)
   const stats = React.useMemo(
@@ -65,7 +65,7 @@ const DashboardOverview: React.FC = () => {
         total: certifications.length,
       },
       badges: {
-        total: badgesData?.data?.total || 0,
+        total: badgesData?.total || 0,
       },
     }),
     [projects, experiences, technologies, messages, certifications, badges, badgesData],

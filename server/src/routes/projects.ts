@@ -3,10 +3,51 @@ import { Project } from '../models/Project';
 import { Technology } from '../models/Technology';
 import { buildSchemas } from '../schemas';
 import { authMiddleware } from '../services/auth';
+import { MongoAssetsRepo } from '../repos/mongo/assetsRepo';
+import { storage } from '../services/gcs';
 import type { Request, Response } from 'express';
 
 const router = Router();
 const schemas = buildSchemas();
+const assetsRepo = new MongoAssetsRepo();
+
+// Helper function to extract GCS path from URL
+function extractGcsPathFromUrl(url: string | null | undefined): string | null {
+  if (!url) return null;
+
+  // Extract path from URLs like: https://storage.googleapis.com/bucket-name/path/to/file
+  const match = url.match(/https:\/\/storage\.googleapis\.com\/[^\/]+\/(.+)$/);
+  return match ? match[1] : null;
+}
+
+// Helper function to clean up old hero image
+async function cleanupOldHeroImage(oldImageUrl: string | null | undefined, projectId: string) {
+  if (!oldImageUrl) return;
+
+  const gcsPath = extractGcsPathFromUrl(oldImageUrl);
+  if (!gcsPath) return;
+
+  try {
+    // Delete from GCS
+    if (process.env.GCS_BUCKET_UPLOADS) {
+      const bucket = storage.bucket(process.env.GCS_BUCKET_UPLOADS);
+      const file = bucket.file(gcsPath);
+      await file.delete();
+      console.log(`Deleted old hero image from GCS: ${gcsPath}`);
+    }
+
+    // Find and delete associated asset records from database
+    const matchingAssets = await assetsRepo.findAssetsByPath(gcsPath, projectId);
+
+    for (const asset of matchingAssets) {
+      await assetsRepo.deleteAssetById(asset._id.toString());
+      console.log(`Deleted asset record from database: ${asset._id}`);
+    }
+  } catch (error) {
+    console.warn(`Failed to cleanup old hero image: ${error}`);
+    // Don't throw - we don't want cleanup failures to prevent the update
+  }
+}
 
 // GET /projects → list with filters and cursor paging
 router.get('/', async (req: Request, res: Response) => {
@@ -104,7 +145,7 @@ router.patch('/:id', authMiddleware, async (req: Request, res: Response) => {
     if (!userId)
       return res.status(401).json({ error: '[[PROJECTS_UPDATE]]-[SERVER]: unauthorized' });
     const id = req.params.id;
-    const parsed = schemas.ProjectsUpdateReq.parse({ version: 'v1', id, data: req.body });
+    const parsed = schemas.ProjectsUpdateReq.parse(req.body);
     const current = await Project.findById(parsed.id).lean();
     if (!current) return res.status(404).json({ error: '[[PROJECTS_UPDATE]]-[SERVER]: not_found' });
     if (current.ownerId !== userId)
@@ -113,6 +154,7 @@ router.patch('/:id', authMiddleware, async (req: Request, res: Response) => {
     if (updates.githubUrl && !updates.repoUrl) {
       updates.repoUrl = updates.githubUrl;
     }
+
     // If technologyIds not provided but techStack names are, resolve them
     if (
       (!(updates as { technologyIds?: string[] }).technologyIds ||
@@ -125,9 +167,20 @@ router.patch('/:id', authMiddleware, async (req: Request, res: Response) => {
         .lean();
       (updates as { technologyIds?: string[] }).technologyIds = techs.map((t) => String(t._id));
     }
-    const project = await Project.findByIdAndUpdate(parsed.id, updates, { new: true }).lean();
+
+    // Handle hero image cleanup if the heroImageUrl is being changed
+    const newHeroImageUrl = updates.heroImageUrl as string | null | undefined;
+    const oldHeroImageUrl = current.heroImageUrl;
+
+    // If heroImageUrl is being removed (set to null/empty) or changed to a different URL
+    if (oldHeroImageUrl && (newHeroImageUrl === null || newHeroImageUrl === '' || (newHeroImageUrl && newHeroImageUrl !== oldHeroImageUrl))) {
+      await cleanupOldHeroImage(oldHeroImageUrl, parsed.id);
+    }
+
+    const project = await Project.findByIdAndUpdate(parsed.id, { $set: updates }, { new: true }).lean();
     return res.json({ project });
   } catch (err) {
+    console.error('Project update failed:', err);
     return res.status(400).json({ error: '[[PROJECTS_UPDATE]]-[SERVER]: invalid_request' + err });
   }
 });

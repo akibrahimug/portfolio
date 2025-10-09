@@ -7,13 +7,39 @@ import path from 'path';
 
 // Initialize Google Cloud Storage with explicit credentials
 const projectId = process.env.GCP_PROJECT_ID;
-const keyFilename = process.env.GOOGLE_APPLICATION_CREDENTIALS || 
+const keyFilename = process.env.GOOGLE_APPLICATION_CREDENTIALS ||
                    path.join(process.cwd(), 'sa.json'); // Default to sa.json in project root
 
-export const storage = new Storage({
-  projectId,
-  keyFilename,
-});
+let storage: Storage;
+
+try {
+  // Check if credentials file exists and is not empty
+  const fs = require('fs');
+  if (fs.existsSync(keyFilename)) {
+    const stats = fs.statSync(keyFilename);
+    if (stats.size === 0) {
+      console.warn('[GCS] Warning: Service account file exists but is empty:', keyFilename);
+      throw new Error('Empty service account file');
+    }
+  }
+
+  storage = new Storage({
+    projectId,
+    keyFilename,
+  });
+} catch (error) {
+  console.warn('[GCS] Warning: Failed to initialize Google Cloud Storage:', error instanceof Error ? error.message : error);
+  console.warn('[GCS] GCS operations will be disabled. Please check your service account credentials.');
+
+  // Create a mock storage instance that throws helpful errors
+  storage = new Proxy({} as Storage, {
+    get() {
+      throw new Error('Google Cloud Storage is not configured. Please set up valid service account credentials.');
+    }
+  });
+}
+
+export { storage };
 
 /**
  * Create a V4 signed PUT URL for a specific object path and content type.

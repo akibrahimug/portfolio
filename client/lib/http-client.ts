@@ -434,6 +434,10 @@ class HttpClient {
     return this.request('/resumes/latest')
   }
 
+  async getPublicResume(): Promise<ApiResponse<{ resume: any }>> {
+    return this.request('/resumes/public')
+  }
+
   async deleteResume(id: string, token: string): Promise<ApiResponse<{ ok: boolean }>> {
     return this.request(`/resumes/${id}`, {
       method: 'DELETE',
@@ -581,6 +585,10 @@ class HttpClient {
       requiresAuth: true,
       token,
     })
+  }
+
+  async getPublicTechnologies(): Promise<ApiResponse<{ items: Technology[] }>> {
+    return this.request('/technologies/public')
   }
 
   async createTechnology(

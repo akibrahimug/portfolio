@@ -47,12 +47,12 @@ const MethodologiesComponent = () => {
   // Memoize category colors object
   const categoryColors: Record<string, string> = useMemo(
     () => ({
-      process: 'bg-green-100 text-green-800',
-      principle: 'bg-blue-100 text-blue-800',
-      paradigm: 'bg-purple-100 text-purple-800',
+      process: 'bg-fun-100 text-fun-800',
+      principle: 'bg-stack-100 text-stack-800',
+      paradigm: 'bg-ai-100 text-ai-800',
       architecture: 'bg-yellow-100 text-yellow-800',
-      technology: 'bg-red-100 text-red-800',
-      design: 'bg-violet-100 text-violet-800',
+      technology: 'bg-brand-100 text-brand-800',
+      design: 'bg-design-100 text-design-800',
     }),
     [],
   )
@@ -110,15 +110,15 @@ const MethodologiesComponent = () => {
   return (
     <div className='m-2 md:mr-10 items-center justify-end'>
       <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
-        <DropdownMenuTrigger className='group inline-flex items-center gap-2 rounded-md bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm ring-1 ring-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 cursor-pointer'>
+        <DropdownMenuTrigger className='group inline-flex items-center gap-2 rounded-md bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 shadow-sm ring-1 ring-gray-200 dark:ring-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-brand-600 dark:hover:text-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 cursor-pointer transition-all duration-300'>
           <span className='hidden lg:inline-block'>My Methodology</span>
           <Flask className='h-4 w-4' />
           <CaretDown className='h-4 w-4 opacity-50 transition-transform group-data-[state=open]:rotate-180' />
         </DropdownMenuTrigger>
-        <DropdownMenuContent align='end' className='w-[280px] bg-white p-1 shadow-md'>
+        <DropdownMenuContent align='end' className='w-[280px] bg-white dark:bg-gray-800 p-1 shadow-md border border-gray-200 dark:border-gray-700'>
           <div className='p-2'>
             <div className='flex items-center justify-between mb-2'>
-              <span className='text-sm font-medium text-gray-700'>
+              <span className='text-sm font-medium text-gray-700 dark:text-gray-300'>
                 Select to compare ({selectedMethodologies.length}/3)
               </span>
               <Button
@@ -126,17 +126,17 @@ const MethodologiesComponent = () => {
                 size='sm'
                 onClick={handleCompareClick}
                 disabled={selectedMethodologies.length < 2}
-                className='h-8 gap-1 bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 disabled:bg-gray-100 disabled:text-gray-400 cursor-pointer'
+                className='h-8 gap-1 bg-brand-50 dark:bg-brand-900/20 text-brand-700 dark:text-brand-400 border border-brand-200 dark:border-brand-800 hover:bg-brand-100 dark:hover:bg-brand-900/30 hover:border-brand-300 dark:hover:border-brand-700 disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:text-gray-400 dark:disabled:text-gray-500 disabled:border-gray-200 dark:disabled:border-gray-700 cursor-pointer transition-all duration-300'
               >
                 <ChartBar className='h-3.5 w-3.5' />
                 <span>Compare</span>
               </Button>
             </div>
           </div>
-          <DropdownMenuSeparator className='bg-gray-200' />
+          <DropdownMenuSeparator className='bg-gray-200 dark:bg-gray-700' />
           {Object.entries(groupedMethodologies).map(([category, items], index) => (
             <React.Fragment key={category}>
-              {index > 0 && <DropdownMenuSeparator className='bg-gray-200' />}
+              {index > 0 && <DropdownMenuSeparator className='bg-gray-200 dark:bg-gray-700' />}
               <DropdownMenuLabel
                 className={cn(
                   'text-xs font-medium uppercase tracking-wider px-2',
@@ -148,7 +148,7 @@ const MethodologiesComponent = () => {
               {items.map((methodology, idx) => (
                 <DropdownMenuItem
                   key={idx}
-                  className='flex cursor-pointer items-center justify-between rounded-md py-1.5 px-2 text-sm text-gray-700 hover:bg-gray-100'
+                  className='flex cursor-pointer items-center justify-between rounded-md py-1.5 px-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200'
                   onSelect={(e) => e.preventDefault()} // Prevent closing dropdown on selection
                 >
                   <div className='flex items-center gap-2'>
@@ -156,7 +156,7 @@ const MethodologiesComponent = () => {
                       id={`methodology-${methodology.name}`}
                       checked={selectedMethodologies.includes(methodology.name)}
                       onCheckedChange={() => toggleMethodologySelection(methodology.name)}
-                      className='border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer'
+                      className='border-gray-300 text-brand-600 focus:ring-brand-500 cursor-pointer'
                     />
                     <span>{methodology.name}</span>
                   </div>
@@ -175,12 +175,12 @@ const MethodologiesComponent = () => {
 
       {/* Comparison Dialog */}
       <Dialog open={isCompareDialogOpen} onOpenChange={handleDialogOpenChange}>
-        <DialogContent className='max-w-4xl bg-white p-6 rounded-lg shadow-lg'>
+        <DialogContent className='max-w-4xl bg-gray-50 dark:bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700'>
           <DialogHeader>
-            <DialogTitle className='text-xl font-semibold text-gray-900'>
+            <DialogTitle className='text-xl font-semibold text-gray-700 dark:text-gray-300'>
               Methodology Comparison
             </DialogTitle>
-            <DialogDescription className='text-gray-500'>
+            <DialogDescription className='text-gray-600 dark:text-gray-400'>
               Compare different development methodologies side by side
             </DialogDescription>
           </DialogHeader>
@@ -243,15 +243,15 @@ const MethodologyComparisonTableComponent = ({
   const getValueColor = useCallback((value: string) => {
     switch (value) {
       case 'Low':
-        return 'bg-green-50 text-green-700'
+        return 'bg-fun-50 text-fun-700'
       case 'Medium':
         return 'bg-yellow-50 text-yellow-700'
       case 'High':
-        return 'bg-red-50 text-red-700'
+        return 'bg-brand-50 text-brand-700'
       case 'Short':
-        return 'bg-green-50 text-green-700'
+        return 'bg-fun-50 text-fun-700'
       case 'Long':
-        return 'bg-red-50 text-red-700'
+        return 'bg-brand-50 text-brand-700'
       default:
         return ''
     }
@@ -262,13 +262,13 @@ const MethodologyComparisonTableComponent = ({
       <table className='w-full border-collapse'>
         <thead>
           <tr>
-            <th className='p-2 text-left font-medium text-gray-500 border-b border-gray-200'>
+            <th className='p-2 text-left font-medium text-gray-600 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700'>
               Criteria
             </th>
             {methodologies.map((methodology) => (
               <th
                 key={methodology.name}
-                className='p-2 text-left font-medium text-gray-900 border-b border-gray-200'
+                className='p-2 text-left font-medium text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700'
               >
                 {methodology.name}
               </th>
@@ -277,8 +277,8 @@ const MethodologyComparisonTableComponent = ({
         </thead>
         <tbody>
           {criteria.map((criterion) => (
-            <tr key={criterion.key} className='border-t border-gray-100'>
-              <td className='p-2 font-medium text-gray-700'>{criterion.label}</td>
+            <tr key={criterion.key} className='border-t border-gray-100 dark:border-gray-700'>
+              <td className='p-2 font-medium text-gray-700 dark:text-gray-300'>{criterion.label}</td>
               {methodologies.map((methodology) => {
                 const value = methodology[criterion.key as keyof Methodology] as string
                 const valueColor = ['complexity', 'flexibility', 'timeToImplement'].includes(
@@ -288,7 +288,7 @@ const MethodologyComparisonTableComponent = ({
                   : ''
 
                 return (
-                  <td key={`${methodology.name}-${criterion.key}`} className='p-2 text-gray-800'>
+                  <td key={`${methodology.name}-${criterion.key}`} className='p-2 text-gray-700 dark:text-gray-300'>
                     {criterion.key === 'category' ? (
                       renderCellContent(methodology, criterion.key)
                     ) : criterion.key === 'description' ? (

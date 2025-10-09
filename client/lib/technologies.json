@@ -3,7 +3,7 @@
     {
       "name": "JavaScript",
       "icon": "/icons/javascript.svg",
-      "color": "bg-yellow-100 dark:bg-yellow-900",
+      "color": "bg-gray-50 dark:bg-gray-800 border-yellow-200 dark:border-yellow-800",
       "experience": "6+ years",
       "learningSource": "Self-taught, bootcamp, professional work",
       "confidenceLevel": 90,
@@ -12,7 +12,7 @@
     {
       "name": "TypeScript",
       "icon": "/icons/typescript.svg",
-      "color": "bg-blue-100 dark:bg-blue-900",
+      "color": "bg-gray-50 dark:bg-gray-800 border-blue-200 dark:border-blue-800",
       "experience": "3+ years",
       "learningSource": "Self-taught, professional projects",
       "confidenceLevel": 85,
@@ -21,7 +21,7 @@
     {
       "name": "React",
       "icon": "/icons/react.svg",
-      "color": "bg-blue-100 dark:bg-blue-900",
+      "color": "bg-gray-50 dark:bg-gray-800 border-blue-200 dark:border-blue-800",
       "experience": "5+ years",
       "learningSource": "Documentation, courses, professional work",
       "confidenceLevel": 95,
@@ -39,7 +39,7 @@
     {
       "name": "Node.js",
       "icon": "/icons/nodejs.svg",
-      "color": "bg-green-100 dark:bg-green-900",
+      "color": "bg-gray-50 dark:bg-gray-800 border-green-200 dark:border-green-800",
       "experience": "4+ years",
       "learningSource": "Self-taught, professional projects",
       "confidenceLevel": 85,
@@ -57,7 +57,7 @@
     {
       "name": "MongoDB",
       "icon": "/icons/mongodb.svg",
-      "color": "bg-green-100 dark:bg-green-900",
+      "color": "bg-gray-50 dark:bg-gray-800 border-green-200 dark:border-green-800",
       "experience": "3+ years",
       "learningSource": "Documentation, courses, professional work",
       "confidenceLevel": 80,
@@ -66,7 +66,7 @@
     {
       "name": "PostgreSQL",
       "icon": "/icons/postgresql.svg",
-      "color": "bg-blue-100 dark:bg-blue-800",
+      "color": "bg-gray-50 dark:bg-gray-800 border-blue-200 dark:border-blue-800",
       "experience": "2+ years",
       "learningSource": "Documentation, courses, professional work",
       "confidenceLevel": 60,
@@ -75,7 +75,7 @@
     {
       "name": "GraphQL",
       "icon": "/icons/graphql.svg",
-      "color": "bg-red-100 dark:bg-red-950",
+      "color": "bg-gray-50 dark:bg-gray-800 border-red-200 dark:border-red-800",
       "experience": "2+ years",
       "learningSource": "Documentation, courses",
       "confidenceLevel": 60,
@@ -84,7 +84,7 @@
     {
       "name": "Redux",
       "icon": "/icons/redux.svg",
-      "color": "bg-purple-100 dark:bg-purple-900",
+      "color": "bg-gray-50 dark:bg-gray-800 border-purple-200 dark:border-purple-800",
       "experience": "3+ years",
       "learningSource": "Documentation, courses, professional work",
       "confidenceLevel": 85,
@@ -93,7 +93,7 @@
     {
       "name": "Tailwind CSS",
       "icon": "/icons/tailwind.svg",
-      "color": "bg-blue-100 dark:bg-blue-800",
+      "color": "bg-gray-50 dark:bg-gray-800 border-blue-200 dark:border-blue-800",
       "experience": "4+ years",
       "learningSource": "Documentation, projects",
       "confidenceLevel": 90,
@@ -102,7 +102,7 @@
     {
       "name": "Sass",
       "icon": "/icons/sass.svg",
-      "color": "bg-red-100 dark:bg-red-950",
+      "color": "bg-gray-50 dark:bg-gray-800 border-red-200 dark:border-red-800",
       "experience": "5+ years",
       "learningSource": "Self-taught, professional projects",
       "confidenceLevel": 90,
@@ -111,7 +111,7 @@
     {
       "name": "Git",
       "icon": "/icons/git.svg",
-      "color": "bg-orange-100 dark:bg-orange-800",
+      "color": "bg-gray-50 dark:bg-gray-800 border-orange-200 dark:border-orange-800",
       "experience": "6+ years",
       "learningSource": "Self-taught, professional work",
       "confidenceLevel": 90,
@@ -120,7 +120,7 @@
     {
       "name": "Jest",
       "icon": "/icons/jest.svg",
-      "color": "bg-purple-100 dark:bg-purple-900",
+      "color": "bg-gray-50 dark:bg-gray-800 border-purple-200 dark:border-purple-800",
       "experience": "3+ years",
       "learningSource": "Documentation, professional projects",
       "confidenceLevel": 80,
@@ -129,7 +129,7 @@
     {
       "name": "Webpack",
       "icon": "/icons/webpack.svg",
-      "color": "bg-blue-100 dark:bg-blue-800",
+      "color": "bg-gray-50 dark:bg-gray-800 border-blue-200 dark:border-blue-800",
       "experience": "4+ years",
       "learningSource": "Documentation, professional projects",
       "confidenceLevel": 75,
@@ -138,7 +138,7 @@
     {
       "name": "Firebase",
       "icon": "/icons/firebase.svg",
-      "color": "bg-yellow-100 dark:bg-yellow-800",
+      "color": "bg-gray-50 dark:bg-gray-800 border-yellow-200 dark:border-yellow-800",
       "experience": "5+ years",
       "learningSource": "Documentation, personal projects",
       "confidenceLevel": 85,
@@ -147,7 +147,7 @@
     {
       "name": "AWS",
       "icon": "/icons/aws.svg",
-      "color": "bg-blue-100 dark:bg-blue-800",
+      "color": "bg-gray-50 dark:bg-gray-800 border-blue-200 dark:border-blue-800",
       "experience": "2+ years",
       "learningSource": "Documentation, courses, professional work",
       "confidenceLevel": 55,
@@ -156,7 +156,7 @@
     {
       "name": "Vercel",
       "icon": "/icons/vercel.svg",
-      "color": "bg-gray-100 dark:bg-gray-900",
+      "color": "bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-700",
       "experience": "3+ years",
       "learningSource": "Documentation, personal projects",
       "confidenceLevel": 85,
@@ -165,7 +165,7 @@
     {
       "name": "Figma",
       "icon": "/icons/figma.svg",
-      "color": "bg-purple-100 dark:bg-purple-900",
+      "color": "bg-gray-50 dark:bg-gray-800 border-purple-200 dark:border-purple-800",
       "experience": "2+ years",
       "learningSource": "Self-taught, professional work",
       "confidenceLevel": 75,
@@ -174,7 +174,7 @@
     {
       "name": "HTML",
       "icon": "/icons/html.svg",
-      "color": "bg-red-100 dark:bg-red-950",
+      "color": "bg-gray-50 dark:bg-gray-800 border-red-200 dark:border-red-800",
       "experience": "6+ years",
       "learningSource": "Self-taught, courses, professional work",
       "confidenceLevel": 95,
@@ -183,7 +183,7 @@
     {
       "name": "CSS",
       "icon": "/icons/css.svg",
-      "color": "bg-blue-100 dark:bg-blue-800",
+      "color": "bg-gray-50 dark:bg-gray-800 border-blue-200 dark:border-blue-800",
       "experience": "6+ years",
       "learningSource": "Self-taught, courses, professional work",
       "confidenceLevel": 90,
@@ -192,7 +192,7 @@
     {
       "name": "Appwrite",
       "icon": "/icons/appwrite.svg",
-      "color": "bg-blue-100 dark:bg-blue-800",
+      "color": "bg-gray-50 dark:bg-gray-800 border-blue-200 dark:border-blue-800",
       "experience": "2+ years",
       "learningSource": "Documentation, courses, professional work",
       "confidenceLevel": 85,
@@ -201,7 +201,7 @@
     {
       "name": "Chart.js",
       "icon": "/icons/chartjs.svg",
-      "color": "bg-yellow-100 dark:bg-yellow-800",
+      "color": "bg-gray-50 dark:bg-gray-800 border-yellow-200 dark:border-yellow-800",
       "experience": "2+ years",
       "learningSource": "Documentation, courses, professional work",
       "confidenceLevel": 95,
@@ -210,7 +210,7 @@
     {
       "name": "Plaid",
       "icon": "/icons/plaid.svg",
-      "color": "bg-blue-100 dark:bg-blue-800",
+      "color": "bg-gray-50 dark:bg-gray-800 border-blue-200 dark:border-blue-800",
       "experience": "2+ years",
       "learningSource": "Documentation, courses, side projects",
       "confidenceLevel": 75,
@@ -219,7 +219,7 @@
     {
       "name": "Stripe",
       "icon": "/icons/stripe.svg",
-      "color": "bg-purple-200 dark:bg-purple-900",
+      "color": "bg-gray-50 dark:bg-gray-800 border-purple-200 dark:border-purple-800",
       "experience": "2+ years",
       "learningSource": "Documentation, courses, side projects",
       "confidenceLevel": 75,

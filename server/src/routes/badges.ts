@@ -34,9 +34,22 @@ router.get('/', authMiddleware, async (req: Request, res: Response) => {
     console.log('[BADGES] Pagination - page:', page, 'limit:', limit);
 
     // Get ALL files first (we need to know total count for proper pagination)
-    const [files] = await storage.bucket(bucketName).getFiles({
-      prefix,
-    });
+    let files;
+    try {
+      [files] = await storage.bucket(bucketName).getFiles({
+        prefix,
+      });
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('Google Cloud Storage is not configured')) {
+        console.log('[BADGES] GCS not configured, returning empty result');
+        res.json({
+          success: true,
+          data: { badges: [], total: 0, page, limit, hasMore: false, totalPages: 0 },
+        });
+        return;
+      }
+      throw error;
+    }
 
     console.log('[BADGES] Found', files.length, 'total files with prefix:', prefix);
 
@@ -96,7 +109,7 @@ router.get('/', authMiddleware, async (req: Request, res: Response) => {
     return;
   } catch (error) {
     console.error('Browse badges failed:', error);
-    res.status(400).json({
+    res.status(500).json({
       success: false,
       error: 'Failed to browse badges',
       data: { badges: [], total: 0 },
@@ -113,6 +126,11 @@ router.delete('/:filename', authMiddleware, async (req: Request, res: Response) 
 
     if (!process.env.GCS_BUCKET_UPLOADS) {
       res.status(500).json({ success: false, error: 'GCS bucket not configured' });
+      return;
+    }
+
+    if (!userId) {
+      res.status(401).json({ success: false, error: 'User not authenticated' });
       return;
     }
 

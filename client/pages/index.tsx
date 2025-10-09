@@ -7,12 +7,10 @@ import dynamic from 'next/dynamic'
 // Lazy load non-critical components
 const TechStackScroll = dynamic(() => import('@/components/TechStack-scroll'), {
   loading: () => <div className='w-full h-96 bg-gray-100 animate-pulse rounded-lg' />,
-  ssr: false,
 })
 
 const Projects = dynamic(() => import('@/components/Projects'), {
   loading: () => <div className='w-full h-screen bg-gray-100 animate-pulse rounded-lg' />,
-  ssr: false,
 })
 
 const Home: React.FC = () => {
@@ -45,7 +43,7 @@ const Home: React.FC = () => {
         <meta httpEquiv='x-ua-compatible' content='ie=edge' />
       </Head>
       <Header />
-      <div className='max-w-[1400px] m-auto'>
+      <div id='about' className='max-w-[1400px] m-auto'>
         <HeroSection certified={[]} />
       </div>
       <div className='max-w-[1400px] m-auto' id='tech-stack'>

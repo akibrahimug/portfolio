@@ -3,6 +3,7 @@ import '@/styles/globals.css'
 import type { AppProps } from 'next/app'
 import { ClerkProvider } from '@clerk/nextjs'
 import { ThemeProvider } from '@/components/theme-provider'
+import Footer from '@/components/Footer'
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
@@ -21,6 +22,7 @@ function MyApp({ Component, pageProps }: AppProps) {
     >
       <ThemeProvider attribute='class' defaultTheme='system' enableSystem>
         <Component {...pageProps} />
+        <Footer />
       </ThemeProvider>
     </ClerkProvider>
   )

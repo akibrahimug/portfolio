@@ -10,16 +10,18 @@ import {
   BookOpen,
   ChartBar,
 } from '@phosphor-icons/react'
-import techStackData from '@/lib/technologies.json'
 import { Button } from '@/components/ui/button'
 import Image from 'next/image'
+import { httpClient } from '@/lib/http-client'
 
 // Extended Technology interface with additional details
 interface Technology {
   name: string
   icon: string
   color: string
+  category?: string
   experience?: string
+  yearsOfExperience?: number
   learningSource?: string
   confidenceLevel?: number
   description?: string
@@ -34,9 +36,26 @@ export default function TechStackScroll() {
   const { ref: containerRef } = useInViewport({ threshold: 0.2 })
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedTech, setSelectedTech] = useState<Technology | null>(null)
+  const [technologies, setTechnologies] = useState<Technology[]>([])
+  const [loading, setLoading] = useState(true)
 
-  // Get the technologies array from the techStack property
-  const technologies: Technology[] = techStackData.techStack
+  // Fetch technologies from API
+  useEffect(() => {
+    const fetchTechnologies = async () => {
+      try {
+        const response = await httpClient.getPublicTechnologies()
+        if (response.success && response.data?.items) {
+          setTechnologies(response.data.items as unknown as Technology[])
+        }
+      } catch (error) {
+        console.error('Failed to fetch technologies:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchTechnologies()
+  }, [])
 
   // Memoized filtered technologies
   const filteredTech = useMemo(() => {
@@ -115,7 +134,11 @@ export default function TechStackScroll() {
           </div>
         </div>
 
-        {filteredTech.length === 0 ? (
+        {loading ? (
+          <div className='text-center py-12'>
+            <p className='text-lg text-gray-600 dark:text-gray-300'>Loading technologies...</p>
+          </div>
+        ) : filteredTech.length === 0 ? (
           <div className='text-center py-12'>
             <p className='text-lg text-gray-600 dark:text-gray-300'>
               No technologies found matching &quot;{searchQuery}&quot;
@@ -250,10 +273,14 @@ interface TechCardProps {
  * @param onClick - Handler invoked when the card is clicked.
  */
 const TechCardComponent: React.FC<TechCardProps> = ({ tech, onClick }) => {
+  // Construct full color classes from the color name
+  const colorName = tech.color || 'gray'
+  const cardColor = `bg-gray-50 dark:bg-gray-800 border-${colorName}-200 dark:border-${colorName}-800`
+
   return (
     <div
       onClick={onClick}
-      className={`flex items-center gap-3 flex-shrink-0 py-3 px-5 rounded-xl ${tech.color} shadow-sm border border-white dark:border-gray-800 transition-all duration-300 hover:scale-105 hover:shadow-md cursor-pointer`}
+      className={`flex items-center gap-3 flex-shrink-0 py-3 px-5 rounded-xl ${cardColor} shadow-md border-2 transition-all duration-300 hover:scale-110 hover:shadow-xl hover:z-10 cursor-pointer text-gray-800 dark:text-gray-100`}
     >
       <Image
         width={24}
@@ -263,7 +290,7 @@ const TechCardComponent: React.FC<TechCardProps> = ({ tech, onClick }) => {
         className='w-6 h-6 object-contain'
         loading='lazy'
       />
-      <span className='font-medium whitespace-nowrap'>{tech.name}</span>
+      <span className='font-semibold whitespace-nowrap'>{tech.name}</span>
     </div>
   )
 }
@@ -283,13 +310,15 @@ interface TechDetailCardProps {
  * @param onClose - Callback to close the modal.
  */
 function TechDetailCard({ tech, onClose }: TechDetailCardProps) {
-  // Default values if not provided in the data
-  const experience = tech.experience || '3+ years'
-  const learningSource = tech.learningSource || 'Self-taught & professional projects'
-  const confidenceLevel = tech.confidenceLevel || 85
-  const description =
-    tech.description ||
-    `${tech.name} is a key technology in my stack that I've used extensively in various projects.`
+  // Use actual data from database, with fallbacks only if truly missing
+  const experience =
+    tech.experience ||
+    (tech.yearsOfExperience
+      ? `${tech.yearsOfExperience}+ year${tech.yearsOfExperience > 1 ? 's' : ''}`
+      : 'Experience not specified')
+  const learningSource = tech.learningSource || 'Learning source not specified'
+  const confidenceLevel = tech.confidenceLevel ?? 0
+  const description = tech.description || `${tech.name} is a technology in my stack.`
 
   const scrollToProjects = () => {
     document.getElementById('projects')?.scrollIntoView({
