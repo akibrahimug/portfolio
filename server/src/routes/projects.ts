@@ -16,7 +16,7 @@ function extractGcsPathFromUrl(url: string | null | undefined): string | null {
   if (!url) return null;
 
   // Extract path from URLs like: https://storage.googleapis.com/bucket-name/path/to/file
-  const match = url.match(/https:\/\/storage\.googleapis\.com\/[^\/]+\/(.+)$/);
+  const match = url.match(/https:\/\/storage\.googleapis\.com\/[^/]+\/(.+)$/);
   return match ? match[1] : null;
 }
 
@@ -144,7 +144,6 @@ router.patch('/:id', authMiddleware, async (req: Request, res: Response) => {
     const userId = (req as unknown as { userId?: string }).userId;
     if (!userId)
       return res.status(401).json({ error: '[[PROJECTS_UPDATE]]-[SERVER]: unauthorized' });
-    const id = req.params.id;
     const parsed = schemas.ProjectsUpdateReq.parse(req.body);
     const current = await Project.findById(parsed.id).lean();
     if (!current) return res.status(404).json({ error: '[[PROJECTS_UPDATE]]-[SERVER]: not_found' });

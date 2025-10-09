@@ -4,6 +4,7 @@
  */
 import { Storage } from '@google-cloud/storage';
 import path from 'path';
+import fs from 'fs';
 
 // Initialize Google Cloud Storage with explicit credentials
 const projectId = process.env.GCP_PROJECT_ID;
@@ -14,7 +15,6 @@ let storage: Storage;
 
 try {
   // Check if credentials file exists and is not empty
-  const fs = require('fs');
   if (fs.existsSync(keyFilename)) {
     const stats = fs.statSync(keyFilename);
     if (stats.size === 0) {
