@@ -52,7 +52,7 @@ const Footer: React.FC = () => {
     const featuredNames = ['Next.js', 'React', 'TypeScript', 'Tailwind CSS']
 
     return featuredNames
-      .map(name => technologies.find(tech => tech.name === name))
+      .map((name) => technologies.find((tech) => tech.name === name))
       .filter(Boolean) as Technology[]
   }, [technologies])
 
@@ -60,8 +60,8 @@ const Footer: React.FC = () => {
   const getTechColor = (name: string): string => {
     const colorMap: Record<string, string> = {
       'Next.js': 'bg-brand-500',
-      'React': 'bg-stack-500',
-      'TypeScript': 'bg-ai-500',
+      React: 'bg-stack-500',
+      TypeScript: 'bg-ai-500',
       'Tailwind CSS': 'bg-fun-500',
     }
     return colorMap[name] || 'bg-gray-500'
@@ -92,13 +92,7 @@ const Footer: React.FC = () => {
     },
     {
       icon: (
-        <Image
-          src='/icons/twitter.svg'
-          alt='Twitter'
-          width={20}
-          height={20}
-          className='h-5 w-5'
-        />
+        <Image src='/icons/twitter.svg' alt='Twitter' width={20} height={20} className='h-5 w-5' />
       ),
       href: 'https://twitter.com/Akibrahimug',
       label: 'Twitter',
@@ -120,9 +114,7 @@ const Footer: React.FC = () => {
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8'>
           {/* Brand Section */}
           <div className='space-y-4'>
-            <h3 className='text-lg font-bold text-gray-700 dark:text-gray-300'>
-              Kasoma Ibrahim
-            </h3>
+            <h3 className='text-lg font-bold text-gray-700 dark:text-gray-300'>Kasoma Ibrahim</h3>
             <p className='text-sm text-gray-600 dark:text-gray-400 leading-relaxed'>
               Full Stack Developer passionate about creating amazing web experiences with modern
               technologies.

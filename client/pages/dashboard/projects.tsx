@@ -60,7 +60,6 @@ const ProjectsPage: React.FC = () => {
         .trim()
     }
 
-
     // Ensure proper default values for URLs
     if (!payload.liveUrl) payload.liveUrl = ''
     if (!payload.repoUrl) payload.repoUrl = ''
@@ -109,7 +108,7 @@ const ProjectsPage: React.FC = () => {
         hasPreview: updates.hasPreview,
         heroImageUrl: updates.heroImageUrl,
         title: updates.title,
-        id: id
+        id: id,
       })
 
       // Update the project

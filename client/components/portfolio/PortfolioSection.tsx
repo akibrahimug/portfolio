@@ -63,7 +63,10 @@ const PortfolioSectionComponent: React.FC<PortfolioSectionProps> = ({
           <h2 className='text-xl sm:text-2xl lg:text-3xl font-bold text-gray-700 dark:text-gray-400'>
             {category}
           </h2>
-          <div className='h-1 w-16 sm:w-20 rounded-full mt-2 transition-all duration-300 hover:w-24' style={{ backgroundColor: getCategoryColor }} />
+          <div
+            className='h-1 w-16 sm:w-20 rounded-full mt-2 transition-all duration-300 hover:w-24'
+            style={{ backgroundColor: getCategoryColor }}
+          />
         </div>
         <div className='flex-1 h-px bg-gray-300 ml-4 sm:ml-8' />
       </div>

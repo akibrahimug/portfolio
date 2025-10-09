@@ -37,6 +37,24 @@ const TechnologiesPage: React.FC = () => {
   const addDialog = useDialogState()
   const editDialog = useDialogState<any>()
 
+  // Helper to get color classes based on color name
+  const getColorClasses = (color: string) => {
+    const colorMap: Record<string, { badge: string; bg: string }> = {
+      blue: { badge: 'bg-blue-100 dark:bg-blue-900', bg: 'bg-blue-100 dark:bg-blue-900' },
+      green: { badge: 'bg-green-100 dark:bg-green-900', bg: 'bg-green-100 dark:bg-green-900' },
+      red: { badge: 'bg-red-100 dark:bg-red-900', bg: 'bg-red-100 dark:bg-red-900' },
+      yellow: { badge: 'bg-yellow-100 dark:bg-yellow-900', bg: 'bg-yellow-100 dark:bg-yellow-900' },
+      purple: { badge: 'bg-purple-100 dark:bg-purple-900', bg: 'bg-purple-100 dark:bg-purple-900' },
+      pink: { badge: 'bg-pink-100 dark:bg-pink-900', bg: 'bg-pink-100 dark:bg-pink-900' },
+      indigo: { badge: 'bg-indigo-100 dark:bg-indigo-900', bg: 'bg-indigo-100 dark:bg-indigo-900' },
+      orange: { badge: 'bg-orange-100 dark:bg-orange-900', bg: 'bg-orange-100 dark:bg-orange-900' },
+      teal: { badge: 'bg-teal-100 dark:bg-teal-900', bg: 'bg-teal-100 dark:bg-teal-900' },
+      cyan: { badge: 'bg-cyan-100 dark:bg-cyan-900', bg: 'bg-cyan-100 dark:bg-cyan-900' },
+      gray: { badge: 'bg-gray-100 dark:bg-gray-900', bg: 'bg-gray-100 dark:bg-gray-900' },
+    }
+    return colorMap[color] || colorMap.gray
+  }
+
   async function handleAddSubmit(formData: any) {
     const token = await getAuthToken()
     if (!token) throw new Error('Not authenticated')
@@ -95,7 +113,7 @@ const TechnologiesPage: React.FC = () => {
     ),
     meta: (
       <>
-        <Badge variant='outline' className={`p-1 px-2 bg-${item.color}-100`}>
+        <Badge variant='outline' className={`p-1 px-2 ${getColorClasses(item.color).badge}`}>
           {item.category}
         </Badge>
       </>
@@ -127,7 +145,7 @@ const TechnologiesPage: React.FC = () => {
         label: 'Color:',
         value: (
           <div
-            className={`w-26 h-4 rounded-full bg-${item.color}-100 dark:bg-${item.color}-900`}
+            className={`w-26 h-4 rounded-full ${getColorClasses(item.color).bg}`}
           ></div>
         ),
       },

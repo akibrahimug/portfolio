@@ -115,7 +115,10 @@ const MethodologiesComponent = () => {
           <Flask className='h-4 w-4' />
           <CaretDown className='h-4 w-4 opacity-50 transition-transform group-data-[state=open]:rotate-180' />
         </DropdownMenuTrigger>
-        <DropdownMenuContent align='end' className='w-[280px] bg-white dark:bg-gray-800 p-1 shadow-md border border-gray-200 dark:border-gray-700'>
+        <DropdownMenuContent
+          align='end'
+          className='w-[280px] bg-white dark:bg-gray-800 p-1 shadow-md border border-gray-200 dark:border-gray-700'
+        >
           <div className='p-2'>
             <div className='flex items-center justify-between mb-2'>
               <span className='text-sm font-medium text-gray-700 dark:text-gray-300'>
@@ -278,7 +281,9 @@ const MethodologyComparisonTableComponent = ({
         <tbody>
           {criteria.map((criterion) => (
             <tr key={criterion.key} className='border-t border-gray-100 dark:border-gray-700'>
-              <td className='p-2 font-medium text-gray-700 dark:text-gray-300'>{criterion.label}</td>
+              <td className='p-2 font-medium text-gray-700 dark:text-gray-300'>
+                {criterion.label}
+              </td>
               {methodologies.map((methodology) => {
                 const value = methodology[criterion.key as keyof Methodology] as string
                 const valueColor = ['complexity', 'flexibility', 'timeToImplement'].includes(
@@ -288,7 +293,10 @@ const MethodologyComparisonTableComponent = ({
                   : ''
 
                 return (
-                  <td key={`${methodology.name}-${criterion.key}`} className='p-2 text-gray-700 dark:text-gray-300'>
+                  <td
+                    key={`${methodology.name}-${criterion.key}`}
+                    className='p-2 text-gray-700 dark:text-gray-300'
+                  >
                     {criterion.key === 'category' ? (
                       renderCellContent(methodology, criterion.key)
                     ) : criterion.key === 'description' ? (

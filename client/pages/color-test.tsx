@@ -180,8 +180,13 @@ const ColorTest: React.FC = () => {
           </h1>
           <p className='text-lg text-gray-600 dark:text-gray-400 max-w-3xl'>
             Complete color palette and component usage guide for the portfolio project. All colors
-            are defined in <code className='bg-gray-200 dark:bg-gray-800 px-2 py-1 rounded'>styles/globals.css</code> using
-            Tailwind v4's <code className='bg-gray-200 dark:bg-gray-800 px-2 py-1 rounded'>@theme inline</code> directive.
+            are defined in{' '}
+            <code className='bg-gray-200 dark:bg-gray-800 px-2 py-1 rounded'>
+              styles/globals.css
+            </code>{' '}
+            using Tailwind v4's{' '}
+            <code className='bg-gray-200 dark:bg-gray-800 px-2 py-1 rounded'>@theme inline</code>{' '}
+            directive.
           </p>
         </div>
 

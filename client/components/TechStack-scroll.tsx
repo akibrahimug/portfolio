@@ -273,9 +273,25 @@ interface TechCardProps {
  * @param onClick - Handler invoked when the card is clicked.
  */
 const TechCardComponent: React.FC<TechCardProps> = ({ tech, onClick }) => {
-  // Construct full color classes from the color name
-  const colorName = tech.color || 'gray'
-  const cardColor = `bg-gray-50 dark:bg-gray-800 border-${colorName}-200 dark:border-${colorName}-800`
+  // Map color names to complete Tailwind classes
+  const getCardColor = (color: string) => {
+    const colorMap: Record<string, string> = {
+      blue: 'bg-gray-50 dark:bg-gray-800 border-blue-200 dark:border-blue-800',
+      green: 'bg-gray-50 dark:bg-gray-800 border-green-200 dark:border-green-800',
+      red: 'bg-gray-50 dark:bg-gray-800 border-red-200 dark:border-red-800',
+      yellow: 'bg-gray-50 dark:bg-gray-800 border-yellow-200 dark:border-yellow-800',
+      purple: 'bg-gray-50 dark:bg-gray-800 border-purple-200 dark:border-purple-800',
+      pink: 'bg-gray-50 dark:bg-gray-800 border-pink-200 dark:border-pink-800',
+      indigo: 'bg-gray-50 dark:bg-gray-800 border-indigo-200 dark:border-indigo-800',
+      orange: 'bg-gray-50 dark:bg-gray-800 border-orange-200 dark:border-orange-800',
+      teal: 'bg-gray-50 dark:bg-gray-800 border-teal-200 dark:border-teal-800',
+      cyan: 'bg-gray-50 dark:bg-gray-800 border-cyan-200 dark:border-cyan-800',
+      gray: 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-800',
+    }
+    return colorMap[color] || colorMap.gray
+  }
+
+  const cardColor = getCardColor(tech.color || 'gray')
 
   return (
     <div
