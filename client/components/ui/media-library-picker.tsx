@@ -169,7 +169,7 @@ export const MediaLibraryPicker: React.FC<MediaLibraryPickerProps> = ({
       <DialogPortal>
         <DialogOverlay className='fixed inset-0 z-[70] bg-black/50' />
         <DialogContent
-          className='fixed left-[50%] top-[50%] z-[80] grid w-full max-w-4xl translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 max-h-[80vh] overflow-hidden'
+          className='fixed left-[50%] top-[50%] z-[80] grid w-full max-w-4xl translate-x-[-50%] translate-y-[-50%] gap-4 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-6 shadow-lg duration-200 max-h-[80vh] overflow-hidden'
           onPointerDownOutside={(e) => e.preventDefault()}
           onInteractOutside={(e) => e.preventDefault()}
         >
