@@ -10,41 +10,49 @@ interface PortfolioCardProps {
   onHover: (id: string | null) => void
 }
 
-function getCardSize(projectId: string): string {
-  // Remove row-span to allow content-driven height and prevent overlap
-  const map: Record<string, string> = {
-    'ai-1': 'col-span-1 sm:col-span-2 lg:col-span-3',
-    'ai-2': 'col-span-1 sm:col-span-2 lg:col-span-2',
-    'ai-3': 'col-span-1 sm:col-span-1 lg:col-span-1',
-    'fe-1': 'col-span-1 sm:col-span-2 lg:col-span-2',
-    'fe-2': 'col-span-1 sm:col-span-1 lg:col-span-1',
-    'fe-3': 'col-span-1 sm:col-span-1 lg:col-span-1',
-    'fs-1': 'col-span-1 sm:col-span-2 lg:col-span-2',
-    'fs-2': 'col-span-1 sm:col-span-1 lg:col-span-1',
-    'fun-1': 'col-span-1 sm:col-span-1 lg:col-span-1',
-    'fun-2': 'col-span-1 sm:col-span-1 lg:col-span-1',
-    'fun-3': 'col-span-1 sm:col-span-1 lg:col-span-1',
+function getCardSize(project: PortfolioProject): string {
+  // Fun/Sandbox cards should all be uniform small size
+  if (project.category === 'Fun/Sandbox') {
+    return 'col-span-1'
   }
-  return map[projectId] || 'col-span-1'
+
+  // For other categories, base size on importance and gradient color
+  const hasRedGradient = project.gradient.includes('red')
+  const importance = project.importance
+
+  if (importance === 'high' && hasRedGradient) {
+    // Biggest cards: high importance + red gradient
+    return 'col-span-1 sm:col-span-2 lg:col-span-2'
+  } else if (importance === 'high') {
+    // Large cards: high importance without red gradient
+    return 'col-span-1 sm:col-span-2 lg:col-span-2'
+  } else if (importance === 'medium') {
+    // Medium cards: medium importance (larger than low, smaller than high)
+    return 'col-span-1 sm:col-span-1 lg:col-span-2'
+  } else {
+    // Small cards: low importance
+    return 'col-span-1'
+  }
 }
 
-export const PortfolioCard: React.FC<PortfolioCardProps> = ({
+const PortfolioCardComponent: React.FC<PortfolioCardProps> = ({
   project,
   categoryIcon: Icon,
   hoveredId,
   onHover,
 }) => {
   const isHovered = hoveredId === project.id
+  const [isTechExpanded, setIsTechExpanded] = React.useState(false)
 
   return (
     <div
       className={`${getCardSize(
-        project.id,
+        project,
       )} group relative overflow-hidden rounded-2xl bg-gradient-to-br min-h-[550px] ${
         project.gradient
-      } p-4 sm:p-6 transition-all duration-500 cursor-pointer border border-gray-200 
-          hover:shadow-2xl hover:shadow-red-500/20 hover:border-red-300/50
-          ${isHovered ? 'ring-2 ring-red-400/30 ring-offset-2 ring-offset-gray-50' : ''}`}
+      } p-4 sm:p-6 transition-all duration-500 cursor-pointer border border-gray-200
+          hover:shadow-2xl hover:shadow-brand-500/20 hover:border-brand-300/50
+          ${isHovered ? 'ring-2 ring-brand-400/30 ring-offset-2 ring-offset-gray-50' : ''}`}
       onMouseEnter={() => onHover(project.id)}
       onMouseLeave={() => onHover(null)}
     >
@@ -65,12 +73,12 @@ export const PortfolioCard: React.FC<PortfolioCardProps> = ({
 
       <div
         className={`absolute top-2 left-2 w-2 h-2 bg-white/20 rounded-full transition-all duration-500 pointer-events-none ${
-          isHovered ? 'scale-150 bg-red-400/60' : ''
+          isHovered ? 'scale-150 bg-brand-400/60' : ''
         }`}
       ></div>
       <div
         className={`absolute top-2 right-2 w-1 h-1 bg-white/30 rounded-full transition-all duration-700 pointer-events-none ${
-          isHovered ? 'scale-200 bg-blue-400/60' : ''
+          isHovered ? 'scale-200 bg-stack-400/60' : ''
         }`}
       ></div>
 
@@ -95,8 +103,8 @@ export const PortfolioCard: React.FC<PortfolioCardProps> = ({
           <div className='flex items-center gap-2'>
             {['ai-1', 'ai-2', 'fs-1'].includes(project.id) && (
               <div
-                className={`px-2 py-1 bg-red-500/90 backdrop-blur-sm rounded-full text-xs font-semibold transition-all duration-300 ${
-                  isHovered ? 'animate-pulse scale-105 bg-red-400' : ''
+                className={`px-2 py-1 bg-brand-500/90 backdrop-blur-sm rounded-full text-xs font-semibold transition-all duration-300 ${
+                  isHovered ? 'animate-pulse scale-105 bg-brand-400' : ''
                 }`}
               >
                 Featured
@@ -105,12 +113,12 @@ export const PortfolioCard: React.FC<PortfolioCardProps> = ({
             <div className='flex gap-2'>
               <div
                 className={`w-2 h-2 rounded-full transition-all duration-500 ${
-                  isHovered ? 'animate-ping bg-green-400 scale-150' : 'bg-white/80'
+                  isHovered ? 'animate-ping bg-fun-400 scale-150' : 'bg-white/80'
                 }`}
               ></div>
               <div
                 className={`w-2 h-2 rounded-full transition-all duration-700 ${
-                  isHovered ? 'animate-ping bg-blue-400 scale-150' : 'bg-white/60'
+                  isHovered ? 'animate-ping bg-stack-400 scale-150' : 'bg-white/60'
                 }`}
                 style={{ animationDelay: '0.2s' }}
               ></div>
@@ -128,8 +136,8 @@ export const PortfolioCard: React.FC<PortfolioCardProps> = ({
 
         {project.hasPreview && (
           <div className='my-4'>
-            <div className='bg-gradient-to-r from-white/10 to-white/5 p-3 rounded-xl backdrop-blur-sm border border-white/20 transition-all duration-500 hover:scale-105'>
-              <PreviewContent previewType={project.previewType} />
+            <div className='relative bg-gradient-to-r from-white/10 to-white/5 p-3 rounded-xl backdrop-blur-sm border border-white/20 overflow-hidden'>
+              <PreviewContent heroImageUrl={project.heroImageUrl} />
             </div>
           </div>
         )}
@@ -151,30 +159,59 @@ export const PortfolioCard: React.FC<PortfolioCardProps> = ({
         </p>
 
         <div className='mb-3 sm:mb-4'>
-          <div className='flex flex-wrap gap-1'>
-            {project.techStack
-              .slice(0, ['ai-1', 'fs-1'].includes(project.id) ? 5 : ['ai-2', 'fe-1'].includes(project.id) ? 4 : 3)
-              .map((tech, index) => (
-                <span
-                  key={index}
-                  className={`px-2 py-1 bg-white/25 backdrop-blur-sm rounded-lg text-xs font-medium transition-all duration-500 hover:bg-white/40 border border-white/10 ${
-                    isHovered
-                      ? 'bg-white/35 border-white/30 shadow-lg brightness-110'
-                      : ''
-                  }`}
-                  style={{ transitionDelay: isHovered ? `${index * 100}ms` : '0ms' }}
-                >
-                  {tech}
-                </span>
-              ))}
-            {project.techStack.length > (['ai-1', 'fs-1'].includes(project.id) ? 5 : ['ai-2', 'fe-1'].includes(project.id) ? 4 : 3) && (
+          <div className='flex flex-wrap gap-1.5'>
+            {(isTechExpanded
+              ? project.techStack
+              : project.techStack.slice(
+                  0,
+                  ['ai-1', 'fs-1'].includes(project.id)
+                    ? 5
+                    : ['ai-2', 'fe-1'].includes(project.id)
+                    ? 4
+                    : 3,
+                )
+            ).map((tech, index) => (
               <span
-                className={`px-2 py-1 bg-white/15 backdrop-blur-sm rounded-lg text-xs border border-white/10 transition-all duration-500 ${
-                  isHovered ? 'bg-white/25 brightness-110' : ''
+                key={index}
+                className={`px-2.5 py-1.5 bg-white/30 backdrop-blur-sm rounded-lg text-xs font-semibold transition-all duration-500 hover:bg-white/45 border border-white/20 shadow-sm ${
+                  isHovered ? 'bg-white/40 border-white/35 shadow-md brightness-110' : ''
                 }`}
+                style={{
+                  transitionDelay: isHovered ? `${index * 100}ms` : '0ms',
+                  textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)',
+                }}
               >
-                +{project.techStack.length - (['ai-1', 'fs-1'].includes(project.id) ? 5 : ['ai-2', 'fe-1'].includes(project.id) ? 4 : 3)}
+                {tech}
               </span>
+            ))}
+            {project.techStack.length >
+              (['ai-1', 'fs-1'].includes(project.id)
+                ? 5
+                : ['ai-2', 'fe-1'].includes(project.id)
+                ? 4
+                : 3) && (
+              <button
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  setIsTechExpanded(!isTechExpanded)
+                }}
+                className={`px-2.5 py-1.5 bg-white/20 backdrop-blur-sm rounded-lg text-xs font-bold border-2 border-white/30 transition-all duration-300 hover:bg-white/35 hover:border-white/50 hover:scale-110 cursor-pointer shadow-sm active:scale-95 ${
+                  isHovered ? 'bg-white/30 border-white/40 brightness-110' : ''
+                }`}
+                style={{ textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)' }}
+              >
+                {isTechExpanded
+                  ? '✕ Show Less'
+                  : `+ ${
+                      project.techStack.length -
+                      (['ai-1', 'fs-1'].includes(project.id)
+                        ? 5
+                        : ['ai-2', 'fe-1'].includes(project.id)
+                        ? 4
+                        : 3)
+                    } more`}
+              </button>
             )}
           </div>
         </div>
@@ -186,26 +223,26 @@ export const PortfolioCard: React.FC<PortfolioCardProps> = ({
         >
           <div
             className={`flex items-center gap-1 transition-all duration-500 ${
-              isHovered ? 'text-yellow-200' : 'text-white/90'
+              isHovered ? 'text-fun-200' : 'text-white/90'
             }`}
           >
             <Clock
               className={`w-3 h-3 transition-all duration-500 ${
                 isHovered
-                  ? 'rotate-90 scale-125 text-yellow-300 drop-shadow-[0_0_6px_rgba(250,204,21,0.6)]'
+                  ? 'rotate-90 scale-125 text-fun-300 drop-shadow-[0_0_6px_rgba(134,239,172,0.6)]'
                   : 'text-white/90'
               }`}
             />
             <span
               className={`hidden sm:inline transition-colors duration-500 ${
-                isHovered ? 'text-yellow-200' : 'text-white/90'
+                isHovered ? 'text-fun-200' : 'text-white/90'
               }`}
             >
               {project.duration}
             </span>
             <span
               className={`sm:hidden transition-colors duration-500 ${
-                isHovered ? 'text-yellow-200' : 'text-white/90'
+                isHovered ? 'text-fun-200' : 'text-white/90'
               }`}
             >
               {project.duration.split('-')[0]}
@@ -213,26 +250,26 @@ export const PortfolioCard: React.FC<PortfolioCardProps> = ({
           </div>
           <div
             className={`flex items-center gap-1 transition-all duration-500 ${
-              isHovered ? 'text-sky-200' : 'text-white/90'
+              isHovered ? 'text-stack-200' : 'text-white/90'
             }`}
           >
             <Users
               className={`w-3 h-3 transition-all duration-500 ${
                 isHovered
-                  ? 'scale-125 text-sky-300 drop-shadow-[0_0_6px_rgba(125,211,252,0.5)]'
+                  ? 'scale-125 text-stack-300 drop-shadow-[0_0_6px_rgba(147,197,253,0.5)]'
                   : 'text-white/90'
               }`}
             />
             <span
               className={`hidden sm:inline transition-colors duration-500 ${
-                isHovered ? 'text-sky-200' : 'text-white/90'
+                isHovered ? 'text-stack-200' : 'text-white/90'
               }`}
             >
               {project.teamSize}
             </span>
             <span
               className={`sm:hidden transition-colors duration-500 ${
-                isHovered ? 'text-sky-200' : 'text-white/90'
+                isHovered ? 'text-stack-200' : 'text-white/90'
               }`}
             >
               {project.teamSize.includes('Solo') ? 'Solo' : project.teamSize.charAt(0)}
@@ -251,9 +288,9 @@ export const PortfolioCard: React.FC<PortfolioCardProps> = ({
               isHovered
                 ? 'bg-white/30 border-white/40 shadow-lg brightness-110'
                 : 'bg-white/20 border-white/20'
-            } text-xs sm:text-sm hover:bg-gradient-to-r hover:from-green-400 hover:to-blue-400 hover:border-transparent hover:shadow-xl`}
+            } text-xs sm:text-sm hover:bg-gradient-to-r hover:from-fun-400 hover:to-stack-400 hover:border-transparent hover:shadow-xl`}
           >
-            <div className='absolute inset-0 bg-gradient-to-r from-green-400 to-blue-400 transform scale-x-0 group-hover/button:scale-x-100 transition-transform duration-300 origin-left rounded-lg'></div>
+            <div className='absolute inset-0 bg-gradient-to-r from-fun-400 to-stack-400 transform scale-x-0 group-hover/button:scale-x-100 transition-transform duration-300 origin-left rounded-lg'></div>
             <ArrowSquareOut
               className={`w-3 h-3 transition-all duration-300 relative z-10 ${
                 isHovered ? 'rotate-12 brightness-110' : ''
@@ -267,9 +304,9 @@ export const PortfolioCard: React.FC<PortfolioCardProps> = ({
               isHovered
                 ? 'bg-white/30 border-white/40 shadow-lg brightness-110'
                 : 'bg-white/20 border-white/20'
-            } text-xs sm:text-sm hover:bg-gradient-to-r hover:from-purple-400 hover:to-pink-400 hover:border-transparent hover:shadow-xl`}
+            } text-xs sm:text-sm hover:bg-gradient-to-r hover:from-ai-400 hover:to-design-400 hover:border-transparent hover:shadow-xl`}
           >
-            <div className='absolute inset-0 bg-gradient-to-r from-purple-400 to-pink-400 transform scale-x-0 group-hover/button:scale-x-100 transition-transform duration-300 origin-right rounded-lg'></div>
+            <div className='absolute inset-0 bg-gradient-to-r from-ai-400 to-design-400 transform scale-x-0 group-hover/button:scale-x-100 transition-transform duration-300 origin-right rounded-lg'></div>
             <GithubLogo
               className={`w-3 h-3 transition-all duration-300 relative z-10 ${
                 isHovered ? '-rotate-12 brightness-110' : ''
@@ -283,10 +320,12 @@ export const PortfolioCard: React.FC<PortfolioCardProps> = ({
       <div
         className={`absolute inset-0 rounded-2xl transition-all duration-500 pointer-events-none ${
           isHovered
-            ? 'bg-gradient-to-r from-red-500/20 via-transparent to-blue-500/20 animate-pulse'
+            ? 'bg-gradient-to-r from-brand-500/20 via-transparent to-stack-500/20 animate-pulse'
             : ''
         }`}
       ></div>
     </div>
   )
 }
+
+export const PortfolioCard = React.memo(PortfolioCardComponent)

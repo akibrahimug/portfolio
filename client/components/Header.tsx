@@ -10,7 +10,7 @@ const Header: React.FC = () => {
       {/* logo */}
       <Link href='/'>
         <ArrowLeft
-          className='lg:hidden text-black md:ml-4 hover:bg-gray-100 hover:text-gray-900 rounded-full p-2 hover:scale-105 transition duration-150 ease-out'
+          className='lg:hidden text-gray-900 md:ml-4 hover:bg-brand-50 hover:text-brand-600 rounded-full p-2 hover:scale-105 transition duration-150 ease-out'
           size={45}
         />
       </Link>

@@ -77,10 +77,9 @@ router.patch('/:id', authMiddleware, async (req: Request, res: Response) => {
   }
 });
 
-// List (already exists in your code, just ensure it returns isPublic)
-router.get('/resumes', authMiddleware, async (req, res) => {
-  const userId = (req as unknown as { userId?: string }).userId;
-  const items = await Asset.find({ ownerId: userId, assetType: 'resume' }).sort({ createdAt: -1 });
+// List resumes (public access)
+router.get('/resumes', async (req, res) => {
+  const items = await Asset.find({ assetType: 'resume' }).sort({ createdAt: -1 });
   res.json({ items }); // includes isPublic
 });
 
@@ -184,6 +183,60 @@ router.get('/latest', async (req: Request, res: Response) => {
     return res
       .status(500)
       .json({ error: '[[RESUMES_LATEST]]-[SERVER]: failed_to_fetch_latest_resume' });
+  }
+});
+
+// GET /resumes/public - Get the most recent public resume
+router.get('/public', async (req: Request, res: Response) => {
+  try {
+    // Find the most recent public resume
+    const publicResume = await Asset.findOne({ assetType: 'resume', isPublic: true })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    if (!publicResume) {
+      return res.status(404).json({ error: '[[RESUMES_PUBLIC]]-[SERVER]: no_public_resume_found' });
+    }
+
+    const bucket = resolveUploadsBucket();
+    if (!bucket) {
+      return res.json({
+        resume: {
+          ...publicResume,
+          signedUrl: null,
+          error: '[[RESUMES_PUBLIC]]-[SERVER]: bucket_not_configured',
+        },
+      });
+    }
+
+    try {
+      const signedUrl = await createV4ViewSignedUrl({
+        bucket,
+        objectPath: publicResume.path,
+        expiresInSeconds: 60 * 60, // 1 hour
+      });
+
+      return res.json({
+        resume: {
+          ...publicResume,
+          signedUrl,
+        },
+      });
+    } catch (error) {
+      console.error('[[RESUMES_PUBLIC]]-[SERVER]: Error generating signed URL:', error);
+      return res.json({
+        resume: {
+          ...publicResume,
+          signedUrl: null,
+          error: '[[RESUMES_PUBLIC]]-[SERVER]: signed_url_generation_failed',
+        },
+      });
+    }
+  } catch (error) {
+    console.error('[[RESUMES_PUBLIC]]-[SERVER]: Error fetching public resume:', error);
+    return res
+      .status(500)
+      .json({ error: '[[RESUMES_PUBLIC]]-[SERVER]: failed_to_fetch_public_resume' });
   }
 });
 

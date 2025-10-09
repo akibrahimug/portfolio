@@ -16,7 +16,6 @@ export interface Project {
   repoUrl?: string | null
   gradient?: string | null
   hasPreview?: boolean
-  previewType?: 'image' | 'components' | 'visualization' | 'platform' | 'game' | 'music' | 'ar' | 'chart' | 'dashboard' | 'ecommerce' | 'other'
   duration?: string | null
   teamSize?: string | null
   importance?: 'high' | 'medium' | 'low'
@@ -214,7 +213,6 @@ export interface ProjectCreateRequest {
   repoUrl?: string
   gradient?: string
   hasPreview?: boolean
-  previewType?: Project['previewType']
   duration?: string
   teamSize?: string
   importance?: 'high' | 'medium' | 'low'
@@ -235,7 +233,6 @@ export interface ProjectUpdateRequest {
   repoUrl?: string
   gradient?: string
   hasPreview?: boolean
-  previewType?: Project['previewType']
   duration?: string
   teamSize?: string
   status?: 'draft' | 'published' | 'archived'

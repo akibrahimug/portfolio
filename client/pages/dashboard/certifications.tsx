@@ -40,10 +40,7 @@ const CertificationsPage: React.FC = () => {
   const refreshCertifications = useCallback(async () => {
     try {
       const token = await getToken({ template })
-      if (!token) {
-        console.log('❌ No auth token available')
-        return
-      }
+      if (!token) throw new Error('Not authenticated')
 
       const res = await httpClient.browseAssets({}, token)
 

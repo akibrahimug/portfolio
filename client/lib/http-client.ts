@@ -434,6 +434,10 @@ class HttpClient {
     return this.request('/resumes/latest')
   }
 
+  async getPublicResume(): Promise<ApiResponse<{ resume: any }>> {
+    return this.request('/resumes/public')
+  }
+
   async deleteResume(id: string, token: string): Promise<ApiResponse<{ ok: boolean }>> {
     return this.request(`/resumes/${id}`, {
       method: 'DELETE',
@@ -494,7 +498,7 @@ class HttpClient {
 
   // Assets browsing
   async browseAssets(
-    params: { prefix?: string; limit?: number; type?: string } = {},
+    params: { prefix?: string; limit?: number; type?: string; token?: string } = {},
     token?: string,
   ): Promise<
     ApiResponse<{
@@ -521,7 +525,7 @@ class HttpClient {
     const query = searchParams.toString()
     return this.request(`/assets/browse${query ? `?${query}` : ''}`, {
       requiresAuth: true,
-      token: token || '',
+      token: token || params?.token || '',
     })
   }
 
@@ -535,7 +539,7 @@ class HttpClient {
     const query = searchParams.toString()
     return this.request(`/assets/folders${query ? `?${query}` : ''}`, {
       requiresAuth: true,
-      token: token || '',
+      token,
     })
   }
 
@@ -576,8 +580,15 @@ class HttpClient {
   }
 
   // Technologies
-  async getTechnologies(): Promise<ApiResponse<Technology[]>> {
-    return this.request('/technologies')
+  async getTechnologies(token: string): Promise<ApiResponse<Technology[]>> {
+    return this.request('/technologies', {
+      requiresAuth: true,
+      token,
+    })
+  }
+
+  async getPublicTechnologies(): Promise<ApiResponse<{ items: Technology[] }>> {
+    return this.request('/technologies/public')
   }
 
   async createTechnology(
@@ -626,12 +637,37 @@ class HttpClient {
     return { success: false, error: 'Endpoint not implemented on server yet' }
   }
 
-  async getBadges(): Promise<ApiResponse<Badge[]>> {
-    return { success: false, error: 'Endpoint not implemented on server yet' }
+  async getBadges(token: string, page: number = 1, limit: number = 50): Promise<ApiResponse<{
+    badges: Badge[]
+    total: number
+    page: number
+    limit: number
+    hasMore: boolean
+    totalPages: number
+  }>> {
+    const searchParams = new URLSearchParams()
+    searchParams.set('page', page.toString())
+    searchParams.set('limit', limit.toString())
+    
+    return this.request(`/badges?${searchParams.toString()}`, {
+      requiresAuth: true,
+      token,
+    })
   }
 
-  async getExperiences(): Promise<ApiResponse<Experience[]>> {
-    return this.request('/experiences')
+  async deleteBadge(filename: string, token: string): Promise<ApiResponse<{ ok: boolean }>> {
+    return this.request(`/badges/${filename}`, {
+      method: 'DELETE',
+      requiresAuth: true,
+      token,
+    })
+  }
+
+  async getExperiences(token: string): Promise<ApiResponse<Experience[]>> {
+    return this.request('/experiences', {
+      requiresAuth: true,
+      token,
+    })
   }
 
   async createExperience(
@@ -652,7 +688,7 @@ class HttpClient {
     token: string,
   ): Promise<ApiResponse<{ experience: Experience }>> {
     return this.request(`/experiences/${id}`, {
-      method: 'PATCH',
+      method: 'PUT',
       body: updates,
       requiresAuth: true,
       token,

@@ -51,6 +51,66 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Brand Red Colors */
+  --color-brand-50: #fef2f2;
+  --color-brand-100: #fee2e2;
+  --color-brand-200: #fecaca;
+  --color-brand-300: #fca5a5;
+  --color-brand-400: #f87171;
+  --color-brand-500: #ef4444;
+  --color-brand-600: #dc2626;
+  --color-brand-700: #b91c1c;
+  --color-brand-800: #991b1b;
+  --color-brand-900: #7f1d1d;
+
+  /* AI Purple Colors */
+  --color-ai-50: #faf5ff;
+  --color-ai-100: #f3e8ff;
+  --color-ai-200: #e9d5ff;
+  --color-ai-300: #d8b4fe;
+  --color-ai-400: #c084fc;
+  --color-ai-500: #a855f7;
+  --color-ai-600: #9333ea;
+  --color-ai-700: #7e22ce;
+  --color-ai-800: #6b21a8;
+  --color-ai-900: #581c87;
+
+  /* Design Pink Colors */
+  --color-design-50: #fdf2f8;
+  --color-design-100: #fce7f3;
+  --color-design-200: #fbcfe8;
+  --color-design-300: #f9a8d4;
+  --color-design-400: #f472b6;
+  --color-design-500: #ec4899;
+  --color-design-600: #db2777;
+  --color-design-700: #be185d;
+  --color-design-800: #9f1239;
+  --color-design-900: #831843;
+
+  /* Stack Blue Colors */
+  --color-stack-50: #eff6ff;
+  --color-stack-100: #dbeafe;
+  --color-stack-200: #bfdbfe;
+  --color-stack-300: #93c5fd;
+  --color-stack-400: #60a5fa;
+  --color-stack-500: #3b82f6;
+  --color-stack-600: #2563eb;
+  --color-stack-700: #1d4ed8;
+  --color-stack-800: #1e40af;
+  --color-stack-900: #1e3a8a;
+
+  /* Fun Green Colors */
+  --color-fun-50: #f0fdf4;
+  --color-fun-100: #dcfce7;
+  --color-fun-200: #bbf7d0;
+  --color-fun-300: #86efac;
+  --color-fun-400: #4ade80;
+  --color-fun-500: #22c55e;
+  --color-fun-600: #16a34a;
+  --color-fun-700: #15803d;
+  --color-fun-800: #166534;
+  --color-fun-900: #14532d;
 }
 
 :root {

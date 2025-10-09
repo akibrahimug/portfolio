@@ -97,11 +97,7 @@ const SkillsInput: React.FC<{
       {/* Display selected skills */}
       <div className='flex flex-wrap gap-2'>
         {skills.map((skill, index) => (
-          <Badge
-            key={index}
-            variant='secondary'
-            className='flex items-center gap-1 px-2 py-1'
-          >
+          <Badge key={index} variant='secondary' className='flex items-center gap-1 px-2 py-1'>
             {skill}
             <X
               className='h-3 w-3 cursor-pointer hover:text-red-500'
@@ -110,7 +106,7 @@ const SkillsInput: React.FC<{
           </Badge>
         ))}
       </div>
-      
+
       {/* Input field */}
       <Input
         value={inputValue}
@@ -119,7 +115,7 @@ const SkillsInput: React.FC<{
         onBlur={handleInputBlur}
         placeholder='Type a skill and press Enter or comma to add it...'
       />
-      
+
       <p className='text-xs text-gray-500 mt-1'>
         Press Enter, comma, or click away to add a skill. Backspace to remove the last skill.
       </p>
@@ -197,7 +193,10 @@ const ExperienceModal: React.FC<{
     }
   }
 
-  const handleInputChange = (field: keyof ExperienceFormData, value: string | boolean | string[]) => {
+  const handleInputChange = (
+    field: keyof ExperienceFormData,
+    value: string | boolean | string[],
+  ) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
@@ -396,12 +395,8 @@ const ExperienceModal: React.FC<{
             <Button type='button' variant='outline' onClick={onClose}>
               Cancel
             </Button>
-            <Button 
-              type='submit' 
-              className='bg-black cursor-pointer'
-              disabled={isLoading}
-            >
-              {isLoading ? 'Saving...' : (experience ? 'Update' : 'Add')} Experience
+            <Button type='submit' className='bg-black cursor-pointer' disabled={isLoading}>
+              {isLoading ? 'Saving...' : experience ? 'Update' : 'Add'} Experience
             </Button>
           </div>
         </form>
@@ -551,17 +546,6 @@ export default function ExperiencesPage() {
   const [editingExperience, setEditingExperience] = useState<Experience | undefined>()
 
   const experiences = experiencesData || []
-  
-  // Debug logging for experiences data
-  console.log('📊 Current experiences data:', {
-    total: experiences.length,
-    loading,
-    error,
-    firstExperience: experiences[0]?.title,
-    lastExperience: experiences[experiences.length - 1]?.title,
-    experienceIds: experiences.map(e => e._id)
-  })
-
   const handleSubmit = async (formData: ExperienceFormData) => {
     try {
       const experienceData = {
@@ -571,22 +555,17 @@ export default function ExperiencesPage() {
         endDate: formData.current ? undefined : formData.endDate,
       }
 
-      console.log('🔄 Saving experience...', { editingExperience: !!editingExperience, experienceData })
-
       if (editingExperience) {
-        console.log('🔄 Updating experience...')
-        const result = await updateExperience.mutate({ id: editingExperience._id, updates: experienceData })
-        console.log('✅ Experience updated:', result)
+        await updateExperience.mutate({
+          id: editingExperience._id,
+          updates: experienceData,
+        })
       } else {
-        console.log('🔄 Creating experience...')
-        const result = await createExperience.mutate(experienceData)
-        console.log('✅ Experience created:', result)
+        await createExperience.mutate(experienceData)
       }
-      
-      console.log('🔄 Refetching experiences...')
+
       await refetch()
-      console.log('✅ Experiences refetched')
-      
+
       // Close modal after successful save and refetch
       setIsModalOpen(false)
       setEditingExperience(undefined)
@@ -602,16 +581,11 @@ export default function ExperiencesPage() {
   }
 
   const handleDelete = async (experienceId: string) => {
-    if (!window.confirm('Are you sure you want to delete this experience?')) {
-      return
-    }
-    
     try {
       await deleteExperience.mutate(experienceId)
       await refetch()
     } catch (err) {
       console.error('Error deleting experience:', err)
-      alert('Failed to delete experience. Please try again.')
     }
   }
 

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import type { PortfolioProject } from '@/types/portfolio'
 import { PortfolioCard } from '@/components/portfolio/PortfolioCard'
 
@@ -25,29 +25,50 @@ function getGridLayout(category: PortfolioSectionProps['category']): string {
   }
 }
 
-export const PortfolioSection: React.FC<PortfolioSectionProps> = ({
+const PortfolioSectionComponent: React.FC<PortfolioSectionProps> = ({
   category,
   CategoryIcon,
   projects,
   hoveredId,
   onHover,
 }) => {
+  const gridLayout = useMemo(() => getGridLayout(category), [category])
+
+  // Define unique colors for each category using centralized color system
+  const getCategoryColor = useMemo(() => {
+    switch (category) {
+      case 'AI Learning/Exploration':
+        return '#a855f7' // Purple for AI (ai-500)
+      case 'Frontend/UI/UX':
+        return '#ec4899' // Pink for design/UI (design-500)
+      case 'Full Stack':
+        return '#3b82f6' // Blue for full stack (stack-500)
+      case 'Fun/Sandbox':
+        return '#22c55e' // Green for fun/games (fun-500)
+      default:
+        return '#1f2937'
+    }
+  }, [category])
+
   return (
     <div className='space-y-4 sm:space-y-6'>
       <div className='flex items-center gap-3 mb-4 sm:mb-6'>
-        <div className='p-2 sm:p-3 rounded-xl shadow-sm transition-transform duration-300 hover:scale-110 bg-gray-900 dark:bg-white'>
+        <div
+          className='p-2 sm:p-3 rounded-xl shadow-md transition-transform duration-300 hover:scale-110'
+          style={{ backgroundColor: getCategoryColor }}
+        >
           <CategoryIcon className='w-5 h-5 sm:w-6 sm:h-6 text-white' />
         </div>
         <div>
-          <h2 className='text-xl sm:text-2xl lg:text-3xl font-bold text-gray-500 dark:text-gray-400'>
+          <h2 className='text-xl sm:text-2xl lg:text-3xl font-bold text-gray-700 dark:text-gray-400'>
             {category}
           </h2>
-          <div className='h-1 w-16 sm:w-20 bg-gray-400 dark:bg-gray-500 rounded-full mt-2 transition-all duration-300 hover:w-24' />
+          <div className='h-1 w-16 sm:w-20 rounded-full mt-2 transition-all duration-300 hover:w-24' style={{ backgroundColor: getCategoryColor }} />
         </div>
         <div className='flex-1 h-px bg-gray-300 ml-4 sm:ml-8' />
       </div>
 
-      <div className={getGridLayout(category)}>
+      <div className={gridLayout}>
         {projects.map((project) => (
           <PortfolioCard
             key={project.id}
@@ -61,3 +82,5 @@ export const PortfolioSection: React.FC<PortfolioSectionProps> = ({
     </div>
   )
 }
+
+export const PortfolioSection = React.memo(PortfolioSectionComponent)

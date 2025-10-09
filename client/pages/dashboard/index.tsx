@@ -15,7 +15,14 @@ import {
   Medal,
 } from '@phosphor-icons/react'
 import Link from 'next/link'
-import { useProjects, useMessages, useTechnologies, useExperiences } from '@/hooks/useHttpApi'
+import {
+  useProjects,
+  useMessages,
+  useTechnologies,
+  useExperiences,
+  useCertifications,
+  useBadges,
+} from '@/hooks/useHttpApi'
 import type { Message } from '@/types/api'
 
 const DashboardOverview: React.FC = () => {
@@ -24,11 +31,15 @@ const DashboardOverview: React.FC = () => {
   const { data: messagesData } = useMessages()
   const { data: technologiesData } = useTechnologies()
   const { data: experiencesData } = useExperiences()
+  const { data: certificationsData } = useCertifications()
+  const { data: badgesData } = useBadges()
 
   const projects = projectsData?.items || []
   const messages = messagesData || []
   const technologies = technologiesData || []
   const experiences = experiencesData || []
+  const certifications = certificationsData?.items || []
+  const badges = badgesData?.badges || []
 
   // Calculate real stats (memoized to prevent recalculation)
   const stats = React.useMemo(
@@ -50,8 +61,14 @@ const DashboardOverview: React.FC = () => {
         total: messages.length,
         unread: messages.length, // All messages are "unread" for now
       },
+      certifications: {
+        total: certifications.length,
+      },
+      badges: {
+        total: badgesData?.total || 0,
+      },
     }),
-    [projects, experiences, technologies, messages],
+    [projects, experiences, technologies, messages, certifications, badges, badgesData],
   )
 
   // Generate recent activity from real data (memoized to prevent recalculation)
@@ -286,8 +303,16 @@ const DashboardOverview: React.FC = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className='text-3xl font-bold text-gray-900 dark:text-white'>0</div>
-            <p className='text-sm text-gray-500 dark:text-gray-400 mt-1'>No certifications yet</p>
+            <div className='text-3xl font-bold text-gray-900 dark:text-white'>
+              {stats.certifications.total}
+            </div>
+            <p className='text-sm text-gray-500 dark:text-gray-400 mt-1'>
+              {stats.certifications.total === 0
+                ? 'No certifications yet'
+                : `${stats.certifications.total} certification${
+                    stats.certifications.total === 1 ? '' : 's'
+                  }`}
+            </p>
             <div className='mt-4'>
               <Link href='/dashboard/certifications'>
                 <Button variant='outline' size='sm' className='cursor-pointer'>
@@ -306,9 +331,13 @@ const DashboardOverview: React.FC = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className='text-3xl font-bold text-gray-900 dark:text-white'>0</div>
+            <div className='text-3xl font-bold text-gray-900 dark:text-white'>
+              {stats.badges.total}
+            </div>
             <p className='text-sm text-gray-500 dark:text-gray-400 mt-1'>
-              Achievement badges earned
+              {stats.badges.total === 0
+                ? 'No badges earned yet'
+                : `${stats.badges.total} badge${stats.badges.total === 1 ? '' : 's'} earned`}
             </p>
             <div className='mt-4'>
               <Link href='/dashboard/badges'>

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useCallback, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -92,158 +92,163 @@ const navItems: NavItem[] = [
   },
 ]
 
-export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
+const DashboardLayoutComponent: React.FC<DashboardLayoutProps> = ({
   children,
   currentSection = 'overview',
 }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const { theme, setTheme } = useTheme()
 
-  const toggleSidebar = () => setSidebarOpen(!sidebarOpen)
+  // Memoize callbacks to prevent unnecessary re-renders
+  const toggleSidebar = useCallback(() => setSidebarOpen(!sidebarOpen), [sidebarOpen])
+
+  const toggleTheme = useCallback(() => {
+    setTheme(theme === 'dark' ? 'light' : 'dark')
+  }, [theme, setTheme])
+
+  // Memoize current section data
+  const currentSectionData = useMemo(
+    () => navItems.find((item) => item.id === currentSection),
+    [currentSection],
+  )
 
   return (
-    <>
+    <div className='min-h-screen bg-background flex overflow-x-hidden'>
       <SignedOut>
         <RedirectToSignIn />
       </SignedOut>
-      <SignedIn>
-        <div className='min-h-screen bg-background flex overflow-x-hidden'>
-          {/* Mobile sidebar overlay */}
-          {sidebarOpen && (
-            <div
-              className='fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden'
-              onClick={toggleSidebar}
-            />
-          )}
+      {/* Mobile sidebar overlay */}
+      {sidebarOpen && (
+        <div
+          className='fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden'
+          onClick={toggleSidebar}
+        />
+      )}
 
-          {/* Sidebar */}
-          <div
-            className={`fixed inset-y-0 left-0 z-50 w-64 transform bg-background shadow-xl transition-transform duration-300 ease-in-out lg:translate-x-0 lg:relative lg:shadow-none ${
-              sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-            }`}
-          >
-            <div className='flex h-full flex-col'>
-              {/* Header */}
-              <div className='flex h-16 items-center justify-between px-6 border-b border-border'>
-                <div className='flex items-center space-x-2'>
-                  <Link href='/' className='lg:hidden'>
-                    <Button variant='ghost' size='sm' className='p-1'>
-                      <ArrowLeft className='h-5 w-5' />
-                    </Button>
-                  </Link>
-                  <div className='h-8 w-8 rounded-lg bg-blue-600 flex items-center justify-center'>
-                    <span className='text-white font-bold text-sm'>P</span>
-                  </div>
-                  <span className='text-xl font-bold text-foreground'>Portfolio</span>
-                </div>
-                <Button variant='ghost' size='sm' onClick={toggleSidebar} className='lg:hidden'>
-                  <DotsThree className='h-5 w-5' />
+      {/* Sidebar */}
+      <div
+        className={`fixed inset-y-0 left-0 z-50 w-64 transform bg-background shadow-xl transition-transform duration-300 ease-in-out lg:translate-x-0 lg:relative lg:shadow-none ${
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        <div className='flex h-full flex-col'>
+          {/* Header */}
+          <div className='flex h-16 items-center justify-between px-6 border-b border-border'>
+            <div className='flex items-center space-x-2'>
+              <Link href='/' className='lg:hidden'>
+                <Button variant='ghost' size='sm' className='p-1'>
+                  <ArrowLeft className='h-5 w-5' />
                 </Button>
+              </Link>
+              <div className='h-8 w-8 rounded-lg bg-blue-600 flex items-center justify-center'>
+                <span className='text-white font-bold text-sm'>P</span>
               </div>
+              <span className='text-xl font-bold text-foreground'>Portfolio</span>
+            </div>
+            <Button variant='ghost' size='sm' onClick={toggleSidebar} className='lg:hidden'>
+              <DotsThree className='h-5 w-5' />
+            </Button>
+          </div>
 
-              {/* Navigation */}
-              <nav className='flex-1 space-y-1 px-4 py-6'>
-                {navItems.map((item) => {
-                  const isActive = currentSection === item.id
-                  return (
-                    <Link key={item.id} href={item.href}>
-                      <Button
-                        variant={isActive ? 'default' : 'ghost'}
-                        className={`w-full justify-start space-x-3 h-12 ${
-                          isActive
-                            ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                            : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
-                        }`}
-                      >
-                        <item.icon className='h-5 w-5' />
-                        <span className='flex-1 text-left'>{item.label}</span>
-                        {item.badge && (
-                          <Badge variant={isActive ? 'secondary' : 'default'} className='ml-auto'>
-                            {item.badge}
-                          </Badge>
-                        )}
-                      </Button>
-                    </Link>
-                  )
-                })}
-              </nav>
-
-              {/* Footer */}
-              <div className='border-t border-border p-4'>
-                <div className='flex items-center justify-between'>
+          {/* Navigation */}
+          <nav className='flex-1 space-y-1 px-4 py-6'>
+            {navItems.map((item) => {
+              const isActive = currentSection === item.id
+              return (
+                <Link key={item.id} href={item.href}>
                   <Button
-                    variant='ghost'
-                    size='sm'
-                    onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                    className='text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                    variant={isActive ? 'default' : 'ghost'}
+                    className={`w-full justify-start space-x-3 h-12 ${
+                      isActive
+                        ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                        : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                    }`}
                   >
-                    {theme === 'dark' ? (
-                      <Clock className='h-5 w-5' />
-                    ) : (
-                      <Clock className='h-5 w-5' />
+                    <item.icon className='h-5 w-5' />
+                    <span className='flex-1 text-left'>{item.label}</span>
+                    {item.badge && (
+                      <Badge variant={isActive ? 'secondary' : 'default'} className='ml-auto'>
+                        {item.badge}
+                      </Badge>
                     )}
                   </Button>
-                </div>
-              </div>
-            </div>
-          </div>
+                </Link>
+              )
+            })}
+          </nav>
 
-          {/* Main content */}
-          <div className='flex-1 lg:pl-0 min-w-0 overflow-x-hidden'>
-            {/* Top bar */}
-            <div className='sticky top-0 z-30 bg-background/80 backdrop-blur-sm border-b border-border'>
-              <div className='flex h-16 items-center justify-between px-6'>
-                <div className='flex items-center space-x-4'>
-                  <Button variant='ghost' size='sm' onClick={toggleSidebar} className='lg:hidden'>
-                    <DotsThree className='h-5 w-5' />
-                  </Button>
-                  <Link href='/'>
-                    <Button
-                      variant='ghost'
-                      size='sm'
-                      className='hidden lg:flex items-center space-x-2 text-muted-foreground hover:text-foreground'
-                    >
-                      <ArrowLeft className='h-4 w-4' />
-                      <span>Back to Portfolio</span>
-                    </Button>
-                  </Link>
-                  <div>
-                    <h1 className='text-xl font-semibold text-foreground'>
-                      {navItems.find((item) => item.id === currentSection)?.label || 'Dashboard'}
-                    </h1>
-                    <p className='text-sm text-muted-foreground'>Manage your portfolio data</p>
-                  </div>
-                </div>
-                <div className='flex items-center space-x-4'>
-                  <SignedIn>
-                    <UserButton
-                      appearance={{
-                        elements: {
-                          avatarBox: 'h-8 w-8',
-                          userButtonPopoverCard: 'shadow-lg',
-                          userButtonPopoverActionButton: 'hover:bg-gray-50',
-                        },
-                      }}
-                      showName
-                    />
-                  </SignedIn>
-                </div>
-              </div>
+          {/* Footer */}
+          <div className='border-t border-border p-4'>
+            <div className='flex items-center justify-between'>
+              <Button
+                variant='ghost'
+                size='sm'
+                onClick={toggleTheme}
+                className='text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+              >
+                {theme === 'dark' ? <Clock className='h-5 w-5' /> : <Clock className='h-5 w-5' />}
+              </Button>
             </div>
-
-            {/* Page content */}
-            <main className='flex-1 p-3 sm:p-4 md:p-6 lg:p-8 overflow-x-hidden min-w-0 no-scrollbar'>
-              <div className='mx-auto max-w-7xl w-full min-w-0 overflow-x-hidden'>{children}</div>
-            </main>
           </div>
         </div>
-      </SignedIn>
-    </>
+      </div>
+
+      {/* Main content */}
+      <div className='flex-1 lg:pl-0 min-w-0 overflow-x-hidden'>
+        {/* Top bar */}
+        <div className='sticky top-0 z-30 bg-background/80 backdrop-blur-sm border-b border-border'>
+          <div className='flex h-16 items-center justify-between px-6'>
+            <div className='flex items-center space-x-4'>
+              <Button variant='ghost' size='sm' onClick={toggleSidebar} className='lg:hidden'>
+                <DotsThree className='h-5 w-5' />
+              </Button>
+              <Link href='/'>
+                <Button
+                  variant='ghost'
+                  size='sm'
+                  className='hidden lg:flex items-center space-x-2 text-muted-foreground hover:text-foreground'
+                >
+                  <ArrowLeft className='h-4 w-4' />
+                  <span>Back to Portfolio</span>
+                </Button>
+              </Link>
+              <div>
+                <h1 className='text-xl font-semibold text-foreground'>
+                  {currentSectionData?.label || 'Dashboard'}
+                </h1>
+                <p className='text-sm text-muted-foreground'>Manage your portfolio data</p>
+              </div>
+            </div>
+            <div className='flex items-center space-x-4'>
+              <SignedIn>
+                <UserButton
+                  appearance={{
+                    elements: {
+                      avatarBox: 'h-8 w-8',
+                      userButtonPopoverCard: 'shadow-lg',
+                      userButtonPopoverActionButton: 'hover:bg-gray-50',
+                    },
+                  }}
+                  showName
+                />
+              </SignedIn>
+            </div>
+          </div>
+        </div>
+
+        {/* Page content */}
+        <main className='flex-1 p-3 sm:p-4 md:p-6 lg:p-8 overflow-x-hidden min-w-0 no-scrollbar'>
+          <div className='mx-auto max-w-7xl w-full min-w-0 overflow-x-hidden'>{children}</div>
+        </main>
+      </div>
+    </div>
   )
 }
 
+export const DashboardLayout = React.memo(DashboardLayoutComponent)
+
 // Stats cards component for overview
-export const StatsCard: React.FC<{
+const StatsCardComponent: React.FC<{
   title: string
   value: string | number
   description?: string
@@ -276,8 +281,10 @@ export const StatsCard: React.FC<{
   )
 }
 
+export const StatsCard = React.memo(StatsCardComponent)
+
 // Breadcrumb component
-export const Breadcrumb: React.FC<{
+const BreadcrumbComponent: React.FC<{
   items: { label: string; href?: string }[]
 }> = ({ items }) => {
   return (
@@ -300,3 +307,5 @@ export const Breadcrumb: React.FC<{
     </nav>
   )
 }
+
+export const Breadcrumb = React.memo(BreadcrumbComponent)

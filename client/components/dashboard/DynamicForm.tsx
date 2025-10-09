@@ -134,11 +134,20 @@ const DynamicFormInner: React.FC<DynamicFormProps> = ({
           break
 
         case 'checkbox':
-          fieldSchema = z.boolean().default(false)
+          fieldSchema = z.boolean()
           break
 
         case 'file':
-          fieldSchema = z.string()
+        case 'image':
+          // For all image fields, allow null/empty values and transform them properly
+          if (formConfig.id === 'project' && field.name === 'heroImageUrl') {
+            fieldSchema = z.string().nullable().optional()
+          } else {
+            fieldSchema = z
+              .string()
+              .nullable()
+              .transform((val) => val || '')
+          }
           break
 
         default:
@@ -167,9 +176,34 @@ const DynamicFormInner: React.FC<DynamicFormProps> = ({
   })
 
   const handleSubmit = (data: FormData) => {
+    // For project forms, handle heroImageUrl and ensure hasPreview is always included
+    let processedData = { ...data }
+    if (formConfig.id === 'project') {
+      // Ensure hasPreview is always a boolean value in the data
+      if (typeof (processedData as any).hasPreview === 'undefined') {
+        ;(processedData as any).hasPreview = false
+      }
+
+      const hasPreview = (processedData as any).hasPreview
+      if (!hasPreview) {
+        ;(processedData as any).heroImageUrl = null
+      } else {
+        // Convert empty string to null for consistency
+        if ((processedData as any).heroImageUrl === '') {
+          ;(processedData as any).heroImageUrl = null
+        }
+      }
+    }
+
     // Clear asset tracking on successful submit since form data is being saved
     clearTracking()
-    onSubmit(data)
+    try {
+      onSubmit(processedData)
+      console.log('📋 onSubmit completed successfully')
+    } catch (error) {
+      console.error('📋 onSubmit failed:', error)
+      throw error
+    }
   }
 
   const handleCancel = React.useCallback(() => {
@@ -180,11 +214,12 @@ const DynamicFormInner: React.FC<DynamicFormProps> = ({
   }, [cleanupAssets, onCancel])
 
   // Clean up assets on component unmount (user navigates away)
-  React.useEffect(() => {
-    return () => {
-      cleanupAssets().catch((err) => console.warn('Failed to cleanup assets on unmount:', err))
-    }
-  }, [cleanupAssets])
+  // DISABLED: This was too aggressive and deleting assets from other forms
+  // React.useEffect(() => {
+  //   return () => {
+  //     cleanupAssets().catch((err) => console.warn('Failed to cleanup assets on unmount:', err))
+  //   }
+  // }, [cleanupAssets])
 
   const renderField = React.useCallback(
     (field: FormSchema['fields'][0]) => {
@@ -424,13 +459,18 @@ const DynamicFormInner: React.FC<DynamicFormProps> = ({
                 const [isPickerOpen, setIsPickerOpen] = React.useState(false)
                 const hasPreview = !!form.watch('hasPreview' as any)
 
+                // For projects, hide the entire image field when hasPreview is false
+                if (formConfig.id === 'project' && !hasPreview) {
+                  return null
+                }
+
                 return (
                   <FormItem>
                     <FormLabel>{field.label}</FormLabel>
                     <FormControl>
                       <div className='space-y-3'>
                         {/* Current image preview */}
-                        {formField.value && !hasPreview && (
+                        {formField.value && (
                           <div className='relative inline-block'>
                             <img
                               src={formField.value}
@@ -442,36 +482,29 @@ const DynamicFormInner: React.FC<DynamicFormProps> = ({
                               variant='destructive'
                               size='sm'
                               className='absolute -top-2 -right-2 h-6 w-6 rounded-full p-0'
-                              onClick={() => formField.onChange('')}
-                              disabled={hasPreview}
+                              onClick={() => formField.onChange(null)}
                             >
                               <X className='h-3 w-3' />
                             </Button>
                           </div>
                         )}
 
-                        {/* Selection buttons */}
-                        <div className='flex gap-2'>
+                        {/* Simple URL input only */}
+                        <div className='space-y-2'>
+                          <Input
+                            placeholder='Enter image URL...'
+                            value={formField.value || ''}
+                            onChange={(e) => formField.onChange(e.target.value || null)}
+                          />
                           <Button
                             type='button'
                             variant='outline'
                             onClick={() => setIsPickerOpen(true)}
                             className='cursor-pointer'
-                            disabled={hasPreview}
                           >
                             <Image className='w-4 h-4 mr-2' />
-                            {formField.value ? 'Change Image' : 'Select Image'}
+                            {formField.value ? 'Change Image' : 'Browse Images'}
                           </Button>
-
-                          {/* Manual URL input as alternative */}
-                          <div className='flex-1'>
-                            <Input
-                              placeholder='Or paste image URL directly...'
-                              value={formField.value || ''}
-                              onChange={(e) => formField.onChange(e.target.value)}
-                              disabled={hasPreview}
-                            />
-                          </div>
                         </div>
 
                         {/* Media Library Picker */}
@@ -499,7 +532,6 @@ const DynamicFormInner: React.FC<DynamicFormProps> = ({
                                 }
                               : undefined
                           }
-                          disabled={hasPreview}
                         />
                       </div>
                     </FormControl>
@@ -541,7 +573,12 @@ const DynamicFormInner: React.FC<DynamicFormProps> = ({
               render={({ field: formField }) => (
                 <FormItem className='flex flex-row items-start space-x-3 space-y-0'>
                   <FormControl>
-                    <Checkbox checked={!!formField.value} onCheckedChange={formField.onChange} />
+                    <Checkbox
+                      checked={formField.value === true}
+                      onCheckedChange={(checked) => {
+                        formField.onChange(Boolean(checked))
+                      }}
+                    />
                   </FormControl>
                   <div className='space-y-1 leading-none'>
                     <FormLabel>{field.label}</FormLabel>

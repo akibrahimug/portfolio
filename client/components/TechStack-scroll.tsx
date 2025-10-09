@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react'
-import { motion, useInView, AnimatePresence } from 'framer-motion'
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
+import { useInViewport } from '@/lib/lightweight-animation'
 import {
   MagnifyingGlass,
   X,
@@ -10,16 +10,18 @@ import {
   BookOpen,
   ChartBar,
 } from '@phosphor-icons/react'
-import techStackData from '@/lib/technologies.json'
 import { Button } from '@/components/ui/button'
 import Image from 'next/image'
+import { httpClient } from '@/lib/http-client'
 
 // Extended Technology interface with additional details
 interface Technology {
   name: string
   icon: string
   color: string
+  category?: string
   experience?: string
+  yearsOfExperience?: number
   learningSource?: string
   confidenceLevel?: number
   description?: string
@@ -31,37 +33,48 @@ interface Technology {
  * Renders a responsive list of technologies with search filtering, animated marquee rows for large lists, and a modal for detailed information on each technology. Supports smooth animations, automatic selection on exact search match, and adapts layout based on the number of filtered technologies.
  */
 export default function TechStackScroll() {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const isInView = useInView(containerRef as any, { once: false, amount: 0.2 })
+  const { ref: containerRef } = useInViewport({ threshold: 0.2 })
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedTech, setSelectedTech] = useState<Technology | null>(null)
+  const [technologies, setTechnologies] = useState<Technology[]>([])
+  const [loading, setLoading] = useState(true)
 
-  // Get the technologies array from the techStack property
-  const technologies: Technology[] = techStackData.techStack
-  const [filteredTech, setFilteredTech] = useState(technologies)
+  // Fetch technologies from API
+  useEffect(() => {
+    const fetchTechnologies = async () => {
+      try {
+        const response = await httpClient.getPublicTechnologies()
+        if (response.success && response.data?.items) {
+          setTechnologies(response.data.items as unknown as Technology[])
+        }
+      } catch (error) {
+        console.error('Failed to fetch technologies:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
 
-  // Motion components
-  const MotionH2 = motion.h2 as any
-  const MotionP = motion.p as any
-  const MotionDiv = motion.div as any
+    fetchTechnologies()
+  }, [])
 
-  // Filter logic
+  // Memoized filtered technologies
+  const filteredTech = useMemo(() => {
+    const query = searchQuery.toLowerCase().trim()
+    return !query
+      ? technologies
+      : technologies.filter((tech) => tech.name.toLowerCase().includes(query))
+  }, [searchQuery, technologies])
+
+  // Auto-select exact match
   useEffect(() => {
     const query = searchQuery.toLowerCase().trim()
-    setFilteredTech(
-      !query
-        ? technologies
-        : technologies.filter((tech) => tech.name.toLowerCase().includes(query)),
-    )
-
-    // If there's exactly one match and it's an exact match, select it automatically
     if (query && filteredTech.length === 1 && filteredTech[0].name.toLowerCase() === query) {
       setSelectedTech(filteredTech[0])
     }
-  }, [searchQuery])
+  }, [searchQuery, filteredTech])
 
-  // Split into rows for marquee
-  const getRowTechnologies = () => {
+  // Memoized rows for marquee
+  const rowTechnologies = useMemo(() => {
     if (!filteredTech.length) return [[], [], []]
     if (filteredTech.length <= 7) return [filteredTech, [], []]
     if (filteredTech.length <= 14) {
@@ -74,47 +87,32 @@ export default function TechStackScroll() {
       filteredTech.slice(size, size * 2),
       filteredTech.slice(size * 2),
     ]
-  }
+  }, [filteredTech])
 
-  const [row1, row2, row3] = getRowTechnologies()
+  const [row1, row2, row3] = rowTechnologies
 
-  // Handle tech selection
-  const handleTechSelect = (tech: Technology) => {
+  // Handle tech selection - memoized
+  const handleTechSelect = useCallback((tech: Technology) => {
     setSelectedTech(tech)
-  }
+  }, [])
 
-  // Close tech detail modal
-  const closeDetail = () => {
+  // Close tech detail modal - memoized
+  const closeDetail = useCallback(() => {
     setSelectedTech(null)
-  }
+  }, [])
 
   return (
     <section className='py-16 relative'>
       <div className='container mx-auto px-4'>
         <div className='text-center mb-8' ref={containerRef}>
-          <MotionH2
-            className='text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-500 dark:text-gray-400 mb-4'
-            initial={{ opacity: 0, y: 20 }}
-            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-            transition={{ duration: 0.6 }}
-          >
+          <h2 className='text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-500 dark:text-gray-400 mb-4'>
             My Tech Stack
-          </MotionH2>
-          <MotionP
-            className='text-lg text-muted-foreground max-w-2xl mx-auto mb-6'
-            initial={{ opacity: 0, y: 20 }}
-            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
+          </h2>
+          <p className='text-lg text-muted-foreground max-w-2xl mx-auto mb-6'>
             Hover over the technologies to stop the scroll and click to see more details
-          </MotionP>
+          </p>
 
-          <MotionDiv
-            className='relative max-w-md mx-auto'
-            initial={{ opacity: 0, y: 20 }}
-            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-          >
+          <div className='relative max-w-md mx-auto'>
             <div className='relative'>
               <MagnifyingGlass className='absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5' />
               <input
@@ -133,16 +131,15 @@ export default function TechStackScroll() {
                 </Button>
               )}
             </div>
-          </MotionDiv>
+          </div>
         </div>
 
-        {filteredTech.length === 0 ? (
-          <MotionDiv
-            className='text-center py-12'
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.3 }}
-          >
+        {loading ? (
+          <div className='text-center py-12'>
+            <p className='text-lg text-gray-600 dark:text-gray-300'>Loading technologies...</p>
+          </div>
+        ) : filteredTech.length === 0 ? (
+          <div className='text-center py-12'>
             <p className='text-lg text-gray-600 dark:text-gray-300'>
               No technologies found matching &quot;{searchQuery}&quot;
             </p>
@@ -152,7 +149,7 @@ export default function TechStackScroll() {
             >
               Clear Search
             </Button>
-          </MotionDiv>
+          </div>
         ) : (
           <>
             {searchQuery || filteredTech.length <= 7 ? (
@@ -220,9 +217,7 @@ export default function TechStackScroll() {
       </div>
 
       {/* Tech Detail Modal */}
-      <AnimatePresence>
-        {selectedTech && <TechDetailCard tech={selectedTech} onClose={closeDetail} />}
-      </AnimatePresence>
+      {selectedTech && <TechDetailCard tech={selectedTech} onClose={closeDetail} />}
     </section>
   )
 }
@@ -277,11 +272,15 @@ interface TechCardProps {
  * @param tech - The technology to display.
  * @param onClick - Handler invoked when the card is clicked.
  */
-function TechCard({ tech, onClick }: TechCardProps) {
+const TechCardComponent: React.FC<TechCardProps> = ({ tech, onClick }) => {
+  // Construct full color classes from the color name
+  const colorName = tech.color || 'gray'
+  const cardColor = `bg-gray-50 dark:bg-gray-800 border-${colorName}-200 dark:border-${colorName}-800`
+
   return (
     <div
       onClick={onClick}
-      className={`flex items-center gap-3 flex-shrink-0 py-3 px-5 rounded-xl ${tech.color} shadow-sm border border-white dark:border-gray-800 transition-all duration-300 hover:scale-105 hover:shadow-md cursor-pointer`}
+      className={`flex items-center gap-3 flex-shrink-0 py-3 px-5 rounded-xl ${cardColor} shadow-md border-2 transition-all duration-300 hover:scale-110 hover:shadow-xl hover:z-10 cursor-pointer text-gray-800 dark:text-gray-100`}
     >
       <Image
         width={24}
@@ -289,11 +288,14 @@ function TechCard({ tech, onClick }: TechCardProps) {
         src={tech.icon || '/placeholder.svg'}
         alt={`${tech.name} icon`}
         className='w-6 h-6 object-contain'
+        loading='lazy'
       />
-      <span className='font-medium whitespace-nowrap'>{tech.name}</span>
+      <span className='font-semibold whitespace-nowrap'>{tech.name}</span>
     </div>
   )
 }
+
+const TechCard = React.memo(TechCardComponent)
 
 interface TechDetailCardProps {
   tech: Technology
@@ -308,16 +310,15 @@ interface TechDetailCardProps {
  * @param onClose - Callback to close the modal.
  */
 function TechDetailCard({ tech, onClose }: TechDetailCardProps) {
-  // Motion components for this function - properly typed to avoid TypeScript errors
-  const MotionDiv = motion.div as React.ComponentType<any>
-
-  // Default values if not provided in the data
-  const experience = tech.experience || '3+ years'
-  const learningSource = tech.learningSource || 'Self-taught & professional projects'
-  const confidenceLevel = tech.confidenceLevel || 85
-  const description =
-    tech.description ||
-    `${tech.name} is a key technology in my stack that I've used extensively in various projects.`
+  // Use actual data from database, with fallbacks only if truly missing
+  const experience =
+    tech.experience ||
+    (tech.yearsOfExperience
+      ? `${tech.yearsOfExperience}+ year${tech.yearsOfExperience > 1 ? 's' : ''}`
+      : 'Experience not specified')
+  const learningSource = tech.learningSource || 'Learning source not specified'
+  const confidenceLevel = tech.confidenceLevel ?? 0
+  const description = tech.description || `${tech.name} is a technology in my stack.`
 
   const scrollToProjects = () => {
     document.getElementById('projects')?.scrollIntoView({
@@ -326,19 +327,12 @@ function TechDetailCard({ tech, onClose }: TechDetailCardProps) {
     onClose()
   }
   return (
-    <MotionDiv
+    <div
       className='fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm'
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
       onClick={onClose}
     >
-      <MotionDiv
+      <div
         className={`relative max-w-md w-full rounded-2xl overflow-hidden shadow-xl ${tech.color} border border-white/20 dark:border-gray-700`}
-        initial={{ scale: 0.9, y: 20, opacity: 0 }}
-        animate={{ scale: 1, y: 0, opacity: 1 }}
-        exit={{ scale: 0.9, y: 20, opacity: 0 }}
-        transition={{ type: 'spring', damping: 25, stiffness: 300 }}
         onClick={(e: React.MouseEvent) => e.stopPropagation()}
       >
         {/* Header */}
@@ -358,6 +352,7 @@ function TechDetailCard({ tech, onClose }: TechDetailCardProps) {
                 src={tech.icon || '/placeholder.svg'}
                 alt={tech.name}
                 className='w-10 h-10 object-contain'
+                loading='lazy'
               />
             </div>
             <div>
@@ -402,11 +397,9 @@ function TechDetailCard({ tech, onClose }: TechDetailCardProps) {
               <div className='flex-1'>
                 <h4 className='font-medium text-gray-900 dark:text-gray-100'>Confidence Level</h4>
                 <div className='mt-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5'>
-                  <MotionDiv
-                    className='bg-green-600 dark:bg-green-500 h-2.5 rounded-full'
-                    initial={{ width: 0 }}
-                    animate={{ width: `${confidenceLevel}%` }}
-                    transition={{ duration: 0.8, ease: 'easeOut' }}
+                  <div
+                    className='bg-green-600 dark:bg-green-500 h-2.5 rounded-full transition-all duration-300'
+                    style={{ width: `${confidenceLevel}%` }}
                   />
                 </div>
                 <p className='text-xs text-right mt-1 text-gray-600 dark:text-gray-400'>
@@ -427,7 +420,7 @@ function TechDetailCard({ tech, onClose }: TechDetailCardProps) {
             </Button>
           </div>
         </div>
-      </MotionDiv>
-    </MotionDiv>
+      </div>
+    </div>
   )
 }

@@ -83,4 +83,18 @@ export class MongoAssetsRepo {
     const nextCursor = hasMore ? String(items[items.length - 1]._id) : undefined;
     return { items, hasMore, nextCursor };
   }
+
+  /** Find asset by GCS path */
+  async findAssetByPath(path: string) {
+    return Asset.findOne({ path }).lean();
+  }
+
+  /** Find assets by GCS path and optionally by projectId */
+  async findAssetsByPath(path: string, projectId?: string) {
+    const q: FilterQuery<IAsset> = { path } as unknown as FilterQuery<IAsset>;
+    if (projectId && isMongoId(projectId)) {
+      q.projectId = new Types.ObjectId(projectId);
+    }
+    return Asset.find(q).lean();
+  }
 }

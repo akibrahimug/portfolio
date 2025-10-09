@@ -7,8 +7,18 @@ import { buildSchemas } from '../schemas';
 const router = Router();
 const schemas = buildSchemas();
 
-// GET /technologies → list all technologies (public)
-router.get('/', async (req: Request, res: Response) => {
+// GET /technologies/public → list all public technologies (no auth required)
+router.get('/public', async (req: Request, res: Response) => {
+  try {
+    const items = await Technology.find().sort({ createdAt: -1 }).lean();
+    return res.json({ items });
+  } catch (err) {
+    return res.status(500).json({ error: '[[TECHNOLOGIES_PUBLIC]]-[SERVER]: internal_error' });
+  }
+});
+
+// GET /technologies → list all technologies (requires auth)
+router.get('/', authMiddleware, async (req: Request, res: Response) => {
   try {
     const items = await Technology.find().sort({ createdAt: -1 }).lean();
     return res.json(items);

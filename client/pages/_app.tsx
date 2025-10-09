@@ -1,43 +1,30 @@
 // pages/_app.tsx
 import '@/styles/globals.css'
 import type { AppProps } from 'next/app'
-import { StyledEngineProvider } from '@mui/material'
-// import { useEffect, useRef } from 'react'
-// import { statsWsClient } from '@/lib/stats-websocket'
 import { ClerkProvider } from '@clerk/nextjs'
 import { ThemeProvider } from '@/components/theme-provider'
-
-// Auth is now handled by Clerk - no need for custom AuthProvider
-
-// Mount-once stats WS bootstrapper (guards StrictMode double-invoke)
-function StatsBootstrap() {
-  // const bootedRef = useRef(false)
-
-  // useEffect(() => {
-  //   if (bootedRef.current) return
-  //   bootedRef.current = true
-
-  //   // Connect to stats WebSocket for monitoring
-  //   statsWsClient.connect()
-
-  //   return () => {
-  //     // Don't disconnect here — StrictMode will unmount/mount effects in dev.
-  //   }
-  // }, [])
-
-  return null
-}
+import Footer from '@/components/Footer'
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
-    <StyledEngineProvider injectFirst>
-      <ClerkProvider {...pageProps}>
-        <ThemeProvider attribute='class' defaultTheme='system' enableSystem>
-          <StatsBootstrap />
-          <Component {...pageProps} />
-        </ThemeProvider>
-      </ClerkProvider>
-    </StyledEngineProvider>
+    <ClerkProvider
+      {...pageProps}
+      appearance={{
+        // Optimize Clerk loading
+        elements: {
+          // Minimize layout shifts by setting consistent dimensions
+          card: 'min-h-[400px]',
+          headerTitle: 'text-xl font-semibold',
+          headerSubtitle: 'text-sm text-gray-600',
+        },
+      }}
+      publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+    >
+      <ThemeProvider attribute='class' defaultTheme='system' enableSystem>
+        <Component {...pageProps} />
+        <Footer />
+      </ThemeProvider>
+    </ClerkProvider>
   )
 }
 
