@@ -234,7 +234,7 @@ function MarqueeSlider({ children, duration, reverse = false }: MarqueeSliderPro
 
   return (
     <div
-      className='relative flex overflow-hidden w-full my-4 h-[70px]'
+      className='relative flex overflow-hidden w-full my-6 h-[70px]'
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
@@ -296,7 +296,7 @@ const TechCardComponent: React.FC<TechCardProps> = ({ tech, onClick }) => {
   return (
     <div
       onClick={onClick}
-      className={`flex items-center gap-3 flex-shrink-0 py-3 px-5 rounded-xl ${cardColor} shadow-md border-2 transition-all duration-300 hover:scale-110 hover:shadow-xl hover:z-10 cursor-pointer text-gray-800 dark:text-gray-100`}
+      className={`flex items-center gap-3 flex-shrink-0 py-3 px-5 rounded-xl ${cardColor} shadow-md border-2 transition-all duration-300 hover:scale-110 hover:z-10 cursor-pointer text-gray-800 dark:text-gray-100`}
     >
       <Image
         width={24}
