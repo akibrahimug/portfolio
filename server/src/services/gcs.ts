@@ -8,25 +8,37 @@ import fs from 'fs';
 
 // Initialize Google Cloud Storage with explicit credentials
 const projectId = process.env.GCP_PROJECT_ID;
-const keyFilename = process.env.GOOGLE_APPLICATION_CREDENTIALS ||
-                   path.join(process.cwd(), 'sa.json'); // Default to sa.json in project root
+const isDevelopment = process.env.NODE_ENV !== 'production';
 
 let storage: Storage;
 
 try {
-  // Check if credentials file exists and is not empty
-  if (fs.existsSync(keyFilename)) {
-    const stats = fs.statSync(keyFilename);
-    if (stats.size === 0) {
-      console.warn('[GCS] Warning: Service account file exists but is empty:', keyFilename);
-      throw new Error('Empty service account file');
-    }
-  }
+  // In production, use Application Default Credentials (no keyfile needed)
+  // In development, use sa.json if GOOGLE_APPLICATION_CREDENTIALS is not set
+  if (isDevelopment) {
+    const keyFilename = process.env.GOOGLE_APPLICATION_CREDENTIALS ||
+                       path.join(process.cwd(), 'sa.json');
 
-  storage = new Storage({
-    projectId,
-    keyFilename,
-  });
+    // Check if credentials file exists and is not empty
+    if (fs.existsSync(keyFilename)) {
+      const stats = fs.statSync(keyFilename);
+      if (stats.size === 0) {
+        console.warn('[GCS] Warning: Service account file exists but is empty:', keyFilename);
+        throw new Error('Empty service account file');
+      }
+    }
+
+    storage = new Storage({
+      projectId,
+      keyFilename,
+    });
+  } else {
+    // Production: use Application Default Credentials (ADC)
+    // This works with GCP service accounts, workload identity, etc.
+    storage = new Storage({
+      projectId,
+    });
+  }
 } catch (error) {
   console.warn('[GCS] Warning: Failed to initialize Google Cloud Storage:', error instanceof Error ? error.message : error);
   console.warn('[GCS] GCS operations will be disabled. Please check your service account credentials.');

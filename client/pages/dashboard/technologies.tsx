@@ -40,17 +40,61 @@ const TechnologiesPage: React.FC = () => {
   // Helper to get color classes based on color name
   const getColorClasses = (color: string) => {
     const colorMap: Record<string, { badge: string; bg: string }> = {
-      blue: { badge: 'bg-blue-100 dark:bg-blue-900', bg: 'bg-blue-100 dark:bg-blue-900' },
-      green: { badge: 'bg-green-100 dark:bg-green-900', bg: 'bg-green-100 dark:bg-green-900' },
-      red: { badge: 'bg-red-100 dark:bg-red-900', bg: 'bg-red-100 dark:bg-red-900' },
-      yellow: { badge: 'bg-yellow-100 dark:bg-yellow-900', bg: 'bg-yellow-100 dark:bg-yellow-900' },
-      purple: { badge: 'bg-purple-100 dark:bg-purple-900', bg: 'bg-purple-100 dark:bg-purple-900' },
-      pink: { badge: 'bg-pink-100 dark:bg-pink-900', bg: 'bg-pink-100 dark:bg-pink-900' },
-      indigo: { badge: 'bg-indigo-100 dark:bg-indigo-900', bg: 'bg-indigo-100 dark:bg-indigo-900' },
-      orange: { badge: 'bg-orange-100 dark:bg-orange-900', bg: 'bg-orange-100 dark:bg-orange-900' },
-      teal: { badge: 'bg-teal-100 dark:bg-teal-900', bg: 'bg-teal-100 dark:bg-teal-900' },
-      cyan: { badge: 'bg-cyan-100 dark:bg-cyan-900', bg: 'bg-cyan-100 dark:bg-cyan-900' },
-      gray: { badge: 'bg-gray-100 dark:bg-gray-900', bg: 'bg-gray-100 dark:bg-gray-900' },
+      blue: {
+        badge:
+          'bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100 border-blue-300 dark:border-blue-700',
+        bg: 'bg-blue-100 dark:bg-blue-900',
+      },
+      green: {
+        badge:
+          'bg-green-100 dark:bg-green-900 text-green-900 dark:text-green-100 border-green-300 dark:border-green-700',
+        bg: 'bg-green-100 dark:bg-green-900',
+      },
+      red: {
+        badge:
+          'bg-red-100 dark:bg-red-900 text-red-900 dark:text-red-100 border-red-300 dark:border-red-700',
+        bg: 'bg-red-100 dark:bg-red-900',
+      },
+      yellow: {
+        badge:
+          'bg-yellow-100 dark:bg-yellow-900 text-yellow-900 dark:text-yellow-100 border-yellow-300 dark:border-yellow-700',
+        bg: 'bg-yellow-100 dark:bg-yellow-900',
+      },
+      purple: {
+        badge:
+          'bg-purple-100 dark:bg-purple-900 text-purple-900 dark:text-purple-100 border-purple-300 dark:border-purple-700',
+        bg: 'bg-purple-100 dark:bg-purple-900',
+      },
+      pink: {
+        badge:
+          'bg-pink-100 dark:bg-pink-900 text-pink-900 dark:text-pink-100 border-pink-300 dark:border-pink-700',
+        bg: 'bg-pink-100 dark:bg-pink-900',
+      },
+      indigo: {
+        badge:
+          'bg-indigo-100 dark:bg-indigo-900 text-indigo-900 dark:text-indigo-100 border-indigo-300 dark:border-indigo-700',
+        bg: 'bg-indigo-100 dark:bg-indigo-900',
+      },
+      orange: {
+        badge:
+          'bg-orange-100 dark:bg-orange-900 text-orange-900 dark:text-orange-100 border-orange-300 dark:border-orange-700',
+        bg: 'bg-orange-100 dark:bg-orange-900',
+      },
+      teal: {
+        badge:
+          'bg-teal-100 dark:bg-teal-900 text-teal-900 dark:text-teal-100 border-teal-300 dark:border-teal-700',
+        bg: 'bg-teal-100 dark:bg-teal-900',
+      },
+      cyan: {
+        badge:
+          'bg-cyan-100 dark:bg-cyan-900 text-cyan-900 dark:text-cyan-100 border-cyan-300 dark:border-cyan-700',
+        bg: 'bg-cyan-100 dark:bg-cyan-900',
+      },
+      gray: {
+        badge:
+          'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600',
+        bg: 'bg-gray-100 dark:bg-gray-900',
+      },
     }
     return colorMap[color] || colorMap.gray
   }
