@@ -336,6 +336,24 @@ function TechDetailCard({ tech, onClose }: TechDetailCardProps) {
   const confidenceLevel = tech.confidenceLevel ?? 0
   const description = tech.description || `${tech.name} is a technology in my stack.`
 
+  // Map color names to gradient backgrounds
+  const getHeaderGradient = (color: string) => {
+    const gradientMap: Record<string, string> = {
+      blue: 'bg-gradient-to-br from-blue-500 to-blue-600',
+      green: 'bg-gradient-to-br from-green-500 to-green-600',
+      red: 'bg-gradient-to-br from-red-500 to-red-600',
+      yellow: 'bg-gradient-to-br from-yellow-500 to-yellow-600',
+      purple: 'bg-gradient-to-br from-purple-500 to-purple-600',
+      pink: 'bg-gradient-to-br from-pink-500 to-pink-600',
+      indigo: 'bg-gradient-to-br from-indigo-500 to-indigo-600',
+      orange: 'bg-gradient-to-br from-orange-500 to-orange-600',
+      teal: 'bg-gradient-to-br from-teal-500 to-teal-600',
+      cyan: 'bg-gradient-to-br from-cyan-500 to-cyan-600',
+      gray: 'bg-gradient-to-br from-gray-500 to-gray-600',
+    }
+    return gradientMap[color] || gradientMap.gray
+  }
+
   const scrollToProjects = () => {
     document.getElementById('projects')?.scrollIntoView({
       behavior: 'smooth',
@@ -348,11 +366,11 @@ function TechDetailCard({ tech, onClose }: TechDetailCardProps) {
       onClick={onClose}
     >
       <div
-        className={`relative max-w-md w-full rounded-2xl overflow-hidden shadow-xl ${tech.color} border border-white/20 dark:border-gray-700`}
+        className='relative max-w-md w-full rounded-2xl overflow-hidden shadow-xl bg-white dark:bg-gray-800 border border-white/20 dark:border-gray-700'
         onClick={(e: React.MouseEvent) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className='relative p-6 pb-4'>
+        <div className={`relative p-6 pb-4 ${getHeaderGradient(tech.color || 'gray')} text-white`}>
           <Button
             onClick={onClose}
             className='absolute top-4 right-4 p-1 rounded-full bg-white/20 dark:bg-gray-800/50 hover:bg-white/30 dark:hover:bg-gray-800/80 transition-colors'
@@ -379,7 +397,7 @@ function TechDetailCard({ tech, onClose }: TechDetailCardProps) {
         </div>
 
         {/* Content */}
-        <div className='bg-white/90 dark:bg-gray-900/90 p-6 pt-5'>
+        <div className='bg-white dark:bg-gray-900 p-6 pt-5'>
           <p className='text-gray-700 dark:text-gray-300 mb-6'>{description}</p>
 
           <div className='space-y-5'>

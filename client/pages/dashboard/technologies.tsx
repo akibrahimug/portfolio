@@ -143,11 +143,7 @@ const TechnologiesPage: React.FC = () => {
       },
       {
         label: 'Color:',
-        value: (
-          <div
-            className={`w-26 h-4 rounded-full ${getColorClasses(item.color).bg}`}
-          ></div>
-        ),
+        value: <div className={`w-26 h-4 rounded-full ${getColorClasses(item.color).bg}`}></div>,
       },
       {
         label: 'Years of Experience:',
