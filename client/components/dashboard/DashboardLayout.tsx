@@ -160,8 +160,8 @@ const DashboardLayoutComponent: React.FC<DashboardLayoutProps> = ({
                     variant={isActive ? 'default' : 'ghost'}
                     className={`w-full justify-start space-x-3 h-12 ${
                       isActive
-                        ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                        : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                        ? 'bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200'
+                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
                     }`}
                   >
                     <item.icon className='h-5 w-5' />
@@ -184,7 +184,7 @@ const DashboardLayoutComponent: React.FC<DashboardLayoutProps> = ({
                 variant='ghost'
                 size='sm'
                 onClick={toggleTheme}
-                className='text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                className='text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
               >
                 {theme === 'dark' ? <Clock className='h-5 w-5' /> : <Clock className='h-5 w-5' />}
               </Button>
@@ -206,7 +206,7 @@ const DashboardLayoutComponent: React.FC<DashboardLayoutProps> = ({
                 <Button
                   variant='ghost'
                   size='sm'
-                  className='hidden lg:flex items-center space-x-2 text-muted-foreground hover:text-foreground'
+                  className='hidden lg:flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
                 >
                   <ArrowLeft className='h-4 w-4' />
                   <span>Back to Portfolio</span>
@@ -295,12 +295,12 @@ const BreadcrumbComponent: React.FC<{
           {item.href ? (
             <Link
               href={item.href}
-              className='hover:text-primary transition-colors whitespace-nowrap'
+              className='hover:text-gray-900 dark:hover:text-gray-100 transition-colors whitespace-nowrap'
             >
               {item.label}
             </Link>
           ) : (
-            <span className='text-foreground whitespace-nowrap'>{item.label}</span>
+            <span className='text-gray-900 dark:text-gray-100 whitespace-nowrap'>{item.label}</span>
           )}
         </React.Fragment>
       ))}
