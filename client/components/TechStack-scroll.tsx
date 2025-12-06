@@ -234,7 +234,7 @@ function MarqueeSlider({ children, duration, reverse = false }: MarqueeSliderPro
 
   return (
     <div
-      className='relative flex overflow-hidden w-full my-8 py-2 h-[90px]'
+      className='relative flex overflow-hidden w-full py-2 h-[90px]'
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
