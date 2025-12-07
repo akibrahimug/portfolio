@@ -4,13 +4,11 @@ const nextConfig = {
 
   // Performance optimizations
   experimental: {
-    // Optimize package imports
     optimizePackageImports: ['@phosphor-icons/react', '@radix-ui/react-slot'],
   },
 
   // Compiler optimizations
   compiler: {
-    // Remove console.log in production
     removeConsole: process.env.NODE_ENV === 'production' ? { exclude: ['error'] } : false,
   },
 
@@ -23,24 +21,14 @@ const nextConfig = {
     minimumCacheTTL: 60 * 60 * 24 * 365, // 1 year
   },
 
-  // Headers for better caching and security
   async headers() {
     return [
       {
         source: '/(.*)',
         headers: [
-          {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
-          },
-          {
-            key: 'X-Frame-Options',
-            value: 'DENY',
-          },
-          {
-            key: 'X-XSS-Protection',
-            value: '1; mode=block',
-          },
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'X-Frame-Options', value: 'DENY' },
+          { key: 'X-XSS-Protection', value: '1; mode=block' },
         ],
       },
       {
@@ -55,40 +43,22 @@ const nextConfig = {
     ]
   },
 
-  // Disable TypeScript type checking in production build to avoid errors
   typescript: {
-    // !! WARN !!
-    // Dangerously allow production builds to successfully complete even if
-    // your project has type errors.
-    // !! WARN !!
     ignoreBuildErrors: true,
   },
+  // ⚠ Next 16 warns about eslint in next.config, but this is just a warning
   eslint: {
-    // Warning: This allows production builds to successfully complete even if
-    // your project has ESLint errors.
     ignoreDuringBuilds: true,
   },
-  // Explicitly define which files should be considered pages
+
   pageExtensions: ['js', 'jsx', 'ts', 'tsx'],
 
-  // Webpack optimizations (only when not using Turbopack)
-  webpack: (config, { dev, isServer }) => {
-    // Skip webpack config when using Turbopack
-    if (process.env.TURBOPACK) {
-      return config
-    }
-
-    // Tree shaking for production
-    if (!dev) {
-      config.optimization.usedExports = true
-      config.optimization.sideEffects = false
-    }
-
-    return config
-  },
+  // Tell Next we intentionally use Turbopack
+  turbopack: {},
 }
 
 const withBundleAnalyzer = require('@next/bundle-analyzer')({
   enabled: process.env.ANALYZE === 'true',
 })
+
 module.exports = withBundleAnalyzer(nextConfig)
