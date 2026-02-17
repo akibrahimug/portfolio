@@ -27,7 +27,7 @@ export default function ProfileDesc({ certified }: ProfileDescProps) {
   const [isLoading, setIsLoading] = useState<boolean>(true)
 
   useEffect(() => {
-    // Simulate data fetching with a delay
+    // Simulate data fetching with a delay.
     const timer = setTimeout(() => {
       setIsLoading(false)
     }, 500) // 0.5 seconds delay
