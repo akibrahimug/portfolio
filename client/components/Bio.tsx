@@ -121,24 +121,17 @@ const BioComponent: React.FC = () => {
               className='text-base text-white/95 font-light tracking-wide'
               style={{ wordSpacing: '0.1em' }}
             >
-              Results-driven Frontend Developer with{' '}
-              <span className='font-normal text-white'>
-                six years of Full-Stack JavaScript expertise
-              </span>
-              , building and scaling high-performance web applications using{' '}
-              <span className='font-normal text-white'>React, Next.js & Node.js</span>. I've led
-              migrations to headless CMS (Storyblok),{' '}
-              <span className='font-normal text-white'>
-                architected Nx monorepos powering 20+ microfrontends
-              </span>
-              , and implemented{' '}
-              <span className='font-normal text-white'>rock-solid CI/CD pipelines</span> to AWS S3.
-              Passionate about data-driven UX, I've{' '}
-              <span className='font-normal text-white'>cut bundle sizes by 60%</span> and delivered
-              interactive visualizations for millions of data points. A collaborative mentor, I
-              champion clean code, rigorous testing (
-              <span className='font-normal text-white'>Jest & React Testing Library – RTL</span>),
-              and continuous innovation.
+              Senior Frontend Engineer building performance-critical React and Next.js applications
+              used in production across multiple international markets.
+              <br />
+              <br />
+              I focus on frontend architecture, platform ownership, and delivery at scale — from Nx
+              monorepos and shared CI/CD pipelines to CMS-driven systems where reliability,
+              performance, and developer experience matter.
+              <br />
+              <br />I value clean, maintainable code, pragmatic testing (
+              <span className='font-normal text-white'>Jest & React Testing Library</span>), and
+              close collaboration with product and backend teams.
             </div>
           )}
         </div>
