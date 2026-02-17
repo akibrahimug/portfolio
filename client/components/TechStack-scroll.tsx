@@ -135,8 +135,23 @@ export default function TechStackScroll() {
         </div>
 
         {loading ? (
-          <div className='text-center py-12'>
-            <p className='text-lg text-gray-600 dark:text-gray-300'>Loading technologies...</p>
+          <div className='py-6 space-y-4'>
+            {/* Skeleton rows mimicking the marquee layout */}
+            {[1, 2, 3].map((row) => (
+              <div key={row} className='flex gap-4 justify-center overflow-hidden'>
+                {Array(6)
+                  .fill(0)
+                  .map((_, i) => (
+                    <div
+                      key={i}
+                      className='flex items-center gap-3 flex-shrink-0 py-3 px-5 rounded-xl bg-gray-100 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700'
+                    >
+                      <div className='w-6 h-6 rounded bg-gray-300 dark:bg-gray-600 animate-pulse' />
+                      <div className='w-16 h-4 rounded bg-gray-300 dark:bg-gray-600 animate-pulse' />
+                    </div>
+                  ))}
+              </div>
+            ))}
           </div>
         ) : filteredTech.length === 0 ? (
           <div className='text-center py-12'>

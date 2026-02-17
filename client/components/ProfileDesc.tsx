@@ -80,24 +80,24 @@ export default function ProfileDesc({ certified }: ProfileDescProps) {
   }, [])
 
   return (
-    <div className='container mx-auto px-14 py-12 md:py-46 xl:py-40'>
+    <div className='container mx-auto px-4 sm:px-8 md:px-14 py-12 md:py-46 xl:py-40'>
       <div className='max-w-5xl mx-auto'>
         {/* Hero Section */}
         <section className='space-y-6 md:space-y-10'>
           {isLoading ? (
-            <div className='space-y-4'>
-              <div className='h-8 bg-gray-200 rounded-md w-64 animate-pulse'></div>
-              <div className='h-24 bg-gray-200 rounded-md w-full animate-pulse'></div>
-              <div className='h-24 bg-gray-200 rounded-md w-3/4 animate-pulse'></div>
+            <div className='space-y-4 flex flex-col items-center md:items-start'>
+              <div className='h-6 sm:h-8 bg-gray-200 rounded-md w-48 sm:w-64 animate-pulse'></div>
+              <div className='h-8 sm:h-12 md:h-14 lg:h-16 bg-gray-200 rounded-md w-full max-w-md sm:max-w-lg md:max-w-xl animate-pulse'></div>
+              <div className='h-8 sm:h-12 md:h-14 lg:h-16 bg-gray-200 rounded-md w-4/5 max-w-sm sm:max-w-md md:max-w-lg animate-pulse'></div>
             </div>
           ) : (
             <SlideUp className='space-y-2 text-center md:text-left'>
-              <h2 className='text-2xl md:text-3xl font-medium'>
+              <h2 className='text-xl sm:text-2xl md:text-3xl font-medium'>
                 Hi, I&apos;m <span className='text-brand-600 font-semibold'>Ibrahim</span> a
               </h2>
-              <h1 className='text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold tracking-tight text-gray-500 leading-tight'>
-                FULLSTACK
-                <br className='hidden sm:block' /> DEVELOPER
+              <h1 className='text-[1.75rem] sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight text-gray-500 leading-[1.15]'>
+                <span className='block'>SENIOR FRONTEND /</span>
+                <span className='block'>FULL STACK ENGINEER</span>
               </h1>
             </SlideUp>
           )}
