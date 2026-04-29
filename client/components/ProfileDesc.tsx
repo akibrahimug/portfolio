@@ -113,24 +113,29 @@ export default function ProfileDesc({ certified }: ProfileDescProps) {
                 fadeInOnView
                 className='text-[1.75rem] sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight text-gray-500 leading-[1.15]'
               >
-                <span className='block'>SENIOR FRONTEND /</span>
                 <span
-                  className='block min-h-[1.15em] min-w-[14ch]'
+                  className='relative block'
                   onMouseEnter={() => setPaused(true)}
                   onMouseLeave={() => setPaused(false)}
                 >
-                  <AnimatePresence mode='wait' initial={false}>
-                    <motion.span
-                      key={ROLES[idx]}
-                      initial={reduced ? undefined : { opacity: 0, y: 6 }}
-                      animate={reduced ? undefined : { opacity: 1, y: 0 }}
-                      exit={reduced ? undefined : { opacity: 0, y: -6 }}
-                      transition={{ duration: 0.25, ease: 'easeOut' }}
-                      className='block'
-                    >
-                      {ROLES[idx]}
-                    </motion.span>
-                  </AnimatePresence>
+                  {/* Phantom: reserves the height of the longest role at every breakpoint so the rotator never causes layout shift */}
+                  <span aria-hidden className='invisible block whitespace-normal'>
+                    {ROLES.reduce((a, b) => (a.length >= b.length ? a : b))}
+                  </span>
+                  <span className='absolute inset-0 block'>
+                    <AnimatePresence mode='wait' initial={false}>
+                      <motion.span
+                        key={ROLES[idx]}
+                        initial={reduced ? undefined : { opacity: 0, y: 6 }}
+                        animate={reduced ? undefined : { opacity: 1, y: 0 }}
+                        exit={reduced ? undefined : { opacity: 0, y: -6 }}
+                        transition={{ duration: 0.25, ease: 'easeOut' }}
+                        className='block'
+                      >
+                        {ROLES[idx]}
+                      </motion.span>
+                    </AnimatePresence>
+                  </span>
                 </span>
               </AnimatedHeading>
             </SlideUp>
