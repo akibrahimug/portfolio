@@ -47,7 +47,7 @@ export function Hero() {
         className='pointer-events-none absolute inset-0 -z-10 opacity-[0.025] dark:opacity-[0.04] [background-image:linear-gradient(to_right,currentColor_1px,transparent_1px),linear-gradient(to_bottom,currentColor_1px,transparent_1px)] [background-size:48px_48px]'
       />
 
-      <div className='mx-auto grid max-w-6xl gap-10 px-5 md:px-8 lg:grid-cols-[1.4fr_1fr] lg:items-center lg:gap-16'>
+      <div className='mx-auto grid max-w-6xl gap-10 px-5 md:px-8 lg:grid-cols-[1.4fr_1fr] lg:items-center lg:gap-16 dark:lg:grid-cols-1'>
         <div>
           <motion.p
             {...FADE_UP}
@@ -133,12 +133,13 @@ export function Hero() {
           </motion.p>
         </div>
 
-        {/* Avatar — natural aspect ratio, brush-stroke painterly look, NOT cropped to a circle */}
+        {/* Avatar — light mode only. Hidden in dark mode so the hero reads
+            as a clean one-column text-first composition (Lee Robinson lane). */}
         <motion.div
           initial={reduced ? false : { opacity: 0, y: 16 }}
           animate={reduced ? false : { opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
-          className='relative mx-auto aspect-[400/480] w-full max-w-[26rem] lg:max-w-none'
+          className='relative mx-auto aspect-[400/480] w-full max-w-[26rem] dark:hidden lg:max-w-none'
         >
           {/* Glow card behind */}
           <div
