@@ -119,7 +119,7 @@ describe('HTTP Client CRUD Operations', () => {
 
     describe('createProject', () => {
       it('should create project successfully', async () => {
-        const projectData: ProjectCreateRequest = {
+        const projectData = {
           title: 'New Project',
           slug: 'new-project',
           kind: 'frontend',
@@ -127,8 +127,8 @@ describe('HTTP Client CRUD Operations', () => {
           techStack: ['react', 'typescript'],
           tags: ['web', 'frontend'],
           visibility: 'public',
-          status: 'draft'
-        }
+          status: 'draft',
+        } as unknown as ProjectCreateRequest
 
         const mockResponse = {
           success: true,
@@ -239,8 +239,10 @@ describe('HTTP Client CRUD Operations', () => {
             skills: ['React', 'Node.js'],
             companyLogoUrl: 'https://example.com/logo.png',
             linkedinUrl: 'https://linkedin.com/company/tech-corp',
-            ownerId: 'user123'
-          }
+            ownerId: 'user123',
+            createdAt: '2022-01-01T00:00:00.000Z',
+            updatedAt: '2022-01-01T00:00:00.000Z',
+          },
         ]
 
         mockFetch.mockResolvedValueOnce({
@@ -376,14 +378,17 @@ describe('HTTP Client CRUD Operations', () => {
       _id: '1',
       name: 'React',
       category: 'frontend',
-      proficiency: 'advanced',
+      proficiency: 90,
       description: 'JavaScript library',
       iconUrl: 'https://example.com/react.png',
-      websiteUrl: 'https://reactjs.org',
-      experience: 36,
-      lastUsed: '2024-01',
-      featured: true,
-      ownerId: 'user123'
+      complexity: 'Advanced',
+      teamSize: 'Any',
+      flexibility: 'High',
+      timeToImplement: '1-2 weeks',
+      yearsOfExperience: 3,
+      ownerId: 'user123',
+      createdAt: '2022-01-01T00:00:00.000Z',
+      updatedAt: '2022-01-01T00:00:00.000Z',
     }
 
     describe('getTechnologies', () => {
@@ -415,14 +420,14 @@ describe('HTTP Client CRUD Operations', () => {
         const techData = {
           name: 'Vue.js',
           category: 'frontend',
-          proficiency: 'intermediate'
-        }
+          proficiency: 'intermediate',
+        } as unknown as Partial<Technology>
 
         mockFetch.mockResolvedValueOnce({
           ok: true,
           json: () => Promise.resolve({
             success: true,
-            data: { technology: { ...mockTechnology, ...techData } }
+            data: { technology: { ...mockTechnology, ...techData } as Technology }
           }),
         } as Response)
 
@@ -435,7 +440,7 @@ describe('HTTP Client CRUD Operations', () => {
 
     describe('updateTechnology', () => {
       it('should update technology successfully', async () => {
-        const updates = { proficiency: 'expert', featured: true }
+        const updates = { proficiency: 'expert', featured: true } as unknown as Partial<Technology>
 
         mockFetch.mockResolvedValueOnce({
           ok: true,
@@ -575,7 +580,8 @@ describe('HTTP Client CRUD Operations', () => {
       subject: 'Test Subject',
       message: 'Test message content',
       status: 'unread',
-      priority: 'medium',
+      priority: 'normal',
+      source: 'contact-form',
       createdAt: '2024-01-01T00:00:00Z',
       updatedAt: '2024-01-01T00:00:00Z'
     }

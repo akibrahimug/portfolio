@@ -3,7 +3,7 @@
  */
 import { useState, useCallback } from 'react'
 import { useClerkAuth } from './useClerkAuth'
-import { httpClient } from '@/lib/http-client'
+import { httpClient, isAssetUploadKind, type AssetUploadKind } from '@/lib/http-client'
 import { extractFiles } from '@/lib/file-utils'
 
 interface UseCrudOperationsOptions<T> {
@@ -128,9 +128,11 @@ export function useCrudOperations<T>({
       const uploads: Record<string, string> = {}
 
       for (const [field, file] of files) {
+        const rawAssetType = uploadOptions?.assetType
+        const assetType: AssetUploadKind = isAssetUploadKind(rawAssetType) ? rawAssetType : 'other'
         const result = await httpClient.uploadAsset(
           file,
-          { ...(uploadOptions || {}), assetType: uploadOptions?.assetType || 'other' },
+          { ...(uploadOptions || {}), assetType },
           token,
         )
         if (!result.success) {

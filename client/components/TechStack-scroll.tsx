@@ -33,7 +33,7 @@ interface Technology {
  * Renders a responsive list of technologies with search filtering, animated marquee rows for large lists, and a modal for detailed information on each technology. Supports smooth animations, automatic selection on exact search match, and adapts layout based on the number of filtered technologies.
  */
 export default function TechStackScroll() {
-  const { ref: containerRef } = useInViewport({ threshold: 0.2 })
+  const { ref: containerRef } = useInViewport<HTMLDivElement>({ threshold: 0.2 })
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedTech, setSelectedTech] = useState<Technology | null>(null)
   const [technologies, setTechnologies] = useState<Technology[]>([])

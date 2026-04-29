@@ -319,6 +319,17 @@ export function useResumes() {
   return useApiQuery(() => httpClient.getResumes())
 }
 
+export function useDeleteResume() {
+  const { getAuthToken } = useClerkAuth()
+
+  return useApiMutation(async (id: string) => {
+    const token = await getAuthToken()
+    return token
+      ? httpClient.deleteResume(id, token)
+      : Promise.resolve({ success: false, error: 'No auth token' })
+  })
+}
+
 export function useLatestResume() {
   return useApiQuery(() => httpClient.getLatestResume())
 }

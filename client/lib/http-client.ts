@@ -30,7 +30,7 @@ import type {
 } from '@/types/api'
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
-type AssetUploadKind =
+export type AssetUploadKind =
   | 'project'
   | 'resume'
   | 'technology'
@@ -40,6 +40,22 @@ type AssetUploadKind =
   | 'certification'
   | 'experience'
   | 'other'
+
+const ASSET_UPLOAD_KINDS: readonly AssetUploadKind[] = [
+  'project',
+  'resume',
+  'technology',
+  'media',
+  'avatar',
+  'badge',
+  'certification',
+  'experience',
+  'other',
+] as const
+
+export function isAssetUploadKind(value: string | undefined): value is AssetUploadKind {
+  return value !== undefined && (ASSET_UPLOAD_KINDS as readonly string[]).includes(value)
+}
 
 interface RequestOptions {
   method?: HttpMethod
@@ -142,8 +158,14 @@ function ensureProjectId(
 /** Normalize the payload sent to /assets/request-upload. */
 function normalizeUploadBody(input: AssetUploadRequest): AssetUploadRequest {
   const body = { ...input }
+  const narrowedAssetType: AssetUploadKind | undefined = isAssetUploadKind(body.assetType)
+    ? body.assetType
+    : undefined
   // Guarantee a projectId for your server contract
-  body.projectId = ensureProjectId({ projectId: body.projectId, assetType: body.assetType }, 'misc')
+  body.projectId = ensureProjectId(
+    { projectId: body.projectId, assetType: narrowedAssetType },
+    'misc',
+  )
   // assetType and folder are preserved from input
   return body
 }
@@ -151,8 +173,11 @@ function normalizeUploadBody(input: AssetUploadRequest): AssetUploadRequest {
 /** Normalize the payload sent to /assets/confirm. */
 function normalizeConfirmBody(input: AssetConfirmRequest): AssetConfirmRequest {
   const body = { ...input }
+  const narrowedAssetType: AssetUploadKind | undefined = isAssetUploadKind(input.assetType)
+    ? input.assetType
+    : undefined
   body.projectId = ensureProjectId(
-    { projectId: body.projectId, assetType: input.assetType },
+    { projectId: body.projectId, assetType: narrowedAssetType },
     'misc',
   )
   // Always preserve the assetType field from input
@@ -502,17 +527,15 @@ class HttpClient {
     token?: string,
   ): Promise<
     ApiResponse<{
-      data: {
-        files: Array<{
-          name: string
-          size: number
-          contentType: string
-          timeCreated: string
-          updated: string
-          publicUrl: string
-          viewUrl: string
-        }>
-      }
+      files: Array<{
+        name: string
+        size: number
+        contentType: string
+        timeCreated: string
+        updated: string
+        publicUrl: string
+        viewUrl: string
+      }>
       total: number
       hasMore: boolean
     }>

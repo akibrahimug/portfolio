@@ -19,8 +19,8 @@ const AvatarsPage: React.FC = () => {
       if (!token) throw new Error('Not authenticated')
       const resp = await httpClient.browseAssets({ prefix: 'avatar' }, token)
       if (resp.success) {
-        const files = (resp.data as any)?.files || []
-        setAvatars(files.map((f: any) => ({ publicUrl: f.publicUrl, name: f.name })))
+        const files = resp.data?.files || []
+        setAvatars(files.map((f) => ({ publicUrl: f.publicUrl, name: f.name })))
       }
     } finally {
       setLoading(false)

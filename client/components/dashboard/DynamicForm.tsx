@@ -461,7 +461,7 @@ const DynamicFormInner: React.FC<DynamicFormProps> = ({
 
                 // For projects, hide the entire image field when hasPreview is false
                 if (formConfig.id === 'project' && !hasPreview) {
-                  return null
+                  return <></>
                 }
 
                 return (

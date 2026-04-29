@@ -63,9 +63,9 @@ export const LazyMotion = React.lazy(() => import('framer-motion').then(module =
 })))
 
 // Intersection observer hook for scroll-based animations
-export const useInViewport = (options = {}) => {
+export const useInViewport = <T extends HTMLElement = HTMLElement>(options: IntersectionObserverInit = {}) => {
   const [isInView, setIsInView] = React.useState(false)
-  const ref = React.useRef<HTMLElement>(null)
+  const ref = React.useRef<T | null>(null)
 
   React.useEffect(() => {
     const observer = new IntersectionObserver(

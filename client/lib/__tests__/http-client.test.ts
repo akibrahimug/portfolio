@@ -2,6 +2,7 @@
  * Tests for HTTP client
  */
 import { httpClient } from '../http-client'
+import type { ProjectCreateRequest } from '../../types/api'
 
 // Mock fetch globally
 global.fetch = jest.fn()
@@ -81,7 +82,7 @@ describe('HttpClient', () => {
         search: 'test',
         limit: 10,
         cursor: 'cursor123',
-      })
+      } as Parameters<typeof httpClient.getProjects>[0])
 
       expect(mockFetch).toHaveBeenCalledWith(
         expect.stringContaining(
@@ -183,7 +184,7 @@ describe('HttpClient', () => {
       }
       mockFetch.mockResolvedValue(mockResponse as any)
 
-      const result = await httpClient.getExperiences()
+      const result = await httpClient.getExperiences('auth-token')
 
       expect(result.success).toBe(true)
       expect(result.data).toEqual(mockExperiences)
@@ -227,7 +228,7 @@ describe('HttpClient', () => {
       }
       mockFetch.mockResolvedValue(mockResponse as any)
 
-      const result = await httpClient.getTechnologies()
+      const result = await httpClient.getTechnologies('auth-token')
 
       expect(result.success).toBe(true)
       expect(result.data).toEqual(mockTechnologies)
@@ -405,7 +406,7 @@ describe('HttpClient', () => {
       mockFetch.mockResolvedValue(mockResponse as any)
 
       await httpClient.createProject(
-        { title: 'Test', slug: 'test', kind: 'frontend' },
+        { title: 'Test', slug: 'test', kind: 'frontend' } as unknown as ProjectCreateRequest,
         'test-token',
       )
 
@@ -427,7 +428,7 @@ describe('HttpClient', () => {
       }
       mockFetch.mockResolvedValue(mockResponse as any)
 
-      await httpClient.getTechnologies()
+      await httpClient.getTechnologies('')
 
       expect(mockFetch).toHaveBeenCalledWith(
         expect.any(String),

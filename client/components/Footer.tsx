@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { GithubLogo, LinkedinLogo, EnvelopeSimple, ArrowUp } from '@phosphor-icons/react'
 import Image from 'next/image'
 import { httpClient } from '@/lib/http-client'
+import type { Technology } from '@/types/api'
 
 interface FooterLink {
   label: string
@@ -17,16 +18,6 @@ interface SocialLink {
   label: string
 }
 
-interface Technology {
-  name: string
-  icon: string
-  color: string
-  experience?: string
-  learningSource?: string
-  confidenceLevel?: number
-  description?: string
-}
-
 const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear()
   const [technologies, setTechnologies] = useState<Technology[]>([])
@@ -37,7 +28,7 @@ const Footer: React.FC = () => {
       try {
         const response = await httpClient.getPublicTechnologies()
         if (response.success && response.data?.items) {
-          setTechnologies(response.data.items as Technology[])
+          setTechnologies(response.data.items)
         }
       } catch (error) {
         console.error('Failed to fetch technologies:', error)
@@ -53,7 +44,7 @@ const Footer: React.FC = () => {
 
     return featuredNames
       .map((name) => technologies.find((tech) => tech.name === name))
-      .filter(Boolean) as Technology[]
+      .filter((tech): tech is Technology => Boolean(tech))
   }, [technologies])
 
   // Map tech to colors

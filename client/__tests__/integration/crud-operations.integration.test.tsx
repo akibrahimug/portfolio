@@ -22,13 +22,14 @@ import {
 } from '../../hooks/useHttpApi'
 import { useClerkAuth } from '../../hooks/useClerkAuth'
 import { httpClient } from '../../lib/http-client'
-import type { Experience, Technology, Message } from '../../types/api'
+import type { Experience, Technology, Message, ExperienceCreateRequest, Badge } from '../../types/api'
 
 // Mock dependencies
 jest.mock('../../lib/http-client')
 jest.mock('../../hooks/useClerkAuth')
 
-const mockHttpClient = httpClient as jest.Mocked<typeof httpClient>
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mockHttpClient = httpClient as unknown as jest.Mocked<Record<string, jest.Mock<any, any>>>
 const mockUseClerkAuth = useClerkAuth as jest.MockedFunction<typeof useClerkAuth>
 
 // Mock data
@@ -254,7 +255,7 @@ describe('CRUD Operations Integration Tests', () => {
         title: 'Test Job',
         company: 'Test Corp',
         employmentType: 'Full-time'
-      })
+      } as ExperienceCreateRequest)
 
       expect(response).toBe(null)
       expect(createResult.current.error).toBe('No auth token')
@@ -408,14 +409,14 @@ describe('CRUD Operations Integration Tests', () => {
         return { success: true, data: newMessage }
       })
 
-      mockHttpClient.updateMessage.mockImplementation(async (id, updates) => {
-        const index = storedMessages.findIndex(msg => msg._id === id)
+      mockHttpClient.updateMessage.mockImplementation(async (id: string, updates: Partial<Message>) => {
+        const index = storedMessages.findIndex((msg) => msg._id === id)
         if (index !== -1) {
           storedMessages[index] = {
             ...storedMessages[index],
             ...updates,
-            updatedAt: new Date().toISOString()
-          }
+            updatedAt: new Date().toISOString(),
+          } as Message
           return { success: true, data: { message: storedMessages[index] } }
         }
         return { success: false, error: 'Message not found' }
@@ -575,9 +576,9 @@ describe('CRUD Operations Integration Tests', () => {
 
       // Start multiple concurrent operations
       const operations = [
-        result.current.mutate({ title: 'Job 1', company: 'Corp 1', employmentType: 'Full-time' }),
-        result.current.mutate({ title: 'Job 2', company: 'Corp 2', employmentType: 'Part-time' }),
-        result.current.mutate({ title: 'Job 3', company: 'Corp 3', employmentType: 'Contract' }),
+        result.current.mutate({ title: 'Job 1', company: 'Corp 1', employmentType: 'Full-time' } as ExperienceCreateRequest),
+        result.current.mutate({ title: 'Job 2', company: 'Corp 2', employmentType: 'Part-time' } as ExperienceCreateRequest),
+        result.current.mutate({ title: 'Job 3', company: 'Corp 3', employmentType: 'Contract' } as ExperienceCreateRequest),
       ]
 
       const responses = await Promise.all(operations)
@@ -644,7 +645,7 @@ describe('CRUD Operations Integration Tests', () => {
           title: 'Test Job',
           company: 'Test Corp',
           employmentType: 'Full-time'
-        })
+        } as ExperienceCreateRequest)
       })
 
       // 3. Refetch and verify consistency
@@ -710,9 +711,10 @@ describe('CRUD Operations Integration Tests', () => {
         totalPages: 3
       }
 
+      type BadgesPage = { badges: Badge[]; total: number; page: number; limit: number; hasMore: boolean; totalPages: number }
       mockHttpClient.getBadges
-        .mockResolvedValueOnce({ success: true, data: mockBadgesPage1 })
-        .mockResolvedValueOnce({ success: true, data: mockBadgesPage2 })
+        .mockResolvedValueOnce({ success: true, data: mockBadgesPage1 as unknown as BadgesPage })
+        .mockResolvedValueOnce({ success: true, data: mockBadgesPage2 as unknown as BadgesPage })
 
       // Test first page
       let result1 = await httpClient.getBadges('token', 1, 2)

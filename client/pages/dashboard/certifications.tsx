@@ -47,10 +47,10 @@ const CertificationsPage: React.FC = () => {
       if (res.success) {
         // Filter for certification files
         const certificationFiles =
-          res.data?.data?.files?.filter((file: any) => file.name.startsWith('certification/')) || []
+          res.data?.files?.filter((file) => file.name.startsWith('certification/')) || []
 
         // Transform the files to match our certification structure
-        const certFiles = certificationFiles.map((file: any) => ({
+        const certFiles = certificationFiles.map((file) => ({
           _id: file.name.replace(/[^a-zA-Z0-9]/g, '_'), // Create unique ID from filename
           name: file.name.split('/').pop()?.replace(/^\d+-/, '') || file.name, // Remove timestamp prefix
           size: file.size,

@@ -24,6 +24,10 @@ const customJestConfig = {
     '!**/coverage/**',
   ],
   testMatch: ['**/__tests__/**/*.{ts,tsx}', '**/?(*.)+(spec|test).{ts,tsx}'],
+  // The CRUD test runner is invoked manually via `yarn test:crud`, not by Jest
+  testPathIgnorePatterns: ['/node_modules/', '<rootDir>/__tests__/test-runner.ts', '<rootDir>/__tests__/factories/'],
+  // Allow Jest to transform ESM packages (Clerk ships .mjs); next/jest's default ignores most node_modules.
+  transformIgnorePatterns: ['/node_modules/(?!(@clerk|jose|jwt-decode|@phosphor-icons|tw-animate-css)/)'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
   // Use Next.js jest presets (babel-jest) instead of ts-jest
   transform: {},

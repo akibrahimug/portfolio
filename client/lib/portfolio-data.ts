@@ -295,5 +295,5 @@ function getDummyPortfolioData(): ApiResponse<PortfolioCategoryMap> {
     ],
   }
 
-  return Promise.resolve({ success: true, data: data })
+  return { success: true, data: data }
 }

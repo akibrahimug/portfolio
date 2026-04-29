@@ -12,12 +12,15 @@ import {
 } from '../../hooks/useHttpApi'
 import { useClerkAuth } from '../../hooks/useClerkAuth'
 import { httpClient } from '../../lib/http-client'
+import type { ExperienceCreateRequest } from '../../types/api'
 
 // Mock dependencies
 jest.mock('../../lib/http-client')
 jest.mock('../../hooks/useClerkAuth')
 
-const mockHttpClient = httpClient as jest.Mocked<typeof httpClient>
+// Test mocks intentionally use partial shapes; cast through `unknown` to bypass strict checks.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mockHttpClient = httpClient as unknown as jest.Mocked<Record<string, jest.Mock<any, any>>>
 const mockUseClerkAuth = useClerkAuth as jest.MockedFunction<typeof useClerkAuth>
 
 describe('Authentication Token Handling', () => {
@@ -107,7 +110,7 @@ describe('Authentication Token Handling', () => {
         title: 'Test Job',
         company: 'Test Corp',
         employmentType: 'Full-time'
-      })
+      } as ExperienceCreateRequest)
 
       expect(response1).toBe(null)
       expect(result.current.error).toContain('expired_token')
@@ -119,7 +122,7 @@ describe('Authentication Token Handling', () => {
         title: 'Test Job',
         company: 'Test Corp',
         employmentType: 'Full-time'
-      })
+      } as ExperienceCreateRequest)
 
       expect(response2).toEqual({
         experience: { _id: '1', title: 'New Experience' }
@@ -226,8 +229,8 @@ describe('Authentication Token Handling', () => {
       const response = await result.current.mutate({
         name: 'React',
         category: 'frontend',
-        proficiency: 'advanced'
-      })
+        proficiency: 'advanced',
+      } as unknown as Partial<import('../../types/api').Technology>)
 
       expect(response).toBe(null)
       expect(result.current.error).toBe('Malformed JWT')
@@ -353,7 +356,7 @@ describe('Authentication Token Handling', () => {
         title: 'Job 1',
         company: 'Corp 1',
         employmentType: 'Full-time'
-      })
+      } as ExperienceCreateRequest)
 
       expect(response1).toBe(null)
       expect(result.current.error).toBe('Token expired')
@@ -363,7 +366,7 @@ describe('Authentication Token Handling', () => {
         title: 'Job 2',
         company: 'Corp 2',
         employmentType: 'Full-time'
-      })
+      } as ExperienceCreateRequest)
 
       expect(response2).toBe(null)
 
@@ -372,7 +375,7 @@ describe('Authentication Token Handling', () => {
         title: 'Job 3',
         company: 'Corp 3',
         employmentType: 'Full-time'
-      })
+      } as ExperienceCreateRequest)
 
       expect(response3).toEqual({
         experience: { _id: '1', title: 'Created' }
@@ -479,7 +482,7 @@ describe('Authentication Token Handling', () => {
   // =============================================================================
   describe('Race Conditions', () => {
     it('should handle token retrieval race conditions', async () => {
-      let resolveTokenPromise: (token: string) => void
+      let resolveTokenPromise!: (token: string) => void
       const tokenPromise = new Promise<string>((resolve) => {
         resolveTokenPromise = resolve
       })
@@ -517,7 +520,7 @@ describe('Authentication Token Handling', () => {
     })
 
     it('should handle component unmount during token fetch', async () => {
-      let resolveTokenPromise: (token: string) => void
+      let resolveTokenPromise!: (token: string) => void
       const tokenPromise = new Promise<string>((resolve) => {
         resolveTokenPromise = resolve
       })

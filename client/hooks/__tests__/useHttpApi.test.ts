@@ -11,7 +11,8 @@ import { useClerkAuth } from '../useClerkAuth'
 jest.mock('../../lib/http-client')
 jest.mock('../useClerkAuth')
 
-const mockHttpClient = httpClient as jest.Mocked<typeof httpClient>
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mockHttpClient = httpClient as unknown as jest.Mocked<Record<string, jest.Mock<any, any>>>
 const mockUseClerkAuth = useClerkAuth as jest.MockedFunction<typeof useClerkAuth>
 
 describe('useHttpApi hooks', () => {
@@ -320,7 +321,7 @@ describe('useHttpApi hooks', () => {
         title: 'New Project',
         slug: 'new-project',
         kind: 'frontend' as const,
-      }
+      } as unknown as import('../../types/api').ProjectCreateRequest
 
       // Start mutation
       const mutationPromise = result.current.mutate(projectData)
@@ -348,7 +349,7 @@ describe('useHttpApi hooks', () => {
         title: 'Project',
         slug: 'project',
         kind: 'frontend' as const,
-      })
+      } as unknown as import('../../types/api').ProjectCreateRequest)
 
       expect(result.current.error).toBe('First error')
 
@@ -374,7 +375,7 @@ describe('useHttpApi hooks', () => {
         title: 'Project',
         slug: 'project',
         kind: 'frontend' as const,
-      })
+      } as unknown as import('../../types/api').ProjectCreateRequest)
 
       expect(result.current.error).toBe(null)
     })
