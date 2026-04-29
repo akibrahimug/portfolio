@@ -378,6 +378,15 @@
   }
 }
 
+@keyframes ticker {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-25%); /* 4 copies, slide one full copy */
+  }
+}
+
 @keyframes marquee-reverse {
   0% {
     transform: translateX(-75%); /* Start at -75% for reverse */

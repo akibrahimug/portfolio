@@ -1,56 +1,42 @@
 import React from 'react'
 import Head from 'next/head'
-import Header from '@/components/Header'
-import HeroSection from '@/components/HeroSection'
-import dynamic from 'next/dynamic'
 
-// Lazy load non-critical components
-const TechStackScroll = dynamic(() => import('@/components/TechStack-scroll'), {
-  loading: () => <div className='w-full h-96 bg-gray-100 animate-pulse rounded-lg' />,
-})
-
-const Projects = dynamic(() => import('@/components/Projects'), {
-  loading: () => <div className='w-full h-screen bg-gray-100 animate-pulse rounded-lg' />,
-})
+import { TopNav } from '@/components/redesign/TopNav'
+import { Hero } from '@/components/redesign/Hero'
+import { TickerStrip } from '@/components/redesign/TickerStrip'
+import { SelectedWork } from '@/components/redesign/SelectedWork'
+import { About } from '@/components/redesign/About'
+import { Connect } from '@/components/redesign/Connect'
+import { RedesignFooter } from '@/components/redesign/RedesignFooter'
+import { ScrollProgress } from '@/components/redesign/ScrollProgress'
+import { redesignContent } from '@/lib/redesign-content'
 
 const Home: React.FC = () => {
   return (
     <>
       <Head>
-        <title>Kasoma Ibrahim</title>
-        <meta
-          name='description'
-          content='This is a portfolio showcasing what Kasoma Ibrahim can build and deliver as a Software Engineer'
-        />
+        <title>{redesignContent.meta.title}</title>
+        <meta name='description' content={redesignContent.meta.description} />
+        <meta property='og:title' content={redesignContent.meta.title} />
+        <meta property='og:description' content={redesignContent.meta.description} />
+        <meta property='og:image' content='/icons/avarta.webp' />
+        <meta name='twitter:card' content='summary_large_image' />
+        <meta name='theme-color' content='#09090b' />
         <link rel='icon' href='/favicon.png' />
-
-        {/* Preload critical resources */}
         <link rel='preload' href='/icons/avarta.webp' as='image' type='image/webp' />
-        <link
-          rel='preload'
-          href='/fonts/inter-var.woff2'
-          as='font'
-          type='font/woff2'
-          crossOrigin='anonymous'
-        />
-
-        {/* DNS prefetch for external domains */}
-        <link rel='dns-prefetch' href='//fonts.googleapis.com' />
-        <link rel='dns-prefetch' href='//storage.googleapis.com' />
-
-        {/* Resource hints for better performance */}
         <meta name='viewport' content='width=device-width, initial-scale=1, viewport-fit=cover' />
-        <meta httpEquiv='x-ua-compatible' content='ie=edge' />
       </Head>
-      <Header />
-      <div id='about' className='max-w-[1400px] m-auto'>
-        <HeroSection certified={[]} />
-      </div>
-      <div className='max-w-[1400px] m-auto' id='tech-stack'>
-        <TechStackScroll />
-      </div>
-      <div>
-        <Projects />
+      <div className='min-h-screen bg-zinc-950 text-zinc-100 antialiased selection:bg-brand-500/30 selection:text-brand-100'>
+        <ScrollProgress />
+        <TopNav />
+        <main>
+          <Hero />
+          <TickerStrip />
+          <SelectedWork />
+          <About />
+          <Connect />
+        </main>
+        <RedesignFooter />
       </div>
     </>
   )
