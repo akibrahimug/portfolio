@@ -17,9 +17,9 @@ export const redesignContent = {
     brand: 'Ibrahim Kasoma',
     links: [
       { href: '#work', label: 'Work' },
+      { href: '#open-source', label: 'Open Source' },
       { href: '#experience', label: 'Experience' },
-      { href: '#skills', label: 'Skills' },
-      { href: '#tech', label: 'Tech' },
+      { href: '#process', label: 'Process' },
       { href: '#contact', label: 'Contact' },
     ],
   },
@@ -37,8 +37,17 @@ export const redesignContent = {
     status: { label: 'Available · Senior frontend roles, UK', dotColor: 'bg-emerald-400' },
     location: 'Stroud, England, UK',
     primaryCta: { label: 'Email me', href: 'mailto:kasomaibrahim@gmail.com' },
-    avatarSrc: '/icons/avarta.webp',
+    avatarSrc: '/icons/avarta-cutout.webp',
     avatarAlt: 'Ibrahim Kasoma — Senior Software Engineer',
+  },
+  stats: {
+    eyebrow: 'By the numbers',
+    items: [
+      { value: '6+', suffix: '', label: 'Years building production', sub: 'TypeScript · React · Node' },
+      { value: '17', suffix: '', label: 'Frontend apps shipped', sub: 'EF · 60+ markets' },
+      { value: '3.4', suffix: 'M', label: 'Monthly active users', sub: 'Across 57 markets' },
+      { value: '60', suffix: '%', label: 'Page load reduction', sub: 'Core Web Vitals · all 3' },
+    ],
   },
   ticker: [
     'TypeScript',
@@ -118,8 +127,67 @@ export const redesignContent = {
       },
     ],
   },
+  openSource: {
+    eyebrow: '02 — Open source & side work',
+    heading: 'Live from GitHub.',
+    body: 'A live view of recent public repositories — sourced directly from github.com/akibrahimug.',
+    githubUser: 'akibrahimug',
+    fallback: [
+      {
+        name: 'portfolio',
+        description: 'This portfolio. Next.js Pages Router, Tailwind v4, Framer Motion, MongoDB.',
+        language: 'TypeScript',
+        stars: 0,
+        updatedAt: '2026-04-29',
+        href: 'https://github.com/akibrahimug/portfolio',
+      },
+      {
+        name: 'devops-platform',
+        description: 'CI/CD reference architecture for multi-app monorepos. GitHub Actions + Nx.',
+        language: 'TypeScript',
+        stars: 0,
+        updatedAt: '2025-12-12',
+        href: 'https://github.com/akibrahimug',
+      },
+      {
+        name: 'react-ui-lab',
+        description: 'Personal React component lab — animation experiments, motion primitives.',
+        language: 'TypeScript',
+        stars: 0,
+        updatedAt: '2025-10-04',
+        href: 'https://github.com/akibrahimug',
+      },
+    ],
+  },
+  process: {
+    eyebrow: '03 — How I work',
+    heading: 'Discover · Architect · Ship · Iterate.',
+    body: 'A pragmatic loop. Each step ends with something that ships.',
+    steps: [
+      {
+        n: '01',
+        title: 'Discover',
+        body: 'Sit with the problem before the keyboard. Read the code. Talk to users and to the people on either side of you. Understand what success actually looks like.',
+      },
+      {
+        n: '02',
+        title: 'Architect',
+        body: 'Pick a path that survives a year of edits. Write a one-page brief, sketch the data flow, name the pieces. Boring choices when boring beats clever.',
+      },
+      {
+        n: '03',
+        title: 'Ship',
+        body: 'Small PRs, real feedback loops, real tests. Performance budgets and accessibility on day one — never bolted on. Release behind a flag if there is any doubt.',
+      },
+      {
+        n: '04',
+        title: 'Iterate',
+        body: 'Watch the metrics that matter. Roll back fast. Pay down debt that slows the next person. Keep what works, retire what does not, leave the place tidier than you found it.',
+      },
+    ],
+  },
   experience: {
-    eyebrow: '02 — Experience',
+    eyebrow: '04 — Experience',
     heading: 'Where I have worked, what I shipped there.',
     roles: [
       {
@@ -174,7 +242,7 @@ export const redesignContent = {
     ],
   },
   skills: {
-    eyebrow: '03 — Core skills',
+    eyebrow: '05 — Core skills',
     heading: 'What I am fluent in.',
     groups: [
       {
@@ -214,12 +282,35 @@ export const redesignContent = {
     ],
   },
   tech: {
-    eyebrow: '04 — Tech I reach for',
+    eyebrow: '06 — Tech I reach for',
     heading: 'Day-to-day tools.',
     body: 'A live, searchable view of the stack I lean on across product engineering, platform work, and personal projects.',
   },
+  currently: {
+    eyebrow: '07 — Currently',
+    heading: 'What I am up to right now.',
+    asOf: 'Updated April 2026',
+    items: [
+      {
+        k: 'Shipping',
+        v: 'Next.js perf and Nx monorepo platform work at EF Education First — 17 apps · 60+ markets · daily multi-region releases.',
+      },
+      {
+        k: 'Building',
+        v: 'This portfolio. Tailwind v4 + Framer Motion + MongoDB-backed admin. Aiming for the AI-2026 senior-IC bar.',
+      },
+      {
+        k: 'Reading',
+        v: 'Writing about product engineering, design systems at scale, and the quiet revolution in AI-era tooling.',
+      },
+      {
+        k: 'Open to',
+        v: 'Senior frontend / platform roles in the UK. Strong product teams, real performance budgets, modern stack.',
+      },
+    ],
+  },
   about: {
-    eyebrow: '05 — About',
+    eyebrow: '08 — About',
     heading: 'I care about craft, performance, and pragmatic architecture.',
     paragraphs: [
       'Senior Software Engineer with 6+ years shipping production TypeScript applications across frontend and backend-integrated systems. Strong track record delivering API-driven features end to end, improving performance and reliability, and contributing to architecture, CI/CD, and engineering standards in fast-moving product environments.',
@@ -234,7 +325,7 @@ export const redesignContent = {
     ],
   },
   contact: {
-    eyebrow: '06 — Contact',
+    eyebrow: '09 — Contact',
     heading: 'Let’s talk.',
     body: 'Fastest way to reach me is email — I read everything and reply within a day. The form is fine too if you prefer.',
     email: 'kasomaibrahim@gmail.com',
