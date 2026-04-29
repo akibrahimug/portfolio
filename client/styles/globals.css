@@ -387,6 +387,15 @@
   }
 }
 
+@keyframes ticker-reverse {
+  0% {
+    transform: translateX(-25%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
 @keyframes marquee-reverse {
   0% {
     transform: translateX(-75%); /* Start at -75% for reverse */
