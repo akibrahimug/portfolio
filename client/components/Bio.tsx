@@ -5,6 +5,7 @@ import Skeleton from 'react-loading-skeleton'
 import 'react-loading-skeleton/dist/skeleton.css'
 import { SlideUp, FadeIn } from '@/lib/lightweight-animation'
 import { httpClient } from '@/lib/http-client'
+import { GradientCard } from '@/components/ui'
 
 const BioComponent: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true)
@@ -94,8 +95,10 @@ const BioComponent: React.FC = () => {
   }, [])
 
   return (
-    <div className='group relative overflow-hidden m-auto md:rounded-2xl bg-gradient-to-br from-gray-800 to-gray-900 border border-white/10 text-white py-6 md:max-w-[500px] 2xl:w-[500px] lg:w-[450px] lg:ml-8 xl:m-auto md:transform md:transition-all md:duration-500 md:hover:scale-[1.02] md:hover:rotate-1 md:hover:shadow-2xl md:hover:shadow-brand-500/20 md:hover:border-brand-300/30 md:will-change-transform'>
-      <div className='absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent transform -translate-x-full group-hover:translate-x-full transition-transform duration-1000 pointer-events-none'></div>
+    <GradientCard
+      glow
+      className='m-auto rounded-none md:rounded-2xl py-6 md:max-w-[500px] 2xl:w-[500px] lg:w-[450px] lg:ml-8 xl:m-auto md:transform md:hover:scale-[1.02] md:hover:rotate-1 md:will-change-transform'
+    >
       <div className='px-6 md:px-10'>
         <div className='flex items-center mb-6'>
           <div className='w-1.5 h-8 bg-brand-500 mr-3 rounded-full'></div>
@@ -163,7 +166,7 @@ const BioComponent: React.FC = () => {
         )}
       </div>
       <div className='absolute inset-0 md:rounded-2xl md:transition-all md:duration-500 pointer-events-none' />
-    </div>
+    </GradientCard>
   )
 }
 

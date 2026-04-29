@@ -11,6 +11,7 @@ import {
 
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
+import { SocialIconLink } from '@/components/ui'
 import { FadeIn, SlideUp } from '@/lib/lightweight-animation'
 
 interface SocialLink {
@@ -43,12 +44,20 @@ export default function ProfileDesc({ certified }: ProfileDescProps) {
 
   const socialLinks: SocialLink[] = [
     {
-      icon: <GithubLogo weight='bold' className='h-5 w-5 transition-colors duration-300' />,
+      icon: (
+        <span className='group-hover:text-white'>
+          <GithubLogo weight='bold' className='h-5 w-5 transition-colors duration-300' />
+        </span>
+      ),
       url: 'https://github.com/akibrahimug',
       label: 'GitHub',
     },
     {
-      icon: <LinkedinLogo weight='bold' className='h-5 w-5 transition-colors duration-300' />,
+      icon: (
+        <span className='group-hover:text-white'>
+          <LinkedinLogo weight='bold' className='h-5 w-5 transition-colors duration-300' />
+        </span>
+      ),
       url: 'https://www.linkedin.com/in/kasoma-ibrahim-89a732168/',
       label: 'LinkedIn',
     },
@@ -60,7 +69,7 @@ export default function ProfileDesc({ certified }: ProfileDescProps) {
             alt='twitter'
             width={18}
             height={18}
-            className='h-5 w-5 transition-all duration-300'
+            className='h-5 w-5 transition-all duration-300 group-hover:brightness-0 group-hover:invert'
             loading='lazy'
           />
         </div>
@@ -143,29 +152,7 @@ export default function ProfileDesc({ certified }: ProfileDescProps) {
 
               <div className='flex space-x-3 items-center'>
                 {socialLinks.map((link, index) => (
-                  <a
-                    key={index}
-                    href={link.url}
-                    target='_blank'
-                    rel='noopener noreferrer'
-                    className='group flex items-center justify-center h-10 w-10 rounded-full bg-white/80 text-gray-800 border border-gray-200/80 backdrop-blur-sm shadow-sm transition-all duration-300 hover:scale-110 hover:bg-brand-500 hover:text-white hover:border-brand-500'
-                    aria-label={link.label}
-                  >
-                    {index === 2 ? (
-                      <div className='w-full h-full flex items-center justify-center'>
-                        <Image
-                          src={'/icons/twitter.svg'}
-                          alt='twitter'
-                          width={18}
-                          height={18}
-                          className='h-5 w-5 transition-all duration-300 group-hover:brightness-0 group-hover:invert'
-                          loading='lazy'
-                        />
-                      </div>
-                    ) : (
-                      <span className='group-hover:text-white'>{link.icon}</span>
-                    )}
-                  </a>
+                  <SocialIconLink key={index} href={link.url} label={link.label} icon={link.icon} />
                 ))}
               </div>
             </SlideUp>

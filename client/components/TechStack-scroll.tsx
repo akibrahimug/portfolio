@@ -11,6 +11,7 @@ import {
   ChartBar,
 } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
+import { Marquee } from '@/components/ui'
 import Image from 'next/image'
 import { httpClient } from '@/lib/http-client'
 
@@ -179,37 +180,40 @@ export default function TechStackScroll() {
                 <div className='absolute right-0 top-0 bottom-0 w-24 z-10 bg-gradient-to-l from-white to-transparent dark:from-gray-900 dark:to-transparent pointer-events-none' />
 
                 {row1.length > 0 && (
-                  <MarqueeSlider duration={60}>
+                  <Marquee speed='normal' className='py-2 h-[90px]'>
                     {row1.map((tech) => (
-                      <TechCard
+                      <div
                         key={tech.name}
-                        tech={tech}
-                        onClick={() => handleTechSelect(tech)}
-                      />
+                        className='flex-shrink-0 transition-transform duration-300 mr-4'
+                      >
+                        <TechCard tech={tech} onClick={() => handleTechSelect(tech)} />
+                      </div>
                     ))}
-                  </MarqueeSlider>
+                  </Marquee>
                 )}
                 {row2.length > 0 && (
-                  <MarqueeSlider duration={80} reverse>
+                  <Marquee speed='normal' direction='right' className='py-2 h-[90px]'>
                     {row2.map((tech) => (
-                      <TechCard
+                      <div
                         key={tech.name}
-                        tech={tech}
-                        onClick={() => handleTechSelect(tech)}
-                      />
+                        className='flex-shrink-0 transition-transform duration-300 mr-4'
+                      >
+                        <TechCard tech={tech} onClick={() => handleTechSelect(tech)} />
+                      </div>
                     ))}
-                  </MarqueeSlider>
+                  </Marquee>
                 )}
                 {row3.length > 0 && (
-                  <MarqueeSlider duration={70}>
+                  <Marquee speed='normal' className='py-2 h-[90px]'>
                     {row3.map((tech) => (
-                      <TechCard
+                      <div
                         key={tech.name}
-                        tech={tech}
-                        onClick={() => handleTechSelect(tech)}
-                      />
+                        className='flex-shrink-0 transition-transform duration-300 mr-4'
+                      >
+                        <TechCard tech={tech} onClick={() => handleTechSelect(tech)} />
+                      </div>
                     ))}
-                  </MarqueeSlider>
+                  </Marquee>
                 )}
               </div>
             )}
@@ -234,46 +238,6 @@ export default function TechStackScroll() {
       {/* Tech Detail Modal */}
       {selectedTech && <TechDetailCard tech={selectedTech} onClose={closeDetail} />}
     </section>
-  )
-}
-
-interface MarqueeSliderProps {
-  children: React.ReactNode
-  duration: number
-  reverse?: boolean
-}
-function MarqueeSlider({ children, duration, reverse = false }: MarqueeSliderProps) {
-  const [isPaused, setIsPaused] = useState(false)
-  const items = React.Children.toArray(children)
-  const dup = items.length > 1 ? [...items, ...items, ...items, ...items] : items
-
-  return (
-    <div
-      className='relative flex overflow-hidden w-full py-2 h-[90px]'
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
-    >
-      <div
-        className={reverse ? 'animate-marquee-reverse' : 'animate-marquee'}
-        style={{
-          animationDuration: `${duration}s`,
-          animationTimingFunction: 'linear',
-          animationIterationCount: 'infinite',
-          animationFillMode: 'forwards',
-          animationPlayState: isPaused ? 'paused' : 'running',
-          display: 'flex',
-          gap: '1rem',
-          minWidth: '400%',
-          width: 'max-content',
-        }}
-      >
-        {dup.map((child, i) => (
-          <div key={i} className='flex-shrink-0 transition-transform duration-300'>
-            {child}
-          </div>
-        ))}
-      </div>
-    </div>
   )
 }
 

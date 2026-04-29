@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { GoogleLogo, TwitterLogo, LinkedinLogo } from '@phosphor-icons/react'
-import SocialMedia from './SocialMedia'
+import { SocialIconLink } from '@/components/ui'
 import { useCreateMessage } from '@/hooks/useHttpApi'
 
 interface ContactData {
@@ -114,22 +114,22 @@ const Contact: React.FC = () => {
         <div className='hidden sm:inline-block mt-4 border rounded-2xl mb-4 pb-4 shadow-md '>
           <h3 className='pt-5 ml-4 text-center font-medium'>If you prefer an alternative way.</h3>
           {/* email */}
-          <SocialMedia
-            link={'mailto: kasomaibrahim@gmail.com'}
+          <SocialIconLink
+            href={'mailto: kasomaibrahim@gmail.com'}
+            label={'kasomaibrahim@gmail.com'}
             icon={<GoogleLogo size={24} />}
-            text={'kasomaibrahim@gmail.com'}
           />
           {/* twitter */}
-          <SocialMedia
-            link={'https://twitter.com/Akibrahimug'}
+          <SocialIconLink
+            href={'https://twitter.com/Akibrahimug'}
+            label={'Twitter'}
             icon={<TwitterLogo size={24} />}
-            text={'Twitter'}
           />
           {/* linked In */}
-          <SocialMedia
-            link={'https://www.linkedin.com/in/kasoma-ibrahim-89a732168/'}
+          <SocialIconLink
+            href={'https://www.linkedin.com/in/kasoma-ibrahim-89a732168/'}
+            label={'LinkedIn'}
             icon={<LinkedinLogo size={24} />}
-            text={'LinkedIn'}
           />
           {/* Tel: number */}
         </div>

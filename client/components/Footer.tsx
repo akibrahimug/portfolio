@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { GithubLogo, LinkedinLogo, EnvelopeSimple, ArrowUp } from '@phosphor-icons/react'
 import Image from 'next/image'
 import { httpClient } from '@/lib/http-client'
+import { SocialIconLink } from '@/components/ui'
 
 interface FooterLink {
   label: string
@@ -121,16 +122,13 @@ const Footer: React.FC = () => {
             </p>
             <div className='flex gap-3'>
               {socialLinks.map((link, index) => (
-                <a
+                <SocialIconLink
                   key={index}
                   href={link.href}
-                  target={link.href.startsWith('http') ? '_blank' : undefined}
-                  rel={link.href.startsWith('http') ? 'noopener noreferrer' : undefined}
-                  className='flex items-center justify-center h-10 w-10 rounded-full bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-brand-50 dark:hover:bg-brand-900/20 hover:text-brand-600 dark:hover:text-brand-400 hover:border-brand-200 dark:hover:border-brand-800 transition-all duration-300 hover:scale-110'
-                  aria-label={link.label}
-                >
-                  {link.icon}
-                </a>
+                  label={link.label}
+                  icon={link.icon}
+                  className='bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700 backdrop-blur-none shadow-none hover:bg-brand-50 dark:hover:bg-brand-900/20 hover:text-brand-600 dark:hover:text-brand-400 hover:border-brand-200 dark:hover:border-brand-800'
+                />
               ))}
             </div>
           </div>

@@ -1,6 +1,6 @@
 import React from 'react'
 import Head from 'next/head'
-import Header from '@/components/Header'
+import MainHeader from '@/components/MainHeader'
 import HeroSection from '@/components/HeroSection'
 import dynamic from 'next/dynamic'
 
@@ -42,7 +42,7 @@ const Home: React.FC = () => {
         <meta name='viewport' content='width=device-width, initial-scale=1, viewport-fit=cover' />
         <meta httpEquiv='x-ua-compatible' content='ie=edge' />
       </Head>
-      <Header />
+      <MainHeader showMethodologies />
       <div id='about' className='max-w-[1400px] m-auto'>
         <HeroSection certified={[]} />
       </div>
