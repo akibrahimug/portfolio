@@ -41,3 +41,8 @@ yarn-error.log*
 .netlify
 next.lock
 
+# Playwright
+playwright-report/
+test-results/
+.playwright/
+

@@ -10,7 +10,10 @@
     "start": "next start",
     "test": "jest --watchAll=false --forceExit --maxWorkers=1",
     "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage --watchAll=false",
     "test:crud": "ts-node __tests__/test-runner.ts",
+    "e2e": "playwright test",
+    "e2e:install": "playwright install chromium",
     "eject": "react-scripts eject",
     "format": "prettier --write 'components/**/*.{js,jsx,ts,tsx,css,md,json}' 'pages/**/*.{js,jsx,ts,tsx,css,md,json}' --config ./.prettierrc"
   },
@@ -60,10 +63,12 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.59.1",
     "@tailwindcss/aspect-ratio": "^0.4.2",
     "@tailwindcss/forms": "^0.5.3",
     "@tailwindcss/line-clamp": "^0.4.4",
     "@tailwindcss/postcss": "^4.1.12",
+    "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
