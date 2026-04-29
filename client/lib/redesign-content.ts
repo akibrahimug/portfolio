@@ -143,24 +143,14 @@ export const redesignContent = {
         repo: 'https://github.com/akibrahimug/ugGov',
       },
       {
-        slug: 'pesa',
-        kind: 'Fintech',
-        title: 'Pesa — Modern banking platform',
+        slug: 'comp-lib',
+        kind: 'Design Systems · Storybook',
+        title: 'comp-lib — Component library lab',
         summary:
-          'A modern banking platform for everyone. Account dashboards, transaction flows, transfers, and a calm fintech UI built around clarity rather than chrome.',
-        stack: ['Next.js', 'TypeScript', 'Tailwind', 'Auth'],
-        live: 'https://banking-app-rho-ruby.vercel.app',
-        repo: 'https://github.com/akibrahimug/banking-app',
-      },
-      {
-        slug: 'moss',
-        kind: 'Editorial · CMS',
-        title: 'Moss — The Finance Guide',
-        summary:
-          'A long-form finance blog — banking, accounting, modern financial management. CMS-driven publishing workflow with editorial-grade typography.',
-        stack: ['Next.js', 'TypeScript', 'Tailwind', 'CMS'],
-        live: 'https://moss-finance-blog.vercel.app',
-        repo: 'https://github.com/akibrahimug/moss-finance-blog',
+          'A personal design-system playground in Storybook — primitives, motion, theming, and accessibility patterns. The kind of internal lab that keeps a senior frontend engineer sharp on the basics.',
+        stack: ['React', 'TypeScript', 'Storybook', 'Tailwind'],
+        live: 'https://comp-lib-gamma.vercel.app',
+        repo: 'https://github.com/akibrahimug/comp-lib',
       },
       {
         slug: 'devops-insights',
@@ -181,6 +171,26 @@ export const redesignContent = {
         stack: ['Next.js', 'TypeScript', 'AI', 'Realtime'],
         live: 'https://learner-phi.vercel.app',
         repo: 'https://github.com/akibrahimug/learner',
+      },
+      {
+        slug: 'puur-safaris',
+        kind: 'Travel · CMS',
+        title: 'Puur Uganda Reizen — Tailor-made safari trips',
+        summary:
+          'Discover Africa with Puur Uganda Reizen — personal, tailor-made safari trips to Uganda and beyond. Small groups, local experts, editorial photography, and a CMS-driven trip catalog built for storytelling.',
+        stack: ['Next.js', 'TypeScript', 'Tailwind', 'CMS'],
+        live: 'https://puur-safaris.vercel.app',
+        repo: 'https://github.com/akibrahimug/puur-safaris',
+      },
+      {
+        slug: 'oliotya',
+        kind: 'Travel · Marketing',
+        title: 'Oliotya Uganda Safaris — Discover Uganda',
+        summary:
+          'Experience the Pearl of Africa — wildlife, mountains, gorilla trekking. A marketing site with rich content blocks, image galleries, and conversion-focused booking pathways.',
+        stack: ['Next.js', 'Tailwind', 'Image-led layout'],
+        live: 'https://fox-adventures.vercel.app',
+        repo: 'https://github.com/akibrahimug/Oliotya-Uganda-Safaris',
       },
     ],
   },
