@@ -24,10 +24,43 @@ const customJestConfig = {
     '!**/coverage/**',
   ],
   testMatch: ['**/__tests__/**/*.{ts,tsx}', '**/?(*.)+(spec|test).{ts,tsx}'],
+  testPathIgnorePatterns: ['/node_modules/', '/e2e/', '/playwright-report/', '/test-results/'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
   // Use Next.js jest presets (babel-jest) instead of ts-jest
   transform: {},
   testTimeout: 10000,
+  coverageThreshold: {
+    'components/ui/Section.tsx': {
+      branches: 50,
+      functions: 60,
+      lines: 60,
+      statements: 60,
+    },
+    'components/ui/GradientCard.tsx': {
+      branches: 50,
+      functions: 60,
+      lines: 60,
+      statements: 60,
+    },
+    'components/ui/SocialIconLink.tsx': {
+      branches: 50,
+      functions: 60,
+      lines: 60,
+      statements: 60,
+    },
+    'components/ui/Marquee.tsx': {
+      branches: 50,
+      functions: 60,
+      lines: 60,
+      statements: 60,
+    },
+    'components/ui/AnimatedHeading.tsx': {
+      branches: 50,
+      functions: 60,
+      lines: 60,
+      statements: 60,
+    },
+  },
 }
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async
