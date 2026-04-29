@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import {
   PaperPlaneTilt,
   ArrowUpRight,
@@ -13,9 +13,76 @@ import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { FadeIn, SlideUp } from '@/lib/lightweight-animation'
 import { AnimatedHeading } from '@/components/ui/AnimatedHeading'
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
+import { useReducedMotion } from 'framer-motion'
 
 const ROLES = ['SENIOR FRONTEND ENGINEER', 'PLATFORM ENGINEER', 'UX ENGINEER']
+const SCRAMBLE_GLYPHS = '!<>-_\\/[]{}—=+*^?#%&$@01'
+
+/**
+ * Decoder/scramble effect: each character cycles through random glyphs
+ * before locking to its target, sequentially. Returns the current display
+ * value, which is updated on each animation frame until the transition
+ * completes. When `enabled` is false, returns the target value immediately
+ * (used for prefers-reduced-motion).
+ */
+function useScramble(target: string, enabled: boolean): string {
+  const [display, setDisplay] = useState(target)
+  const lastTargetRef = useRef(target)
+  const rafRef = useRef<number | null>(null)
+
+  useEffect(() => {
+    if (!enabled) {
+      setDisplay(target)
+      lastTargetRef.current = target
+      return
+    }
+    const old = lastTargetRef.current
+    if (old === target) return
+
+    const length = Math.max(old.length, target.length)
+    type Slot = { from: string; to: string; start: number; end: number; ch?: string }
+    const queue: Slot[] = []
+    for (let i = 0; i < length; i++) {
+      const start = Math.floor(Math.random() * 18)
+      const end = start + 14 + Math.floor(Math.random() * 22)
+      queue.push({ from: old[i] || ' ', to: target[i] || ' ', start, end })
+    }
+
+    let frame = 0
+    const tick = () => {
+      let out = ''
+      let done = 0
+      for (let i = 0; i < queue.length; i++) {
+        const q = queue[i]
+        if (frame >= q.end) {
+          done++
+          out += q.to
+        } else if (frame >= q.start) {
+          if (!q.ch || Math.random() < 0.28) {
+            q.ch = SCRAMBLE_GLYPHS[Math.floor(Math.random() * SCRAMBLE_GLYPHS.length)]
+          }
+          out += q.ch
+        } else {
+          out += q.from
+        }
+      }
+      setDisplay(out)
+      if (done === queue.length) {
+        lastTargetRef.current = target
+        return
+      }
+      frame++
+      rafRef.current = requestAnimationFrame(tick)
+    }
+    rafRef.current = requestAnimationFrame(tick)
+
+    return () => {
+      if (rafRef.current != null) cancelAnimationFrame(rafRef.current)
+    }
+  }, [target, enabled])
+
+  return display
+}
 
 interface SocialLink {
   icon: React.ReactNode
@@ -32,6 +99,8 @@ export default function ProfileDesc({ certified }: ProfileDescProps) {
   const [idx, setIdx] = useState<number>(0)
   const [paused, setPaused] = useState<boolean>(false)
   const reduced = useReducedMotion()
+  const display = useScramble(ROLES[idx], !reduced)
+  const settling = display !== ROLES[idx]
 
   useEffect(() => {
     // Simulate data fetching with a delay.
@@ -122,19 +191,16 @@ export default function ProfileDesc({ certified }: ProfileDescProps) {
                   <span aria-hidden className='invisible block whitespace-normal'>
                     {ROLES.reduce((a, b) => (a.length >= b.length ? a : b))}
                   </span>
-                  <span className='absolute inset-0 block'>
-                    <AnimatePresence mode='wait' initial={false}>
-                      <motion.span
-                        key={ROLES[idx]}
-                        initial={reduced ? undefined : { opacity: 0, y: 6 }}
-                        animate={reduced ? undefined : { opacity: 1, y: 0 }}
-                        exit={reduced ? undefined : { opacity: 0, y: -6 }}
-                        transition={{ duration: 0.25, ease: 'easeOut' }}
-                        className='block'
-                      >
-                        {ROLES[idx]}
-                      </motion.span>
-                    </AnimatePresence>
+                  <span
+                    aria-live='polite'
+                    className={
+                      'absolute inset-0 block font-mono tabular-nums tracking-tight transition-colors duration-300 ' +
+                      (settling
+                        ? 'text-brand-500 [text-shadow:0_0_18px_rgba(239,68,68,0.45)]'
+                        : 'text-gray-500')
+                    }
+                  >
+                    {display}
                   </span>
                 </span>
               </AnimatedHeading>
