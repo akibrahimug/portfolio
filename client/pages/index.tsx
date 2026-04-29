@@ -6,7 +6,7 @@ import { Hero } from '@/components/redesign/Hero'
 import { StatsBand } from '@/components/redesign/StatsBand'
 import { TickerStrip } from '@/components/redesign/TickerStrip'
 import { SelectedWork } from '@/components/redesign/SelectedWork'
-import { GithubProjects } from '@/components/redesign/GithubProjects'
+import { Showcase } from '@/components/redesign/Showcase'
 import { Process } from '@/components/redesign/Process'
 import { Experience } from '@/components/redesign/Experience'
 import { Skills } from '@/components/redesign/Skills'
@@ -40,7 +40,7 @@ const Home: React.FC = () => {
           <StatsBand />
           <TickerStrip />
           <SelectedWork />
-          <GithubProjects />
+          <Showcase />
           <Process />
           <Experience />
           <Skills />
