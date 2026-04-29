@@ -1,6 +1,7 @@
 import React from 'react'
 import Avarta from '@/components/Avarta'
 import ProfileDesc from '@/components/ProfileDesc'
+import { Section } from '@/components/ui/Section'
 
 type CertifiedSkill = string
 
@@ -25,10 +26,12 @@ const certified: CertifiedSkill[] = [
 
 const HeroSection: React.FC<HeroSectionProps> = () => {
   return (
-    <div className='grid lg:grid-cols-2 relative'>
-      <ProfileDesc certified={certified} />
-      <Avarta />
-    </div>
+    <Section id='hero' gradient='aurora'>
+      <div className='grid lg:grid-cols-2 relative'>
+        <ProfileDesc certified={certified} />
+        <Avarta />
+      </div>
+    </Section>
   )
 }
 

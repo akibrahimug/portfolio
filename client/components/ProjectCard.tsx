@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { ArrowSquareOut, GithubLogo, CaretDown, CaretUp } from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
+import { motion, useReducedMotion } from 'framer-motion'
 
 interface TextToggleProps {
   text: string
@@ -88,8 +89,13 @@ function TextToggle({ text, clamp = 3 }: TextToggleProps) {
  * @param project - The project data to display in the card.
  */
 export function ProjectCard({ project }: ProjectCardProps) {
+  const reduced = useReducedMotion()
   return (
-    <div className=' hover:scale-101 group relative flex h-full flex-col overflow-hidden rounded-lg border border-gray-300 bg-card text-card-foreground shadow-sm transition-all duration-300 hover:shadow-md'>
+    <motion.div
+      whileHover={reduced ? undefined : { y: -4 }}
+      transition={{ type: 'spring', stiffness: 280, damping: 22 }}
+      className=' hover:scale-101 group relative flex h-full flex-col overflow-hidden rounded-lg border border-gray-300 bg-card text-card-foreground shadow-sm transition-all duration-300 hover:shadow-md'
+    >
       <div className='relative aspect-video overflow-hidden'>
         <Image
           src={project.pictureUrl || '/placeholder.svg'}
@@ -144,6 +150,6 @@ export function ProjectCard({ project }: ProjectCardProps) {
           </Link>
         </div>
       </div>
-    </div>
+    </motion.div>
   )
 }

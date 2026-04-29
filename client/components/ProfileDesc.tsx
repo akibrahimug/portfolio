@@ -12,6 +12,10 @@ import {
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { FadeIn, SlideUp } from '@/lib/lightweight-animation'
+import { AnimatedHeading } from '@/components/ui/AnimatedHeading'
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
+
+const ROLES = ['SENIOR FRONTEND ENGINEER', 'PLATFORM ENGINEER', 'UX ENGINEER']
 
 interface SocialLink {
   icon: React.ReactNode
@@ -25,6 +29,9 @@ interface ProfileDescProps {
 
 export default function ProfileDesc({ certified }: ProfileDescProps) {
   const [isLoading, setIsLoading] = useState<boolean>(true)
+  const [idx, setIdx] = useState<number>(0)
+  const [paused, setPaused] = useState<boolean>(false)
+  const reduced = useReducedMotion()
 
   useEffect(() => {
     // Simulate data fetching with a delay.
@@ -34,6 +41,12 @@ export default function ProfileDesc({ certified }: ProfileDescProps) {
 
     return () => clearTimeout(timer)
   }, [])
+
+  useEffect(() => {
+    if (reduced || paused) return
+    const t = setInterval(() => setIdx((i) => (i + 1) % ROLES.length), 2800)
+    return () => clearInterval(t)
+  }, [reduced, paused])
 
   const scrollToProjects = () => {
     document.getElementById('projects')?.scrollIntoView({
@@ -95,10 +108,31 @@ export default function ProfileDesc({ certified }: ProfileDescProps) {
               <h2 className='text-xl sm:text-2xl md:text-3xl font-medium'>
                 Hi, I&apos;m <span className='text-brand-600 font-semibold'>Ibrahim</span> a
               </h2>
-              <h1 className='text-[1.75rem] sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight text-gray-500 leading-[1.15]'>
+              <AnimatedHeading
+                as='h1'
+                fadeInOnView
+                className='text-[1.75rem] sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight text-gray-500 leading-[1.15]'
+              >
                 <span className='block'>SENIOR FRONTEND /</span>
-                <span className='block'>FULL STACK ENGINEER</span>
-              </h1>
+                <span
+                  className='block min-h-[1.15em] min-w-[14ch]'
+                  onMouseEnter={() => setPaused(true)}
+                  onMouseLeave={() => setPaused(false)}
+                >
+                  <AnimatePresence mode='wait' initial={false}>
+                    <motion.span
+                      key={ROLES[idx]}
+                      initial={reduced ? undefined : { opacity: 0, y: 6 }}
+                      animate={reduced ? undefined : { opacity: 1, y: 0 }}
+                      exit={reduced ? undefined : { opacity: 0, y: -6 }}
+                      transition={{ duration: 0.25, ease: 'easeOut' }}
+                      className='block'
+                    >
+                      {ROLES[idx]}
+                    </motion.span>
+                  </AnimatePresence>
+                </span>
+              </AnimatedHeading>
             </SlideUp>
           )}
 
