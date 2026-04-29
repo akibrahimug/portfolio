@@ -5,11 +5,11 @@ import { TopNav } from '@/components/redesign/TopNav'
 import { Hero } from '@/components/redesign/Hero'
 import { StatsBand } from '@/components/redesign/StatsBand'
 import { TickerStrip } from '@/components/redesign/TickerStrip'
+import { Skills } from '@/components/redesign/Skills'
 import { SelectedWork } from '@/components/redesign/SelectedWork'
 import { Showcase } from '@/components/redesign/Showcase'
 import { Process } from '@/components/redesign/Process'
 import { Experience } from '@/components/redesign/Experience'
-import { Skills } from '@/components/redesign/Skills'
 import { TechShowcase } from '@/components/redesign/TechShowcase'
 import { Currently } from '@/components/redesign/Currently'
 import { About } from '@/components/redesign/About'
@@ -39,11 +39,11 @@ const Home: React.FC = () => {
           <Hero />
           <StatsBand />
           <TickerStrip />
+          <Skills />
           <SelectedWork />
           <Showcase />
           <Process />
           <Experience />
-          <Skills />
           <TechShowcase />
           <Currently />
           <About />

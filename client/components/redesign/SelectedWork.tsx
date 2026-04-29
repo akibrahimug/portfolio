@@ -27,10 +27,11 @@ export function SelectedWork() {
               transition={{ duration: 0.5, delay: i * 0.06, ease: [0.16, 1, 0.3, 1] }}
             >
               <a
-                href={item.href}
-                target={item.href.startsWith('http') ? '_blank' : undefined}
-                rel={item.href.startsWith('http') ? 'noopener noreferrer' : undefined}
+                href={item.live}
+                target='_blank'
+                rel='noopener noreferrer'
                 className='group block py-7 transition-colors md:py-9'
+                aria-label={`${item.title} — opens in a new tab`}
               >
                 <div className='grid gap-6 md:grid-cols-[6rem_1fr_auto] md:items-baseline md:gap-10'>
                   <span className='font-mono text-xs tracking-widest text-muted-foreground'>
@@ -51,7 +52,7 @@ export function SelectedWork() {
                     <p className='mt-4 max-w-2xl text-sm leading-relaxed text-muted-foreground md:text-base'>
                       {item.summary}
                     </p>
-                    <ul className='mt-4 flex flex-wrap gap-x-2 gap-y-2'>
+                    <ul className='mt-4 flex flex-wrap items-center gap-x-2 gap-y-2'>
                       {item.stack.map((s) => (
                         <li
                           key={s}
@@ -60,6 +61,9 @@ export function SelectedWork() {
                           {s}
                         </li>
                       ))}
+                      <li className='ml-auto truncate font-mono text-[10px] uppercase tracking-wider text-muted-foreground/80'>
+                        {(item.live || '').replace(/^https?:\/\/(www\.)?/, '')}
+                      </li>
                     </ul>
                   </div>
                   <span
@@ -73,18 +77,6 @@ export function SelectedWork() {
             </motion.li>
           ))}
         </ul>
-
-        <div className='mt-12 text-center'>
-          <a
-            href='https://github.com/akibrahimug'
-            target='_blank'
-            rel='noopener noreferrer'
-            className='inline-flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground'
-          >
-            More on GitHub
-            <span aria-hidden>↗</span>
-          </a>
-        </div>
       </div>
     </section>
   )

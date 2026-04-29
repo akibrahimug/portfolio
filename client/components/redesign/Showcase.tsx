@@ -22,75 +22,92 @@ export function Showcase() {
         </p>
 
         <ul className='mt-14 grid gap-5 md:grid-cols-2'>
-          {items.map((p, i) => (
-            <motion.li
-              key={p.slug}
-              initial={reduced ? false : { opacity: 0, y: 16 }}
-              animate={reduced ? false : { opacity: 1, y: 0 }}
-              transition={{ duration: 0.55, delay: i * 0.07, ease: [0.16, 1, 0.3, 1] }}
-              className='group relative flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card/40 p-6 transition-colors hover:border-brand-500/40 hover:bg-brand-500/[0.04]'
-            >
-              <div
-                aria-hidden
-                className='pointer-events-none absolute inset-0 -z-10 opacity-0 transition-opacity duration-500 group-hover:opacity-100 [background:radial-gradient(60%_60%_at_30%_0%,rgba(239,68,68,0.06),transparent_70%)]'
-              />
-
-              <div className='flex items-start justify-between gap-4'>
-                <span className='font-mono text-[10px] uppercase tracking-widest text-brand-500'>
-                  {p.kind}
-                </span>
-                <span
-                  aria-hidden
-                  className='font-mono text-[10px] uppercase tracking-widest text-muted-foreground'
-                >
-                  {String(i + 1).padStart(2, '0')}
-                </span>
-              </div>
-
-              <h3 className='mt-4 text-2xl font-medium tracking-tight text-foreground transition-colors group-hover:text-brand-500'>
-                {p.title}
-              </h3>
-
-              <p className='mt-3 text-sm leading-relaxed text-muted-foreground md:text-base'>
-                {p.summary}
-              </p>
-
-              <ul className='mt-5 flex flex-wrap gap-x-2 gap-y-2'>
-                {p.stack.map((s) => (
-                  <li
-                    key={s}
-                    className='rounded-full border border-border bg-background/60 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-muted-foreground'
-                  >
-                    {s}
-                  </li>
-                ))}
-              </ul>
-
-              <div className='mt-6 flex flex-wrap items-center gap-3 border-t border-border pt-5'>
+          {items.map((p, i) => {
+            const onRepoClick = (e: React.MouseEvent | React.KeyboardEvent) => {
+              e.preventDefault()
+              e.stopPropagation()
+              window.open(p.repo, '_blank', 'noopener,noreferrer')
+            }
+            return (
+              <motion.li
+                key={p.slug}
+                initial={reduced ? false : { opacity: 0, y: 16 }}
+                animate={reduced ? false : { opacity: 1, y: 0 }}
+                transition={{ duration: 0.55, delay: i * 0.07, ease: [0.16, 1, 0.3, 1] }}
+              >
                 <a
                   href={p.live}
                   target='_blank'
                   rel='noopener noreferrer'
-                  className='inline-flex items-center gap-1.5 rounded-md bg-foreground px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider text-background transition-opacity hover:opacity-90'
+                  aria-label={`${p.title} — open live site`}
+                  className='group relative flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card/40 p-6 transition-colors hover:border-brand-500/40 hover:bg-brand-500/[0.04]'
                 >
-                  Live site
-                  <span aria-hidden>↗</span>
+                  <div
+                    aria-hidden
+                    className='pointer-events-none absolute inset-0 -z-10 opacity-0 transition-opacity duration-500 group-hover:opacity-100 [background:radial-gradient(60%_60%_at_30%_0%,rgba(239,68,68,0.06),transparent_70%)]'
+                  />
+
+                  <div className='flex items-start justify-between gap-4'>
+                    <span className='font-mono text-[10px] uppercase tracking-widest text-brand-500'>
+                      {p.kind}
+                    </span>
+                    <span
+                      aria-hidden
+                      className='font-mono text-[10px] uppercase tracking-widest text-muted-foreground'
+                    >
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                  </div>
+
+                  <h3 className='mt-4 text-2xl font-medium tracking-tight text-foreground transition-colors group-hover:text-brand-500'>
+                    {p.title}
+                  </h3>
+
+                  <p className='mt-3 text-sm leading-relaxed text-muted-foreground md:text-base'>
+                    {p.summary}
+                  </p>
+
+                  <ul className='mt-5 flex flex-wrap gap-x-2 gap-y-2'>
+                    {p.stack.map((s) => (
+                      <li
+                        key={s}
+                        className='rounded-full border border-border bg-background/60 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-muted-foreground'
+                      >
+                        {s}
+                      </li>
+                    ))}
+                  </ul>
+
+                  <div className='mt-6 flex flex-wrap items-center gap-3 border-t border-border pt-5'>
+                    <span className='inline-flex items-center gap-1.5 rounded-md bg-foreground px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider text-background transition-opacity group-hover:opacity-90'>
+                      Live site
+                      <span
+                        aria-hidden
+                        className='transition-transform group-hover:translate-x-0.5'
+                      >
+                        ↗
+                      </span>
+                    </span>
+                    <span
+                      role='button'
+                      tabIndex={0}
+                      onClick={onRepoClick}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') onRepoClick(e)
+                      }}
+                      className='inline-flex items-center gap-1.5 rounded-md border border-border bg-card/40 px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider text-foreground transition-colors hover:border-brand-500/40 hover:text-brand-500'
+                    >
+                      Repo
+                      <span aria-hidden>↗</span>
+                    </span>
+                    <span className='ml-auto truncate font-mono text-[10px] uppercase tracking-wider text-muted-foreground/80'>
+                      {(p.live || '').replace(/^https?:\/\//, '')}
+                    </span>
+                  </div>
                 </a>
-                <a
-                  href={p.repo}
-                  target='_blank'
-                  rel='noopener noreferrer'
-                  className='inline-flex items-center gap-1.5 rounded-md border border-border bg-card/40 px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider text-foreground transition-colors hover:border-brand-500/40 hover:text-brand-500'
-                >
-                  Repo
-                  <span aria-hidden>↗</span>
-                </a>
-                <span className='ml-auto truncate font-mono text-[10px] uppercase tracking-wider text-muted-foreground/80'>
-                  {(p.live || '').replace(/^https?:\/\//, '')}
-                </span>
-              </div>
-            </motion.li>
-          ))}
+              </motion.li>
+            )
+          })}
         </ul>
       </div>
     </section>
