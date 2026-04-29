@@ -43,9 +43,6 @@ const nextConfig = {
     ]
   },
 
-  typescript: {
-    ignoreBuildErrors: true,
-  },
   // ⚠ Next 16 warns about eslint in next.config, but this is just a warning
   eslint: {
     ignoreDuringBuilds: true,

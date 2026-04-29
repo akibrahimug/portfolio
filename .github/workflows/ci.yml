@@ -24,3 +24,23 @@ jobs:
       - run: yarn typecheck
       - run: yarn test --ci
       - run: docker build -t portfolio-backend-ci .
+
+  client:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: client
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: yarn
+          cache-dependency-path: client/yarn.lock
+      - run: yarn install --frozen-lockfile
+      - run: yarn typecheck
+      - run: yarn test --ci --watchAll=false
+      - run: yarn build
+        env:
+          NEXT_PUBLIC_API_BASE_URL: http://localhost:5000/api/v1
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_ZXhhbXBsZS5jbGVyay5hY2NvdW50cy5kZXYk
