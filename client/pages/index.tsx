@@ -3,6 +3,7 @@ import Head from 'next/head'
 import Header from '@/components/Header'
 import HeroSection from '@/components/HeroSection'
 import dynamic from 'next/dynamic'
+import { siteContent } from '@/lib/site-content'
 
 // Lazy load non-critical components
 const TechStackScroll = dynamic(() => import('@/components/TechStack-scroll'), {
@@ -17,11 +18,12 @@ const Home: React.FC = () => {
   return (
     <>
       <Head>
-        <title>Kasoma Ibrahim</title>
-        <meta
-          name='description'
-          content='This is a portfolio showcasing what Kasoma Ibrahim can build and deliver as a Software Engineer'
-        />
+        <title>{siteContent.meta.title}</title>
+        <meta name='description' content={siteContent.meta.description} />
+        <meta property='og:title' content={siteContent.meta.title} />
+        <meta property='og:description' content={siteContent.meta.description} />
+        <meta property='og:image' content={siteContent.meta.ogImage} />
+        <meta name='twitter:card' content='summary_large_image' />
         <link rel='icon' href='/favicon.png' />
 
         {/* Preload critical resources */}

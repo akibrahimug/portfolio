@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { GithubLogo, LinkedinLogo, EnvelopeSimple, ArrowUp } from '@phosphor-icons/react'
 import Image from 'next/image'
 import { httpClient } from '@/lib/http-client'
+import { siteContent } from '@/lib/site-content'
+import { socialLinks } from '@/lib/social-links'
 
 interface FooterLink {
   label: string
@@ -79,28 +81,28 @@ const Footer: React.FC = () => {
     { label: 'Color Test', href: '/color-test' },
   ]
 
-  const socialLinks: SocialLink[] = [
+  const footerSocialLinks: SocialLink[] = [
     {
       icon: <GithubLogo weight='bold' className='h-5 w-5' />,
-      href: 'https://github.com/akibrahimug',
-      label: 'GitHub',
+      href: socialLinks.github.href,
+      label: socialLinks.github.label,
     },
     {
       icon: <LinkedinLogo weight='bold' className='h-5 w-5' />,
-      href: 'https://www.linkedin.com/in/kasoma-ibrahim-89a732168/',
-      label: 'LinkedIn',
+      href: socialLinks.linkedin.href,
+      label: socialLinks.linkedin.label,
     },
     {
       icon: (
         <Image src='/icons/twitter.svg' alt='Twitter' width={20} height={20} className='h-5 w-5' />
       ),
-      href: 'https://twitter.com/Akibrahimug',
-      label: 'Twitter',
+      href: socialLinks.twitter.href,
+      label: socialLinks.twitter.label,
     },
     {
       icon: <EnvelopeSimple weight='bold' className='h-5 w-5' />,
-      href: 'mailto:kasomaibrahim@gmail.com',
-      label: 'Email',
+      href: socialLinks.email.href,
+      label: socialLinks.email.label,
     },
   ]
 
@@ -114,13 +116,14 @@ const Footer: React.FC = () => {
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8'>
           {/* Brand Section */}
           <div className='space-y-4'>
-            <h3 className='text-lg font-bold text-gray-700 dark:text-gray-300'>Kasoma Ibrahim</h3>
+            <h3 className='text-lg font-bold text-gray-700 dark:text-gray-300'>
+              {siteContent.footer.copyrightName}
+            </h3>
             <p className='text-sm text-gray-600 dark:text-gray-400 leading-relaxed'>
-              Full Stack Developer passionate about creating amazing web experiences with modern
-              technologies.
+              {siteContent.footer.tagline}
             </p>
             <div className='flex gap-3'>
-              {socialLinks.map((link, index) => (
+              {footerSocialLinks.map((link, index) => (
                 <a
                   key={index}
                   href={link.href}
@@ -190,7 +193,7 @@ const Footer: React.FC = () => {
         {/* Bottom Bar */}
         <div className='pt-8 border-t border-gray-200 dark:border-gray-800 flex flex-col sm:flex-row items-center justify-between gap-4'>
           <p className='text-sm text-gray-600 dark:text-gray-400 text-center sm:text-left'>
-            © {currentYear} Kasoma Ibrahim. All rights reserved.
+            © {currentYear} {siteContent.footer.copyrightName}. All rights reserved.
           </p>
 
           <button

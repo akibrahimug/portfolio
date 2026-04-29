@@ -12,6 +12,8 @@ import {
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { FadeIn, SlideUp } from '@/lib/lightweight-animation'
+import { siteContent } from '@/lib/site-content'
+import { socialLinks } from '@/lib/social-links'
 
 interface SocialLink {
   icon: React.ReactNode
@@ -41,16 +43,16 @@ export default function ProfileDesc({ certified }: ProfileDescProps) {
     })
   }
 
-  const socialLinks: SocialLink[] = [
+  const heroSocialLinks: SocialLink[] = [
     {
       icon: <GithubLogo weight='bold' className='h-5 w-5 transition-colors duration-300' />,
-      url: 'https://github.com/akibrahimug',
-      label: 'GitHub',
+      url: socialLinks.github.href,
+      label: socialLinks.github.label,
     },
     {
       icon: <LinkedinLogo weight='bold' className='h-5 w-5 transition-colors duration-300' />,
-      url: 'https://www.linkedin.com/in/kasoma-ibrahim-89a732168/',
-      label: 'LinkedIn',
+      url: socialLinks.linkedin.href,
+      label: socialLinks.linkedin.label,
     },
     {
       icon: (
@@ -65,18 +67,18 @@ export default function ProfileDesc({ certified }: ProfileDescProps) {
           />
         </div>
       ),
-      url: 'https://twitter.com/Akibrahimug',
-      label: 'Twitter',
+      url: socialLinks.twitter.href,
+      label: socialLinks.twitter.label,
     },
   ]
 
   const handleEmail = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault()
     const emailParams = new URLSearchParams({
-      subject: 'Regarding Your work as a Software Engineer',
-      body: 'Hello Kasoma,\n\nI saw your website and would like to discuss...',
+      subject: siteContent.navButtons.emailSubject,
+      body: siteContent.navButtons.emailBody,
     }).toString()
-    window.open(`mailto:kasomaibrahim@gmail.com?${emailParams}`, '_self')
+    window.open(`${socialLinks.email.href}?${emailParams}`, '_self')
   }, [])
 
   return (
@@ -93,7 +95,8 @@ export default function ProfileDesc({ certified }: ProfileDescProps) {
           ) : (
             <SlideUp className='space-y-2 text-center md:text-left'>
               <h2 className='text-xl sm:text-2xl md:text-3xl font-medium'>
-                Hi, I&apos;m <span className='text-brand-600 font-semibold'>Ibrahim</span> a
+                {siteContent.hero.kicker}{' '}
+                <span className='text-brand-600 font-semibold'>{siteContent.hero.name}</span> a
               </h2>
               <h1 className='text-[1.75rem] sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight text-gray-500 leading-[1.15]'>
                 <span className='block'>SENIOR FRONTEND /</span>
@@ -142,7 +145,7 @@ export default function ProfileDesc({ certified }: ProfileDescProps) {
               </div>
 
               <div className='flex space-x-3 items-center'>
-                {socialLinks.map((link, index) => (
+                {heroSocialLinks.map((link, index) => (
                   <a
                     key={index}
                     href={link.url}

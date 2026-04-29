@@ -4,6 +4,7 @@ import Image from 'next/image'
 import 'react-loading-skeleton/dist/skeleton.css'
 import Bio from '@/components/Bio'
 import { MouseSimple } from '@phosphor-icons/react'
+import { siteContent } from '@/lib/site-content'
 
 const Avarta: React.FC = () => {
   const scrollToProjects = () => {
@@ -59,7 +60,7 @@ const Avarta: React.FC = () => {
                 }}
                 className='mt-2 text-sm tracking-wider'
               >
-                Scroll
+                {siteContent.avarta.scroll}
               </span>
               <span
                 style={{
@@ -70,7 +71,7 @@ const Avarta: React.FC = () => {
                 }}
                 className='text-sm tracking-wider'
               >
-                Down
+                {siteContent.avarta.down}
               </span>
 
               <style jsx>{`

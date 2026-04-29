@@ -5,6 +5,7 @@ import Skeleton from 'react-loading-skeleton'
 import 'react-loading-skeleton/dist/skeleton.css'
 import { SlideUp, FadeIn } from '@/lib/lightweight-animation'
 import { httpClient } from '@/lib/http-client'
+import { siteContent } from '@/lib/site-content'
 
 const BioComponent: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true)
@@ -68,7 +69,7 @@ const BioComponent: React.FC = () => {
       // Create a link and set properties
       const link = document.createElement('a')
       link.href = url
-      link.download = 'KASOMA_IBRAHIM_CV_2025.pdf'
+      link.download = siteContent.about.resumeFile
 
       // Append to the document, click, and clean up
       document.body.appendChild(link)
@@ -100,7 +101,7 @@ const BioComponent: React.FC = () => {
         <div className='flex items-center mb-6'>
           <div className='w-1.5 h-8 bg-brand-500 mr-3 rounded-full'></div>
           <h4 className='text-2xl font-semibold text-white'>
-            {isLoading ? <Skeleton width={128} height={32} /> : 'About me'}
+            {isLoading ? <Skeleton width={128} height={32} /> : siteContent.about.heading}
           </h4>
         </div>
 
@@ -121,17 +122,17 @@ const BioComponent: React.FC = () => {
               className='text-base text-white/95 font-light tracking-wide'
               style={{ wordSpacing: '0.1em' }}
             >
-              Senior Frontend Engineer building performance-critical React and Next.js applications
-              used in production across multiple international markets.
-              <br />
-              <br />
-              I focus on frontend architecture, platform ownership, and delivery at scale — from Nx
-              monorepos and shared CI/CD pipelines to CMS-driven systems where reliability,
-              performance, and developer experience matter.
-              <br />
-              <br />I value clean, maintainable code, pragmatic testing (
-              <span className='font-normal text-white'>Jest & React Testing Library</span>), and
-              close collaboration with product and backend teams.
+              {siteContent.about.paragraphs.map((paragraph, index) => (
+                <React.Fragment key={index}>
+                  {index > 0 && (
+                    <>
+                      <br />
+                      <br />
+                    </>
+                  )}
+                  {paragraph}
+                </React.Fragment>
+              ))}
             </div>
           )}
         </div>
@@ -143,7 +144,7 @@ const BioComponent: React.FC = () => {
               disabled={isDownloading}
               className='inline-flex items-center text-sm text-white/70 hover:text-white cursor-pointer transition-colors bg-transparent border-none disabled:opacity-50 disabled:cursor-not-allowed'
             >
-              <span>{isDownloading ? 'Downloading...' : 'Download Resume'}</span>
+              <span>{isDownloading ? 'Downloading...' : siteContent.about.resumeLabel}</span>
               <svg
                 xmlns='http://www.w3.org/2000/svg'
                 className='h-4 w-4 ml-1'

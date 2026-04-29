@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button'
 import { GithubLogo } from '@phosphor-icons/react'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
+import { siteContent } from '@/lib/site-content'
+import { socialLinks } from '@/lib/social-links'
 
 const NavButtons = () => {
   const router = useRouter()
@@ -17,10 +19,10 @@ const NavButtons = () => {
   const handleEmail = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault()
     const emailParams = new URLSearchParams({
-      subject: 'Regarding Your work as a Software Engineer',
-      body: 'Hello Kasoma,\n\nI saw your website and would like to discuss...',
+      subject: siteContent.navButtons.emailSubject,
+      body: siteContent.navButtons.emailBody,
     }).toString()
-    window.open(`mailto:kasomaibrahim@gmail.com?${emailParams}`, '_self')
+    window.open(`${socialLinks.email.href}?${emailParams}`, '_self')
   }
 
   return (
@@ -31,7 +33,7 @@ const NavButtons = () => {
           className='flex-1 h-10 px-4 rounded-none border-r text-left justify-start font-normal bg-white text-gray-900 hover:bg-gray-100 hover:text-gray-900 transition-colors cursor-pointer'
           onClick={handleEmail}
         >
-          Email Me
+          {siteContent.navButtons.emailMe}
         </Button>
 
         {/* TechStack */}
@@ -41,7 +43,7 @@ const NavButtons = () => {
           value='TechStack'
           onClick={scrollToProjects}
         >
-          TechStack
+          {siteContent.navButtons.techStack}
         </Button>
 
         {/* REST API with GitHub icon */}
@@ -52,11 +54,11 @@ const NavButtons = () => {
             value='Restful API'
             onClick={() => router.push('/dashboard')}
           >
-            Dashboard
+            {siteContent.navButtons.dashboard}
           </Button>
 
           <Link
-            href='https://github.com/akibrahimug'
+            href={socialLinks.github.href}
             target='_blank'
             rel='noopener noreferrer'
             className='absolute right-5 transform translate-x-1/2 border border-white/10 p-3 rounded-3xl bg-gradient-to-br from-gray-800 to-gray-900 text-white hover:from-gray-700 hover:to-gray-800 hover:scale-110 transition-transform duration-200'

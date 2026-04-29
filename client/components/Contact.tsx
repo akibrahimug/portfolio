@@ -2,6 +2,8 @@ import React, { useState } from 'react'
 import { GoogleLogo, TwitterLogo, LinkedinLogo } from '@phosphor-icons/react'
 import SocialMedia from './SocialMedia'
 import { useCreateMessage } from '@/hooks/useHttpApi'
+import { siteContent } from '@/lib/site-content'
+import { socialLinks } from '@/lib/social-links'
 
 interface ContactData {
   name: string
@@ -41,7 +43,7 @@ const Contact: React.FC = () => {
       })
 
       if (result) {
-        setFeedback('Message sent successfully!')
+        setFeedback(siteContent.contact.success)
         // Reset form
         setData({ name: '', message: '', company: '', email: '' })
       } else {
@@ -67,13 +69,13 @@ const Contact: React.FC = () => {
           onSubmit={submit}
           className='p-5 border m-auto sm:m-4 mt-4 mb-4 rounded-2xl shadow-md max-w-[350px]'
         >
-          <h3 className='mb-4 text-center font-medium'>Send me a Message</h3>
+          <h3 className='mb-4 text-center font-medium'>{siteContent.contact.heading}</h3>
 
           <div className='flex flex-col w-[300px]'>
             <input
               type='text'
               className='w-full border p-2 rounded-md placeholder:p-2 outline-none'
-              placeholder='Name'
+              placeholder={siteContent.contact.labels.name}
               id='name'
               name='name'
               onChange={handleChange}
@@ -81,7 +83,7 @@ const Contact: React.FC = () => {
             <input
               type='text'
               className='w-full border mt-4 p-2 rounded-md placeholder:p-2 outline-none'
-              placeholder='Company'
+              placeholder={siteContent.contact.labels.company}
               id='company'
               name='company'
               onChange={handleChange}
@@ -89,7 +91,7 @@ const Contact: React.FC = () => {
             <input
               type='text'
               className='w-full border mt-4 p-2 rounded-md placeholder:p-2 outline-none'
-              placeholder='Email'
+              placeholder={siteContent.contact.labels.email}
               onChange={handleChange}
               id='email'
               name='email'
@@ -97,7 +99,7 @@ const Contact: React.FC = () => {
             <textarea
               maxLength={300}
               className='w-full border mt-4 rounded-md resize-none placeholder:p-2 outline-none'
-              placeholder='Message(300-words Max)'
+              placeholder={siteContent.contact.labels.message}
               onChange={handleChange}
               id='message'
               name='message'
@@ -108,28 +110,30 @@ const Contact: React.FC = () => {
             disabled={createMessage.loading}
             className='text-gray-700 hover:text-white block rounded-md border p-2 mt-4 w-32 m-auto text-base hover:shadow-md active:scale-95 transition-all duration-100 hover:bg-red-500 text-center disabled:opacity-50 disabled:cursor-not-allowed'
           >
-            {createMessage.loading ? 'Sending...' : 'Send'}
+            {createMessage.loading
+              ? siteContent.contact.labels.submitting
+              : siteContent.contact.labels.submit}
           </button>
         </form>
         <div className='hidden sm:inline-block mt-4 border rounded-2xl mb-4 pb-4 shadow-md '>
-          <h3 className='pt-5 ml-4 text-center font-medium'>If you prefer an alternative way.</h3>
+          <h3 className='pt-5 ml-4 text-center font-medium'>{siteContent.contact.subheading}</h3>
           {/* email */}
           <SocialMedia
-            link={'mailto: kasomaibrahim@gmail.com'}
+            link={socialLinks.email.href}
             icon={<GoogleLogo size={24} />}
-            text={'kasomaibrahim@gmail.com'}
+            text={socialLinks.email.address}
           />
           {/* twitter */}
           <SocialMedia
-            link={'https://twitter.com/Akibrahimug'}
+            link={socialLinks.twitter.href}
             icon={<TwitterLogo size={24} />}
-            text={'Twitter'}
+            text={socialLinks.twitter.label}
           />
           {/* linked In */}
           <SocialMedia
-            link={'https://www.linkedin.com/in/kasoma-ibrahim-89a732168/'}
+            link={socialLinks.linkedin.href}
             icon={<LinkedinLogo size={24} />}
-            text={'LinkedIn'}
+            text={socialLinks.linkedin.label}
           />
           {/* Tel: number */}
         </div>
