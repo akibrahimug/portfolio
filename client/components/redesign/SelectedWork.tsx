@@ -62,7 +62,7 @@ export function SelectedWork() {
                         </li>
                       ))}
                       <li className='ml-auto truncate font-mono text-[10px] uppercase tracking-wider text-muted-foreground/80'>
-                        {(item.live || '').replace(/^https?:\/\/(www\.)?/, '')}
+                        {(item.live || '').replace(/^https?:\/\/(www\.)?/, '').replace(/\/.*$/, '')}
                       </li>
                     </ul>
                   </div>

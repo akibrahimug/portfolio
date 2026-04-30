@@ -153,7 +153,7 @@ export const redesignContent = {
         summary:
           'A personal design-system playground in Storybook — primitives, motion, theming, and accessibility patterns. The kind of internal lab that keeps a senior frontend engineer sharp on the basics.',
         stack: ['React', 'TypeScript', 'Storybook', 'Tailwind'],
-        live: 'https://complib.kasomaibrahim.dev',
+        live: 'https://complib.kasomaibrahim.dev/?path=/docs/components-avatar--docs',
         repo: 'https://github.com/akibrahimug/comp-lib',
       },
       {
@@ -193,7 +193,7 @@ export const redesignContent = {
         summary:
           'Experience the Pearl of Africa — wildlife, mountains, gorilla trekking. A marketing site with rich content blocks, image galleries, and conversion-focused booking pathways.',
         stack: ['Next.js', 'Tailwind', 'Image-led layout'],
-        live: 'https://fox-adventures.vercel.app',
+        live: 'https://www.oliotyaugandasafaris.com',
         repo: 'https://github.com/akibrahimug/Oliotya-Uganda-Safaris',
       },
       {

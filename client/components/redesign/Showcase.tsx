@@ -101,7 +101,7 @@ export function Showcase() {
                       <span aria-hidden>↗</span>
                     </span>
                     <span className='ml-auto truncate font-mono text-[10px] uppercase tracking-wider text-muted-foreground/80'>
-                      {(p.live || '').replace(/^https?:\/\//, '')}
+                      {(p.live || '').replace(/^https?:\/\/(www\.)?/, '').replace(/\/.*$/, '')}
                     </span>
                   </div>
                 </a>
