@@ -366,7 +366,7 @@ export const redesignContent = {
       {
         key: 'linkedin',
         label: 'LinkedIn',
-        href: 'https://www.linkedin.com/in/kasoma-ibrahim-89a732168/',
+        href: 'https://www.linkedin.com/in/kasomaibrahim/',
       },
       { key: 'twitter', label: 'X / Twitter', href: 'https://twitter.com/Akibrahimug' },
     ],
