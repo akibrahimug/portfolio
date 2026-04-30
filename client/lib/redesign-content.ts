@@ -344,11 +344,10 @@ export const redesignContent = {
   },
   about: {
     eyebrow: '08 — About',
-    heading: 'I care about craft, performance, and pragmatic architecture.',
+    heading: 'Senior Software Engineer · TypeScript, React, Node.js.',
     paragraphs: [
-      'Senior Software Engineer with six years on production frontend at scale — multi-brand monorepos, edge-cached marketing surfaces, dashboards that outlive their authors. The throughline across EF Education First, freelance client work, and personal side projects: 80+ apps shipped end to end. At EF specifically, I work across seven concurrent projects, where the flagship Next.js platform reaches 3.4M+ monthly users in 60+ markets.',
-      'What I care about is the boring middle — the platform work that lets a small team ship at the pace of a much bigger one. Shared CI/CD pipelines, design tokens, observability, performance budgets that hold under real traffic. The flashy stuff (motion, micro-interactions, AI-era tooling) is fun, but the real leverage comes from making it cheap to ship the next thing safely.',
-      'I write TypeScript and Node by default. I read code before I write it. I prefer boring choices that survive a year of edits, small PRs that compound, and metrics that move. Based in Stroud — open to senior frontend roles in the UK where the bar is high and the team is small enough to feel.',
+      'Senior Software Engineer with 6+ years of experience building and scaling production TypeScript applications across frontend and backend-integrated systems. Strong track record delivering API-driven features end-to-end, improving performance and reliability, and contributing to architecture, CI/CD, and engineering standards in fast-moving product environments.',
+      'Front-end engineer with strong Node.js and API integration experience, comfortable working across the stack to ship product features, improve developer workflows, and support scalable delivery in growing teams.',
     ],
     facts: [
       { k: 'Years building', v: '6+' },
