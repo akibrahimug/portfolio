@@ -153,7 +153,7 @@ export const redesignContent = {
         summary:
           'A personal design-system playground in Storybook — primitives, motion, theming, and accessibility patterns. The kind of internal lab that keeps a senior frontend engineer sharp on the basics.',
         stack: ['React', 'TypeScript', 'Storybook', 'Tailwind'],
-        live: 'https://comp-lib-gamma.vercel.app',
+        live: 'https://complib.kasomaibrahim.dev',
         repo: 'https://github.com/akibrahimug/comp-lib',
       },
       {
@@ -163,7 +163,7 @@ export const redesignContent = {
         summary:
           'Real-time monitoring dashboard for DevOps metrics across global regions. Charts, regional breakdowns, and signal-over-noise visual hierarchy.',
         stack: ['Next.js', 'TypeScript', 'Charting', 'Tailwind'],
-        live: 'https://devops-insights-ebon.vercel.app',
+        live: 'https://devops.kasomaibrahim.dev',
         repo: 'https://github.com/akibrahimug/devops-insights',
       },
       {
@@ -173,7 +173,7 @@ export const redesignContent = {
         summary:
           'Real-time AI teaching platform with character-based companions and live learning sessions. An AI-native take on the tutor + classroom format.',
         stack: ['Next.js', 'TypeScript', 'AI', 'Realtime'],
-        live: 'https://learner-phi.vercel.app',
+        live: 'https://learner.kasomaibrahim.dev',
         repo: 'https://github.com/akibrahimug/learner',
       },
       {
@@ -203,7 +203,7 @@ export const redesignContent = {
         summary:
           'A fashion catalog with multi-brand product grids, category navigation, and an editorial layout — image-led product cards on a JavaScript stack.',
         stack: ['JavaScript', 'Tailwind', 'Image-led'],
-        live: 'https://igc-mock-app-2024.vercel.app',
+        live: 'https://igc.kasomaibrahim.dev',
         repo: 'https://github.com/akibrahimug/igc-site',
       },
     ],
