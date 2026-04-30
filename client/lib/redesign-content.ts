@@ -29,7 +29,7 @@ export const redesignContent = {
       'Scalable Delivery',
     ],
     statement:
-      'I build and scale production TypeScript at EF Education First — currently shipping seven projects in parallel, with 80+ apps across 60+ markets and 3.4M+ users on the flagship Next.js platform.',
+      'I build and scale production TypeScript across EF Education First, freelance client work, and personal projects — 80+ apps shipped end to end. Currently shipping seven concurrent projects at EF, where the flagship Next.js platform reaches 3.4M+ users in 60+ markets.',
     status: { label: 'Available · Senior frontend roles, UK', dotColor: 'bg-emerald-400' },
     location: 'Stroud, England, UK',
     primaryCta: { label: 'Email me', href: 'mailto:kasomaibrahim@gmail.com' },
@@ -196,6 +196,16 @@ export const redesignContent = {
         live: 'https://fox-adventures.vercel.app',
         repo: 'https://github.com/akibrahimug/Oliotya-Uganda-Safaris',
       },
+      {
+        slug: 'igcfashion',
+        kind: 'Fashion · Catalog',
+        title: 'IGCFashion — Multi-brand fashion catalog',
+        summary:
+          'A fashion catalog with multi-brand product grids, category navigation, and an editorial layout — image-led product cards on a JavaScript stack.',
+        stack: ['JavaScript', 'Tailwind', 'Image-led'],
+        live: 'https://igc-mock-app-2024.vercel.app',
+        repo: 'https://github.com/akibrahimug/igc-site',
+      },
     ],
   },
   process: {
@@ -336,7 +346,7 @@ export const redesignContent = {
     eyebrow: '08 — About',
     heading: 'I care about craft, performance, and pragmatic architecture.',
     paragraphs: [
-      'Senior Software Engineer with six years on production frontend at scale — multi-brand monorepos, edge-cached marketing surfaces, dashboards that outlive their authors. Most of that has been at EF Education First, where I currently ship across seven concurrent projects, 80+ apps, 60+ markets, and 3.4M+ monthly users on the flagship Next.js platform alone.',
+      'Senior Software Engineer with six years on production frontend at scale — multi-brand monorepos, edge-cached marketing surfaces, dashboards that outlive their authors. The throughline across EF Education First, freelance client work, and personal side projects: 80+ apps shipped end to end. At EF specifically, I work across seven concurrent projects, where the flagship Next.js platform reaches 3.4M+ monthly users in 60+ markets.',
       'What I care about is the boring middle — the platform work that lets a small team ship at the pace of a much bigger one. Shared CI/CD pipelines, design tokens, observability, performance budgets that hold under real traffic. The flashy stuff (motion, micro-interactions, AI-era tooling) is fun, but the real leverage comes from making it cheap to ship the next thing safely.',
       'I write TypeScript and Node by default. I read code before I write it. I prefer boring choices that survive a year of edits, small PRs that compound, and metrics that move. Based in Stroud — open to senior frontend roles in the UK where the bar is high and the team is small enough to feel.',
     ],
