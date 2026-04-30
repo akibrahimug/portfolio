@@ -126,7 +126,7 @@ export const redesignContent = {
           'EF’s global homepage — Language. Education. Travel. Helped scale a shared platform behind the consumer brand surfaces, with daily multi-region releases on a CI/CD platform deploying 17 production frontend apps.',
         stack: ['Next.js', 'TypeScript', 'CMS', 'Edge Cache'],
         metric: '60+ markets · daily releases',
-        live: 'https://www.ef.com/homepage',
+        live: 'https://www.ef.com',
       },
       {
         slug: 'ef-pg',
