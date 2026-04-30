@@ -2,12 +2,10 @@
 
 import * as React from 'react'
 import { redesignContent } from '@/lib/redesign-content'
-import { useCreateMessage } from '@/hooks/useHttpApi'
 
 export function Connect() {
   const { eyebrow, heading, body, email, socials } = redesignContent.contact
   const [copied, setCopied] = React.useState(false)
-  const createMessage = useCreateMessage()
   const [feedback, setFeedback] = React.useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
   const [form, setForm] = React.useState({ name: '', email: '', message: '' })
 
@@ -30,12 +28,16 @@ export function Connect() {
     e.preventDefault()
     setFeedback('sending')
     try {
-      const result = await createMessage.mutate({
-        name: form.name,
-        email: form.email,
-        message: form.message,
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email,
+          message: form.message,
+        }),
       })
-      if (result) {
+      if (res.ok) {
         setFeedback('sent')
         setForm({ name: '', email: '', message: '' })
       } else {
