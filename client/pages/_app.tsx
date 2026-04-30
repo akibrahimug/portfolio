@@ -5,6 +5,20 @@ import { useRouter } from 'next/router'
 import { ClerkProvider } from '@clerk/nextjs'
 import { ThemeProvider } from '@/components/theme-provider'
 import Footer from '@/components/Footer'
+import { motion, useScroll, useReducedMotion } from 'framer-motion'
+
+function ScrollProgress() {
+  const { scrollYProgress } = useScroll()
+  const reduced = useReducedMotion()
+  if (reduced) return null
+  return (
+    <motion.div
+      style={{ scaleX: scrollYProgress, transformOrigin: '0%' }}
+      className='fixed top-0 left-0 right-0 h-[2px] bg-brand-500 z-50'
+      aria-hidden
+    />
+  )
+}
 
 function MyApp({ Component, pageProps }: AppProps) {
   const router = useRouter()
@@ -25,6 +39,7 @@ function MyApp({ Component, pageProps }: AppProps) {
       publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
     >
       <ThemeProvider attribute='class' defaultTheme='system' enableSystem>
+        <ScrollProgress />
         <Component {...pageProps} />
         {!isHome && <Footer />}
       </ThemeProvider>
