@@ -1,10 +1,10 @@
-# Public home page redesign
+# Public home page architecture
 
-Reference for the redesigned public home page that ships on `FEATURE/full-redesign`.
+Reference for the redesigned, fully-static public home page.
 
 ## Why this exists
 
-The previous home page was a category-grouped, avatar-led layout with a methodologies dropdown, a contact form, and a tech-stack marquee. It read junior. The redesign rebuilds the page top-to-bottom in the senior-IC lane (Lee Robinson · Emil Kowalski · Paco Coursey aesthetic, captured in `design-inspiration.md`): text-led, dark-default with a light-mode counterpart, single accent, restrained motion, content centralized.
+The previous home page was a category-grouped, avatar-led layout with a methodologies dropdown, a contact form posting to a MongoDB-backed Express server, and a tech-stack marquee. It read junior and depended on a Cloud Run deploy that was overkill for a personal site. The redesign rebuilt the page top-to-bottom in the senior-IC lane (Lee Robinson · Emil Kowalski · Paco Coursey aesthetic, captured in `design-inspiration.md`): text-led, dark-default with a light-mode counterpart, single accent, restrained motion, content centralized. The static migration that followed retired the dashboard, the auth layer, and the entire backend for the public site — the contact form now goes through a single Next.js API route (`/api/contact`) that calls Resend.
 
 ## Page composition
 
@@ -24,7 +24,7 @@ The previous home page was a category-grouped, avatar-led layout with a methodol
 9. **`TechShowcase`** — Searchable tile bar over `client/lib/technologies.json`. Tile click opens a modal with description + confidence bar. Marquee animation at rest, static when query is non-empty or reduced-motion is on.
 10. **`Currently`** — Four mini-cards: Shipping · Building · Reading · Open to. Has an "Updated April 2026" timestamp.
 11. **`About`** — CV professional summary verbatim. Heading aligned with the CV title line.
-12. **`Connect`** — Email pill + Copy email button + three social links + a contact form that posts via `useCreateMessage()`.
+12. **`Connect`** — Email pill + Copy email button + three social links + a contact form that posts to `/api/contact`. The route in `client/pages/api/contact.ts` validates the body and forwards via Resend with `replyTo` set to the visitor's email (replies go to the visitor's inbox, not Resend's sender domain).
 
 Plus `TopNav` (sticky, scroll-aware backdrop blur, theme toggle) above and `ScrollProgress` (spring-smoothed top bar) and `RedesignFooter` around it.
 
@@ -117,29 +117,47 @@ client/lib/validation.ts
 client/pages/color-test.tsx
 ```
 
-These were the old home-page components and their dependencies. Their roles were absorbed into `components/redesign/*`. The **Footer** legacy component is intentionally kept — it is rendered on non-home routes (dashboard, sign-in, sign-up) by `_app.tsx`.
+These were the old home-page components and their dependencies. Their roles were absorbed into `components/redesign/*`. The **Footer** legacy component was kept through the redesign because the dashboard / sign-in / sign-up routes still rendered it; it has since been deleted by the static migration alongside those routes.
 
-The dashboard kept its dependencies: `lib/form-configs.ts`, `lib/file-utils.ts`, `lib/formatters.ts`, `lib/image-utils.ts`, `lib/schemas.ts`, `lib/portfolio-data.ts`, `hooks/usePortfolio.ts` are all still in use by `pages/dashboard/*`.
+## Static migration cleanup
 
-## What still depends on the backend
+A second pass deleted everything that backed the dashboard and the auth layer:
 
-The redesigned public home is **almost** static. The only call into the Cloud Run + MongoDB stack from a public route is the contact form:
+- `pages/dashboard/*`, `pages/sign-in/*`, `pages/sign-up/*`
+- `components/dashboard/*`, `components/ui/*`, `components/Footer.tsx`
+- All dashboard-only hooks (`useHttpApi`, `useCrudOperations`, `useDialogState`, `useTableHelpers`, `useAssetTracking`, `useClerkAuth`, `useStats`, `usePortfolio`, `use-toast`, `use-mobile`, `use-intersection-observer`)
+- All dashboard-only libs (`http-client`, `portfolio-data`, `stats-websocket`, `form-configs`, `file-utils`, `formatters`, `image-utils`, `schemas`, `methods.json`, `utils`)
+- All `__tests__/` directories and Jest tooling
+- `types/api.ts`, `types/portfolio.ts`, etc.
+- ~17 deps from `package.json` (`@clerk/nextjs`, `@radix-ui/*`, `swr`, `axios`, `react-hook-form`, `react-loading-skeleton`, `sonner`, `date-fns`, etc.)
+
+`pages/_app.tsx` is now a single-line wrapper: `<ThemeProvider><Component /></ThemeProvider>`. Build output dropped from ~15 routes to **just `/` + `/api/contact`**.
+
+## What depends on the backend
+
+**Nothing.** The public home page is fully static. The contact form posts to `client/pages/api/contact.ts`, which forwards through Resend.
+
+The `server/` directory still exists in-tree but is **deprecated** (see `server/README.md`) — not deployed, not referenced from the build. Preserved as a reference for the WebSocket / GCS / Clerk-JWT integration in case a backend ever returns.
+
+## Project images
+
+Commit screenshots to `client/public/projects/<slug>.webp`, where `<slug>` matches the project's entry in `redesignContent.showcase.items` or `redesignContent.work.items`. Vercel + `next/image` optimize them at request time. See `client/public/projects/README.md` for export settings.
+
+If the catalog ever grows past ~30 images or repo size starts to hurt clones, swap to **Vercel Blob** or **Cloudinary** — the change is one line per project (just the `live` URL stays the same; image URLs would move to a new field or a CDN domain).
+
+## Contact form
+
+`client/pages/api/contact.ts` is a Next.js API route that receives the contact form's POST, validates the body (name / email / message, with a 2,000-char message cap), and forwards through Resend with `replyTo` set to the visitor's email so replies land in their inbox.
+
+Required env (set in Vercel Project Settings → Environment Variables, or `client/.env.local` for dev):
 
 ```
-Connect.tsx → useCreateMessage() → POST {NEXT_PUBLIC_API_BASE_URL}/messages
+RESEND_API_KEY=re_...
+RESEND_TO_EMAIL=kasomaibrahim@gmail.com
+RESEND_FROM_EMAIL=onboarding@resend.dev    # or hello@kasomaibrahim.dev once domain verified
 ```
 
-To go fully static:
-
-1. Replace the form with a third-party endpoint (Formspree, Resend, EmailJS, Vercel Functions). 5-line swap inside `Connect.tsx`.
-2. Decide whether the admin dashboard is still useful. If yes, keep the backend deployed. If no, the dashboard pages can be removed and the server retired.
-
-Today, with the dashboard live, the backend continues to host:
-
-- `/api/v1/projects`, `/experiences`, `/technologies`, `/messages`, `/badges`, `/resumes`, `/avatars`, `/certifications` (CRUD).
-- `/api/v1/assets/request-upload` + `/api/v1/assets/confirm` (GCS V4 signed-URL flow for direct browser uploads).
-- `/api/v1/healthz`, `/api/v1/readyz`, `/api/v1/stats` (health and metrics).
-- `/api/v1/ws` (WebSocket; stats only).
+If `RESEND_API_KEY` is missing the route fails-soft with a 500, and the form shows its error feedback. To switch providers later (Postmark / SendGrid / a third-party form service), the only file that changes is `pages/api/contact.ts` — the form itself just posts to `/api/contact`.
 
 ## Adding or editing a project
 

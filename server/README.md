@@ -1,5 +1,18 @@
 # Portfolio Backend (HTTP-first, TypeScript, MongoDB)
 
+> [!IMPORTANT]
+> **DEPRECATED — preserved for history only.** As of 2026-04-30 the
+> public portfolio is fully static (Vercel + Resend). The dashboard
+> CRUD this server backed has been removed from `client/`. The contact
+> form now posts to `client/pages/api/contact.ts` (a Next.js API route
+> using Resend) instead of `POST /api/v1/messages`.
+>
+> This directory is **not deployed** and is **not referenced from the
+> `client/` build**. It stays in-tree as a reference for the
+> WebSocket / GCS signed-upload / Clerk-JWT-verification integration
+> in case a backend is ever revived. If/when you decide a backend is
+> not coming back, this directory can be removed in a single commit.
+
 Badges: Node.js 20, TypeScript 5, WebSocket, MongoDB/Mongoose, Google Cloud Storage, Cloud Run, Jest
 
 ### What is this?
