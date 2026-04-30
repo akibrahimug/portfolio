@@ -87,7 +87,7 @@ const Footer: React.FC = () => {
     },
     {
       icon: <LinkedinLogo weight='bold' className='h-5 w-5' />,
-      href: 'https://www.linkedin.com/in/kasoma-ibrahim-89a732168/',
+      href: 'https://www.linkedin.com/in/kasomaibrahim/',
       label: 'LinkedIn',
     },
     {
