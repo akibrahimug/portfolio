@@ -1,6 +1,7 @@
 // pages/_app.tsx
 import '@/styles/globals.css'
 import type { AppProps } from 'next/app'
+import { useRouter } from 'next/router'
 import { ClerkProvider } from '@clerk/nextjs'
 import { ThemeProvider } from '@/components/theme-provider'
 import Footer from '@/components/Footer'
@@ -20,13 +21,16 @@ function ScrollProgress() {
 }
 
 function MyApp({ Component, pageProps }: AppProps) {
+  const router = useRouter()
+  // The redesigned home page owns its own layout (dark default + footer).
+  // Other routes (dashboard, sign-in, etc.) keep the old chrome.
+  const isHome = router.pathname === '/'
+
   return (
     <ClerkProvider
       {...pageProps}
       appearance={{
-        // Optimize Clerk loading
         elements: {
-          // Minimize layout shifts by setting consistent dimensions
           card: 'min-h-[400px]',
           headerTitle: 'text-xl font-semibold',
           headerSubtitle: 'text-sm text-gray-600',
@@ -37,7 +41,7 @@ function MyApp({ Component, pageProps }: AppProps) {
       <ThemeProvider attribute='class' defaultTheme='system' enableSystem>
         <ScrollProgress />
         <Component {...pageProps} />
-        <Footer />
+        {!isHome && <Footer />}
       </ThemeProvider>
     </ClerkProvider>
   )
