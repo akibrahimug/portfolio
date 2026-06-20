@@ -1,22 +1,32 @@
 import React from 'react'
 import Head from 'next/head'
 
-import { TopNav } from '@/components/redesign/TopNav'
-import { Hero } from '@/components/redesign/Hero'
-import { StatsBand } from '@/components/redesign/StatsBand'
-import { TickerStrip } from '@/components/redesign/TickerStrip'
-import { Skills } from '@/components/redesign/Skills'
-import { SelectedWork } from '@/components/redesign/SelectedWork'
-import { Showcase } from '@/components/redesign/Showcase'
-import { Process } from '@/components/redesign/Process'
-import { Experience } from '@/components/redesign/Experience'
-import { TechShowcase } from '@/components/redesign/TechShowcase'
-import { Currently } from '@/components/redesign/Currently'
-import { About } from '@/components/redesign/About'
-import { Connect } from '@/components/redesign/Connect'
-import { RedesignFooter } from '@/components/redesign/RedesignFooter'
-import { ScrollProgress } from '@/components/redesign/ScrollProgress'
+import { DarkSpace } from '@/components/site/DarkSpace'
+import { SiteNav } from '@/components/site/SiteNav'
+import { Hero } from '@/components/site/Hero'
+import { Work } from '@/components/site/Work'
+import { Impact } from '@/components/site/Impact'
+import { Showcase } from '@/components/site/Showcase'
+import { Process } from '@/components/site/Process'
+import { Experience } from '@/components/site/Experience'
+import { Stack } from '@/components/site/Stack'
+import { About } from '@/components/site/About'
+import { Contact } from '@/components/site/Contact'
+import { Footer } from '@/components/site/Footer'
 import { redesignContent } from '@/lib/redesign-content'
+
+/** Full-bleed section band. `invert` flips the palette (black panel / red panel). */
+function Band({ invert = false, children }: { invert?: boolean; children: React.ReactNode }) {
+  return (
+    <div
+      className={
+        invert ? 'feature-invert bg-background py-20 text-foreground md:py-32' : 'py-14 md:py-20'
+      }
+    >
+      {children}
+    </div>
+  )
+}
 
 const Home: React.FC = () => {
   return (
@@ -29,27 +39,41 @@ const Home: React.FC = () => {
         <meta property='og:image' content='/icons/avarta.webp' />
         <meta name='twitter:card' content='summary_large_image' />
         <link rel='icon' href='/favicon.png' />
-        <link rel='preload' href='/icons/avarta-cutout.webp' as='image' type='image/webp' />
         <meta name='viewport' content='width=device-width, initial-scale=1, viewport-fit=cover' />
       </Head>
-      <div className='min-h-screen bg-background text-foreground antialiased selection:bg-brand-500/30 selection:text-foreground'>
-        <ScrollProgress />
-        <TopNav />
-        <main>
+      <div className='relative min-h-screen bg-background text-foreground antialiased'>
+        <DarkSpace />
+        <SiteNav />
+        <div className='relative z-10'>
+          <main>
           <Hero />
-          <StatsBand />
-          <TickerStrip />
-          <Skills />
-          <SelectedWork />
-          <Showcase />
-          <Process />
-          <Experience />
-          <TechShowcase />
-          <Currently />
-          <About />
-          <Connect />
-        </main>
-        <RedesignFooter />
+          <Band>
+            <Work />
+          </Band>
+          <Band invert>
+            <Impact />
+          </Band>
+          <Band>
+            <Showcase />
+          </Band>
+          <Band>
+            <Process />
+          </Band>
+          <Band>
+            <Experience />
+          </Band>
+          <Band invert>
+            <Stack />
+          </Band>
+          <Band>
+            <About />
+          </Band>
+          <Band invert>
+            <Contact />
+          </Band>
+          </main>
+          <Footer />
+        </div>
       </div>
     </>
   )
