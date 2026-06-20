@@ -183,7 +183,7 @@ export const redesignContent = {
         summary:
           'Discover Africa with Puur Uganda Reizen — personal, tailor-made safari trips to Uganda and beyond. Editorial photography and a CMS-driven trip catalog built for storytelling.',
         stack: ['Next.js', 'TypeScript', 'Tailwind', 'CMS'],
-        live: 'https://puur-safaris.vercel.app',
+        live: 'https://www.puurugandareizen.nl',
         repo: 'https://github.com/akibrahimug/puur-safaris',
       },
       {
