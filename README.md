@@ -6,6 +6,8 @@ Personal portfolio for **Ibrahim Kasoma**, Senior Software Engineer (TypeScript 
 
 Single Next.js application, fully static, deployed on Vercel. Every visible string on the home page comes from `client/lib/redesign-content.ts`. The only server-side surface is `client/pages/api/contact.ts`, a Resend-backed mailer.
 
+The home page is theme-aware: **light mode** shows the portrait, while **dark mode** renders an interactive 3D scene — a three.js Earth globe with hoverable tech-hub pins, plus a full-page starfield and planets (Mars, Jupiter, Saturn, Neptune) that drift through the margins as you scroll. The WebGL scene is code-split so three.js only loads in dark mode, and all motion respects `prefers-reduced-motion`.
+
 ```
 Visitor → Vercel CDN → Static HTML/CSS/JS
                      ↓
@@ -16,9 +18,11 @@ A previous version backed by Express + MongoDB + Clerk lives under `server/` but
 
 ## Stack
 
-- **Framework:** Next.js 16 (Pages Router), TypeScript, Tailwind v4, Framer Motion
+- **Framework:** Next.js 16 (Pages Router), React 19, TypeScript, Tailwind v4, Framer Motion
+- **3D:** three.js + React Three Fiber (dark-mode globe + space scene, code-split)
 - **Theme:** light / dark via `next-themes`
 - **Mail:** Resend (free tier 3,000 emails/month)
+- **Testing:** Vitest (unit) + Playwright with axe-core (e2e / a11y)
 - **Hosting:** Vercel
 
 ## Documentation

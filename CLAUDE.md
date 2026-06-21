@@ -22,9 +22,13 @@ yarn build          # Production build
 yarn analyze        # Build with @next/bundle-analyzer enabled
 yarn start          # Production server
 yarn format         # Prettier-write components/ and pages/
+yarn typecheck      # tsc --noEmit
+yarn test           # Vitest unit tests (test/unit/)
+yarn e2e            # Playwright e2e + axe a11y (serves the build on :3100)
+yarn test:all       # Vitest then Playwright
 ```
 
-There is no `lint` or `test` script today. Tests were removed alongside the dashboard CRUD they exercised. New test infra (Playwright for E2E, Vitest for unit) can land separately when needed. ESLint runs through Next's build-time check (currently disabled via `eslint.ignoreDuringBuilds`). TypeScript build errors are bypassed via `typescript.ignoreBuildErrors: true` in `next.config.js`.
+There is **no `lint` script** — ESLint runs through Next's build-time check (currently disabled via `eslint.ignoreDuringBuilds`), and TypeScript build errors are bypassed via `typescript.ignoreBuildErrors: true` in `next.config.js`, so run `yarn typecheck` before pushing. Tests **do** exist now: Vitest for unit (`test/unit/`) and Playwright + axe-core for e2e/a11y (`test/e2e/`). The Playwright `webServer` runs `yarn start -p 3100`, so a production build must succeed first.
 
 Path alias: `@/*` → `client/*` (see `tsconfig.json`).
 
@@ -32,19 +36,28 @@ Path alias: `@/*` → `client/*` (see `tsconfig.json`).
 
 ### Fully static frontend
 
-Every visible string on the home page comes from two files:
-
-- `client/lib/redesign-content.ts` — hero, stats, skills, work, showcase, process, experience, currently, about, contact.
-- `client/lib/technologies.json` — the searchable Tech Showcase tile data.
-
-The home page composes 12 sections defined under `client/components/redesign/`:
+The home page composes section components from `client/components/site/`, in this order:
 
 ```
-Hero → StatsBand → TickerStrip → Skills → SelectedWork → Showcase
-     → Process → Experience → TechShowcase → Currently → About → Connect
+SiteNav → Hero → Work → Impact → Showcase → Process → Experience → Stack → About → Contact → Footer
 ```
 
-Plus `TopNav` and `ScrollProgress` above and `RedesignFooter` below. Theme is light/dark via `next-themes` — toggle in `TopNav`. Every motion is gated by `useReducedMotion()` from framer-motion.
+All visible copy is content-driven, so text edits never touch components:
+
+- `client/lib/redesign-content.ts` — hero, work, impact, showcase, process, experience, about, contact copy.
+- `client/lib/technologies.json` — the searchable Stack / tech-showcase tile data.
+
+Theme is light/dark via `next-themes` (toggle in `SiteNav`). Every motion is gated by `useReducedMotion()` from framer-motion. `client/components/site/primitives.tsx` holds small shared building blocks.
+
+### Dark-mode 3D scene
+
+Light mode shows the portrait; dark mode swaps in a three.js / React Three Fiber scene, behind a dynamic import so three.js only loads for dark-mode visitors whose browser supports WebGL:
+
+- `components/site/DarkSpace.tsx` — gate (dark theme + WebGL check) that code-splits the scene.
+- `components/site/SpaceBackground.tsx` — fixed full-page backdrop: a custom-shader starfield plus Mars / Jupiter / Saturn / Neptune that drift through the side margins as you scroll. Planet surfaces are generated procedurally on a `<canvas>`; only Earth uses a texture (`public/textures/earth-blue.jpg`).
+- `components/site/HeroGlobe.tsx` — the hero Earth globe: textured sphere, fresnel atmosphere halo, and tech-hub markers projected to screen coords each frame.
+- `components/site/HeroGlobeMount.tsx` — DOM overlay of hub hit-dots + caption; the globe freezes while the pointer is over it so pins are easy to target.
+- `client/lib/tech-facts.ts` — hub data (city, lat/lng, note); `client/lib/geo.ts` — lat/lng → unit-sphere vector (unit-tested in `test/unit/geo.test.ts`).
 
 ### Contact form
 
@@ -76,6 +89,6 @@ If a sender domain has been verified in Resend (e.g. `kasomaibrahim.dev`), set `
 
 - **Tailwind v4** is active via `@tailwindcss/postcss` in `postcss.config.mjs` plus `@theme inline` blocks in `client/styles/globals.css`. Don't reintroduce a `tailwind.config.js`.
 - **Turbopack** is the active dev bundler (`next dev --turbo`). Webpack-specific tweaks in `next.config.js` will not apply in dev.
-- **TS errors and ESLint warnings are ignored at build time** today. Run `npx tsc --noEmit` before pushing to catch regressions.
+- **TS errors and ESLint warnings are ignored at build time** today. Run `yarn typecheck` before pushing to catch regressions, and `yarn test` / `yarn e2e` for the test suites.
 - **Avatar pipeline:** the brush-stroke portrait at `client/public/icons/avarta-cutout.{png,webp}` was processed from the original `avarta.webp` to mask out white background pixels with full per-pixel color decontamination. If the source ever changes, see `docs/redesign.md` for the algorithm.
 - **The redesign deleted ~25 legacy components and ~93 more files in the static migration** (dashboard, sign-in/up, Clerk, shadcn ui, dashboard hooks/lib, Jest, RTL, axios, swr, react-hook-form, etc.). If you find an older doc mentioning any of these, treat it as historical.
