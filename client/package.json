@@ -12,6 +12,7 @@
     "e2e": "playwright test",
     "test:all": "vitest run && playwright test",
     "typecheck": "tsc --noEmit",
+    "seo:assets": "node scripts/generate-seo-assets.mjs",
     "format": "prettier --write 'components/**/*.{js,jsx,ts,tsx,css,md,json}' 'pages/**/*.{js,jsx,ts,tsx,css,md,json}' --config ./.prettierrc"
   },
   "dependencies": {

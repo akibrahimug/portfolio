@@ -14,6 +14,7 @@ import { About } from '@/components/site/About'
 import { Contact } from '@/components/site/Contact'
 import { Footer } from '@/components/site/Footer'
 import { redesignContent } from '@/lib/redesign-content'
+import { SITE_URL, ogImage, structuredDataJson } from '@/lib/seo'
 
 /** Full-bleed section band. `invert` flips the palette (black panel / red panel). */
 function Band({ invert = false, children }: { invert?: boolean; children: React.ReactNode }) {
@@ -34,12 +35,31 @@ const Home: React.FC = () => {
       <Head>
         <title>{redesignContent.meta.title}</title>
         <meta name='description' content={redesignContent.meta.description} />
+        <link rel='canonical' href={`${SITE_URL}/`} />
+        <meta
+          name='robots'
+          content='index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'
+        />
+        <meta property='og:type' content='website' />
+        <meta property='og:site_name' content='Ibrahim Kasoma' />
+        <meta property='og:locale' content='en_GB' />
+        <meta property='og:url' content={`${SITE_URL}/`} />
         <meta property='og:title' content={redesignContent.meta.title} />
         <meta property='og:description' content={redesignContent.meta.description} />
-        <meta property='og:image' content='/icons/avarta.webp' />
+        <meta property='og:image' content={ogImage.url} />
+        <meta property='og:image:width' content={String(ogImage.width)} />
+        <meta property='og:image:height' content={String(ogImage.height)} />
+        <meta property='og:image:alt' content={ogImage.alt} />
         <meta name='twitter:card' content='summary_large_image' />
-        <link rel='icon' href='/favicon.png' />
+        <meta name='twitter:title' content={redesignContent.meta.title} />
+        <meta name='twitter:description' content={redesignContent.meta.description} />
+        <meta name='twitter:image' content={ogImage.url} />
+        <meta name='twitter:creator' content='@Akibrahimug' />
         <meta name='viewport' content='width=device-width, initial-scale=1, viewport-fit=cover' />
+        <script
+          type='application/ld+json'
+          dangerouslySetInnerHTML={{ __html: structuredDataJson() }}
+        />
       </Head>
       <div className='relative min-h-screen bg-background text-foreground antialiased'>
         <DarkSpace />
