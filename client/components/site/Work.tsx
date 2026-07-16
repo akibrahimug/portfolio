@@ -48,8 +48,8 @@ export function Work() {
                   <p className='mt-4 max-w-2xl text-pretty leading-relaxed text-muted-foreground'>
                     {item.summary}
                   </p>
-                  <p className='mt-5 flex items-center gap-3 text-sm font-medium text-accent'>
-                    <span className='h-px w-6 bg-accent' aria-hidden />
+                  <p className='mt-5 flex items-center gap-2.5 text-sm font-medium text-accent'>
+                    <span className='inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-accent' aria-hidden />
                     {item.metric}
                   </p>
                   <ul className='mt-4 flex flex-wrap gap-x-4 gap-y-1 text-xs uppercase tracking-wider text-faint'>

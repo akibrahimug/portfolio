@@ -1,27 +1,27 @@
 # Ibrahim Kasoma
 
-> Senior Software Engineer (TypeScript, React, Node.js) based in Stroud, England, UK. 6+ years building production TypeScript across frontend and backend-integrated systems — 80+ apps shipped, reaching 3.4M+ monthly users in 60+ markets on EF Education First's flagship Next.js platform. Open to senior frontend / platform roles in the UK.
+> Senior Software Engineer (TypeScript, React, Node.js) based in Stroud, England, UK. 6+ years building production TypeScript across frontend and backend-integrated systems: 80+ apps shipped, reaching 3.4M+ monthly users in 60+ markets on EF Education First's flagship Next.js platform. Open to senior frontend / platform roles in the UK.
 
 Key facts:
 
-- Current role: Senior Frontend Engineer at EF Education First (London, UK · hybrid), March 2023 — present.
+- Current role: Senior Frontend Engineer at EF Education First (London, UK · hybrid), March 2023–present.
 - Signature results at EF: page loads cut by 60% on a 3.4M-MAU Next.js platform; CI/CD pipeline reduced from 45 to 15 minutes shipping 17 production apps daily; Nx monorepo consolidating 20+ microfrontends across 8 product teams (−15,000 lines of duplicate code); test coverage lifted from ~30% to 85%.
 - Core stack: TypeScript, React, Next.js, Node.js, Tailwind CSS, GraphQL, Nx, AWS, GCP, GitHub Actions, Storybook, Jest, Cypress.
 - Contact: kasomaibrahim@gmail.com (replies within a day).
 
 ## Site
 
-- [Portfolio home](https://www.kasomaibrahim.dev/): skills, selected work, showcase, process, experience, and contact — all on one page.
+- [Portfolio home](https://www.kasomaibrahim.dev/): skills, selected work, showcase, process, experience, and contact, all on one page.
 
 ## Selected work (EF Education First)
 
-- [EF EPI — English Proficiency Index](https://www.ef.com/epi): flagship data-viz platform serving 57 markets and 3.4M monthly users; cut page load times by 60%.
+- [EF EPI · English Proficiency Index](https://www.ef.com/epi): flagship data-viz platform serving 57 markets and 3.4M monthly users; cut page load times by 60%.
 - [EF Homepage](https://www.ef.com): global consumer brand surface with daily multi-region releases.
 - [EF Programs](https://www.ef.com/pg): global program catalog on an Nx monorepo of 20+ microfrontends.
 
 ## Showcase (personal & freelance)
 
-- [comp-lib — component library lab](https://complib.kasomaibrahim.dev/): design-system playground in Storybook.
+- [comp-lib · component library lab](https://complib.kasomaibrahim.dev/): design-system playground in Storybook.
 - [DevOps Insights](https://devops.kasomaibrahim.dev): real-time monitoring dashboard for DevOps metrics.
 - [Learner](https://learner.kasomaibrahim.dev): real-time AI teaching platform with character-based companions.
 - [Puur Uganda Reizen](https://www.puurugandareizen.nl): tailor-made safari trips, CMS-driven.

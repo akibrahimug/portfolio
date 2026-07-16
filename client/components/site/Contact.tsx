@@ -230,7 +230,7 @@ export function Contact() {
               </button>
               {feedback === 'sent' && (
                 <p role='status' className='text-sm text-accent'>
-                  Sent — I’ll reply within a day.
+                  Sent. I’ll reply within a day.
                 </p>
               )}
               {feedback === 'error' && serverError && (

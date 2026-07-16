@@ -23,7 +23,7 @@ export function Experience() {
                   <div>
                     <h3 className='font-display text-xl font-medium tracking-tight md:text-2xl'>
                       {role.title}
-                      <span className='text-muted-foreground'> — </span>
+                      <span className='text-muted-foreground'> · </span>
                       {href ? (
                         <a
                           href={href}

@@ -80,10 +80,10 @@ export function acknowledgementEmail(args: { name: string; message: string }): E
   const body = `
     <h1 style="margin:0 0 12px 0;font-size:20px;font-weight:600;color:#1c1917;line-height:1.3;">${escape(greeting)}.</h1>
     <p style="margin:0 0 14px 0;font-size:15px;line-height:1.6;color:#1c1917;">I got your message and will get back to you within a couple of days. Replying to this email lands straight in my inbox if you need to add anything.</p>
-    <p style="margin:0 0 24px 0;font-size:15px;line-height:1.6;color:#1c1917;">— Ibrahim</p>
+    <p style="margin:0 0 24px 0;font-size:15px;line-height:1.6;color:#1c1917;">Ibrahim</p>
     <div style="font-size:11px;color:#a8a29e;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Your message</div>
     <div style="font-size:14px;line-height:1.6;color:#57534e;white-space:pre-wrap;background:#fafaf9;border-radius:10px;padding:14px 16px;">${escape(message)}</div>
   `
-  const text = `${greeting}.\n\nI got your message and will get back to you within a couple of days. Replying to this email lands straight in my inbox if you need to add anything.\n\n— Ibrahim\n\n---\n\nYour message:\n${message}`
-  return { subject, html: wrap(`I got your message — replying soon.`, body), text }
+  const text = `${greeting}.\n\nI got your message and will get back to you within a couple of days. Replying to this email lands straight in my inbox if you need to add anything.\n\nIbrahim\n\n---\n\nYour message:\n${message}`
+  return { subject, html: wrap(`I got your message, replying soon.`, body), text }
 }

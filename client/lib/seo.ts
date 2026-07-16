@@ -15,7 +15,7 @@ export const ogImage = {
   url: `${SITE_URL}/og.png`,
   width: 1200,
   height: 630,
-  alt: 'Ibrahim Kasoma — Senior Software Engineer. TypeScript, React, Node.js.',
+  alt: 'Ibrahim Kasoma · Senior Software Engineer. TypeScript, React, Node.js.',
 }
 
 const PERSON_ID = `${SITE_URL}/#person`
@@ -46,7 +46,7 @@ function person() {
     address: {
       '@type': 'PostalAddress',
       addressLocality: 'Stroud',
-      addressRegion: 'England',
+      addressRegion: 'Gloucestershire',
       addressCountry: 'GB',
     },
     worksFor: {
@@ -68,7 +68,7 @@ function website() {
     '@type': 'WebSite',
     '@id': WEBSITE_ID,
     url: `${SITE_URL}/`,
-    name: 'Ibrahim Kasoma — Portfolio',
+    name: 'Ibrahim Kasoma · Portfolio',
     description: redesignContent.meta.description,
     publisher: { '@id': PERSON_ID },
     inLanguage: 'en',
@@ -123,10 +123,29 @@ function projectList() {
   }
 }
 
+/** Signals the freelance/contract service area for local ("near me") search. */
+function service() {
+  return {
+    '@type': 'Service',
+    '@id': `${SITE_URL}/#service`,
+    name: 'Freelance Software & Web Development',
+    serviceType: 'Software development',
+    provider: { '@id': PERSON_ID },
+    areaServed: [
+      { '@type': 'City', name: 'Gloucester' },
+      { '@type': 'City', name: 'Stroud' },
+      { '@type': 'City', name: 'London' },
+      { '@type': 'AdministrativeArea', name: 'Gloucestershire' },
+      { '@type': 'Country', name: 'United Kingdom' },
+    ],
+    url: `${SITE_URL}/#showcase`,
+  }
+}
+
 export function buildStructuredData() {
   return {
     '@context': 'https://schema.org',
-    '@graph': [person(), website(), profilePage(), projectList()],
+    '@graph': [person(), website(), profilePage(), projectList(), service()],
   }
 }
 

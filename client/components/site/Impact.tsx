@@ -92,7 +92,7 @@ export function Impact() {
         index='02'
         eyebrow='Measured impact'
         title='I own a shared delivery platform at EF.'
-        intro='It sits behind 17 production front-end apps across 60+ markets. Rebuilding it — the pipeline, the test culture, the EPI front end — moved real numbers. Here is the before and after.'
+        intro='It sits behind 17 production front-end apps across 60+ markets. Rebuilding it (the pipeline, the test culture, the EPI front end) moved real numbers. Here is the before and after.'
       >
         {/* the story: what changed */}
         <div className='grid gap-x-14 gap-y-12 sm:grid-cols-2'>

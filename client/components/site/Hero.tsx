@@ -24,10 +24,7 @@ export function Hero() {
       <div className='grid items-center gap-12 md:grid-cols-[1.4fr_0.9fr] md:gap-10'>
         {/* text */}
         <div>
-          <p className='flex items-center gap-2.5 text-sm text-muted-foreground'>
-            <span className='inline-block h-1.5 w-1.5 rounded-full bg-accent' aria-hidden />
-            {hero.status.label}
-          </p>
+          <p className='text-xs uppercase tracking-[0.2em] text-faint'>{hero.availability}</p>
 
           <h1 className='mt-6 font-display text-4xl font-medium leading-[1.04] tracking-tight text-balance sm:text-5xl md:text-6xl'>
             I build and scale the web platforms behind products millions of people use.
