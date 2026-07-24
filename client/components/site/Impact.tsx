@@ -47,7 +47,7 @@ const COMPARES: Compare[] = [
 const SCALE = [
   { value: 3.4, decimals: 1, suffix: 'M', label: 'Monthly active users' },
   { value: 57, suffix: '', label: 'International markets' },
-  { value: 17, suffix: '', label: 'Production apps shipped daily' },
+  { value: 17, suffix: '', label: 'Production apps, deployed daily' },
 ]
 
 function Bar({

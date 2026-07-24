@@ -1,10 +1,10 @@
 # Ibrahim Kasoma
 
-> Senior Software Engineer (TypeScript, React, Node.js) based in Stroud, England, UK. 6+ years building production TypeScript across frontend and backend-integrated systems: 80+ apps shipped, reaching 3.4M+ monthly users in 60+ markets on EF Education First's flagship Next.js platform. Open to senior frontend / platform roles in the UK.
+> Senior Frontend Engineer (TypeScript, React, Node.js) based in Stroud, England, UK. 6+ years building production TypeScript across frontend and backend-integrated systems: 80+ apps shipped, reaching 3.4M+ monthly users in 60+ markets on EF Education First's flagship Next.js platform. Open to senior frontend / platform roles in the UK.
 
 Key facts:
 
-- Current role: Senior Frontend Engineer at EF Education First (London, UK · hybrid), March 2023–present.
+- Current role: Frontend Engineer at EF Education First (London, UK · hybrid), Dec 2023–present, following a Junior Frontend Developer contract there (Mar 2023–Dec 2023).
 - Signature results at EF: page loads cut by 60% on a 3.4M-MAU Next.js platform; CI/CD pipeline reduced from 45 to 15 minutes shipping 17 production apps daily; Nx monorepo consolidating 20+ microfrontends across 8 product teams (−15,000 lines of duplicate code); test coverage lifted from ~30% to 85%.
 - Core stack: TypeScript, React, Next.js, Node.js, Tailwind CSS, GraphQL, Nx, AWS, GCP, GitHub Actions, Storybook, Jest, Cypress.
 - Contact: kasomaibrahim@gmail.com (replies within a day).

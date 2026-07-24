@@ -14,7 +14,7 @@ export function Experience() {
           {experience.roles.map((role, i) => {
             const href = 'href' in role ? (role.href as string) : undefined
             return (
-              <Reveal as='div' key={role.company} delay={i * 0.04}>
+              <Reveal as='div' key={`${role.company}-${role.title}-${role.period}`} delay={i * 0.04}>
                 <div className='grid gap-4 border-t border-border py-9 md:grid-cols-[12rem_1fr] md:gap-10'>
                   <div className='text-sm'>
                     <p className='text-faint'>{role.period}</p>
@@ -22,8 +22,12 @@ export function Experience() {
                   </div>
                   <div>
                     <h3 className='font-display text-xl font-medium tracking-tight md:text-2xl'>
-                      {role.title}
-                      <span className='text-muted-foreground'> · </span>
+                      {role.title && (
+                        <>
+                          {role.title}
+                          <span className='text-muted-foreground'> · </span>
+                        </>
+                      )}
                       {href ? (
                         <a
                           href={href}

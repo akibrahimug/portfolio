@@ -42,7 +42,7 @@ function ThemeToggle() {
 }
 
 export function SiteNav() {
-  const { nav } = redesignContent
+  const { nav, cv } = redesignContent
   const [scrolled, setScrolled] = React.useState(false)
 
   React.useEffect(() => {
@@ -74,6 +74,15 @@ export function SiteNav() {
                 </a>
               </li>
             ))}
+            <li>
+              <a
+                href={cv.href}
+                download
+                className='text-sm text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline'
+              >
+                {cv.label}
+              </a>
+            </li>
           </ul>
           <span className='hidden h-4 w-px bg-border sm:block' aria-hidden />
           <ThemeToggle />

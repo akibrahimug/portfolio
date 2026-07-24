@@ -1,6 +1,6 @@
 const SITE_URL = 'https://kasomaibrahim.dev'
 const LOGO_CID = 'cid:portfolio-logo'
-const BRAND_NAME = 'Kasoma Ibrahim'
+const BRAND_NAME = 'Ibrahim Kasoma'
 
 export const EMAIL_LOGO_CID = 'portfolio-logo'
 

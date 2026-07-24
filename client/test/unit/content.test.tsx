@@ -27,10 +27,16 @@ describe('sections render content from redesign-content.ts', () => {
     }
   })
 
-  it('Experience renders each company', () => {
+  it('Experience renders each role', () => {
     render(<Experience />)
+    const headings = screen.getAllByRole('heading')
     for (const role of redesignContent.experience.roles) {
-      expect(screen.getByRole('heading', { name: new RegExp(role.company) })).toBeInTheDocument()
+      const match = headings.some(
+        (h) =>
+          h.textContent?.includes(role.company) &&
+          (!role.title || h.textContent?.includes(role.title)),
+      )
+      expect(match).toBe(true)
     }
   })
 

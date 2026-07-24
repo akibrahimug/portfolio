@@ -48,7 +48,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(500).json({ error: 'Email service not configured.' })
   }
 
-  const fromHeader = `Kasoma Ibrahim <${FROM}>`
+  const fromHeader = `Ibrahim Kasoma <${FROM}>`
 
   try {
     const notify = notificationEmail({ name: trimmedName, email: trimmedEmail, message: trimmedMessage })

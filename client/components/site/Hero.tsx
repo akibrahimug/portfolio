@@ -9,7 +9,7 @@ import { HeroGlobeMount } from './HeroGlobeMount'
 const HERO_STATS = [
   { value: '6+', label: 'Years in production' },
   { value: '80+', label: 'Apps shipped' },
-  { value: '7+', label: 'EF projects at once' },
+  { value: '7+', label: 'Concurrent EF projects' },
 ]
 
 export function Hero() {

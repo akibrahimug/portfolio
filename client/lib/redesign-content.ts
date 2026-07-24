@@ -5,9 +5,9 @@
 
 export const redesignContent = {
   meta: {
-    title: 'Ibrahim Kasoma · Senior Software Engineer',
+    title: 'Ibrahim Kasoma · Senior Frontend Engineer',
     description:
-      'Senior Software Engineer with 6+ years building production TypeScript across frontend and backend-integrated systems. 80+ apps shipped, 60+ markets, 3.4M+ users on EF Education First’s flagship Next.js platform.',
+      'Senior Frontend Engineer with 6+ years building production TypeScript across frontend and backend-integrated systems. 80+ apps shipped, 60+ markets, 3.4M+ users on EF Education First’s flagship Next.js platform.',
   },
   nav: {
     brand: 'Ibrahim Kasoma',
@@ -19,11 +19,13 @@ export const redesignContent = {
       { href: '#contact', label: 'Contact' },
     ],
   },
+  // TODO: drop the actual file at client/public/Ibrahim_Kasoma_CV.pdf — this path 404s until then.
+  cv: { label: 'Download CV', href: '/Ibrahim_Kasoma_CV.pdf' },
   hero: {
-    eyebrow: 'Senior Software Engineer · TypeScript · React · Node.js',
+    eyebrow: 'Senior Frontend Engineer · TypeScript · React · Node.js',
     name: 'Ibrahim Kasoma.',
     rolePool: [
-      'Senior Software Engineer',
+      'Senior Frontend Engineer',
       'Frontend Platform Engineer',
       'API-driven Systems',
       'Scalable Delivery',
@@ -34,14 +36,14 @@ export const redesignContent = {
     location: 'Stroud, Gloucestershire, UK',
     primaryCta: { label: 'Email me', href: 'mailto:kasomaibrahim@gmail.com' },
     avatarSrc: '/icons/avarta-cutout.webp',
-    avatarAlt: 'Ibrahim Kasoma · Senior Software Engineer',
+    avatarAlt: 'Ibrahim Kasoma · Senior Frontend Engineer',
   },
   stats: {
     eyebrow: 'By the numbers',
     items: [
       { value: '6+', suffix: '', label: 'Years building production', sub: 'TypeScript · React · Node' },
       { value: '80+', suffix: '', label: 'Frontend apps shipped', sub: 'Across all roles' },
-      { value: '7+', suffix: '', label: 'EF projects in parallel', sub: 'Multi-brand consumer surfaces' },
+      { value: '7+', suffix: '', label: 'Concurrent EF projects', sub: 'Multi-brand consumer surfaces' },
       { value: '3.4', suffix: 'M+', label: 'MAU on the flagship', sub: 'EF Next.js platform · 60+ markets' },
     ],
   },
@@ -266,8 +268,8 @@ export const redesignContent = {
       {
         company: 'EF Education First',
         place: 'London, UK · Hybrid',
-        title: 'Senior Frontend Engineer',
-        period: 'Mar 2023–Present',
+        title: 'Frontend Engineer',
+        period: 'Dec 2023–Present',
         href: 'https://www.ef.com',
         bullets: [
           'Shipping seven concurrent EF projects across 80+ frontend apps and 60+ markets, including the EPI, Homepage, and Programs surfaces.',
@@ -276,6 +278,16 @@ export const redesignContent = {
           'Architected an Nx monorepo consolidating 20+ microfrontends across 8 product teams, eliminating 15,000+ lines of duplicate code.',
           'Lifted test coverage from ~30% to 85% with Jest + React Testing Library, reducing production incidents by ~40%.',
           'Mentored engineers through code reviews, shared standards, and architecture discussions.',
+        ],
+      },
+      {
+        company: 'EF Education First',
+        place: 'London, UK · Hybrid',
+        title: 'Junior Frontend Developer (Contract)',
+        period: 'Mar 2023–Dec 2023',
+        href: 'https://www.ef.com',
+        bullets: [
+          'Migrated a legacy WordPress site to Next.js, cutting page loads by 45% and extending language support to 40+ languages.',
         ],
       },
       {
@@ -290,11 +302,12 @@ export const redesignContent = {
         ],
       },
       {
-        company: 'Freelance Web Application Developer',
+        company: 'Frontend Developer (Freelance)',
         place: 'London, UK',
-        title: 'React · JavaScript · Node.js',
+        title: '',
         period: 'Feb 2020–Nov 2022',
         bullets: [
+          'Core stack: React, JavaScript, Node.js.',
           'Delivered end-to-end web applications for multiple clients, managing requirements through production deployment.',
           'Integrated third-party REST APIs and shipped production-ready releases with responsive, accessible frontends.',
           'Translated business requirements into scalable technical solutions, balancing maintainability, usability, and delivery speed.',
@@ -344,9 +357,9 @@ export const redesignContent = {
   },
   about: {
     eyebrow: '08 · About',
-    heading: 'Senior Software Engineer · TypeScript, React, Node.js.',
+    heading: 'Senior Frontend Engineer · TypeScript, React, Node.js.',
     paragraphs: [
-      'Senior Software Engineer with 6+ years of experience building and scaling production TypeScript applications across frontend and backend-integrated systems. Strong track record delivering API-driven features end-to-end, improving performance and reliability, and contributing to architecture, CI/CD, and engineering standards in fast-moving product environments.',
+      'Senior Frontend Engineer with 6+ years of experience building and scaling production TypeScript applications across frontend and backend-integrated systems. Strong track record delivering API-driven features end-to-end, improving performance and reliability, and contributing to architecture, CI/CD, and engineering standards in fast-moving product environments.',
       'Front-end engineer with strong Node.js and API integration experience, comfortable working across the stack to ship product features, improve developer workflows, and support scalable delivery in growing teams.',
       'Also available for freelance and contract engagements, remote-first, with on-site availability across Gloucestershire (Gloucester, Stroud, Cheltenham) and London.',
     ],

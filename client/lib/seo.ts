@@ -15,7 +15,7 @@ export const ogImage = {
   url: `${SITE_URL}/og.png`,
   width: 1200,
   height: 630,
-  alt: 'Ibrahim Kasoma · Senior Software Engineer. TypeScript, React, Node.js.',
+  alt: 'Ibrahim Kasoma · Senior Frontend Engineer. TypeScript, React, Node.js.',
 }
 
 const PERSON_ID = `${SITE_URL}/#person`
@@ -33,8 +33,7 @@ function person() {
     '@type': 'Person',
     '@id': PERSON_ID,
     name: 'Ibrahim Kasoma',
-    alternateName: 'Kasoma Ibrahim',
-    jobTitle: 'Senior Software Engineer',
+    jobTitle: 'Senior Frontend Engineer',
     description: redesignContent.meta.description,
     url: `${SITE_URL}/`,
     image: {

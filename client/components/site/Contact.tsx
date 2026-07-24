@@ -31,7 +31,7 @@ const validate = (form: { name: string; email: string; message: string }): Error
 }
 
 export function Contact() {
-  const { contact } = redesignContent
+  const { contact, cv } = redesignContent
   const { email, socials } = contact
   const [copied, setCopied] = React.useState(false)
   const [feedback, setFeedback] = React.useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
@@ -122,7 +122,7 @@ export function Contact() {
             >
               {email}
             </a>
-            <div className='mt-3'>
+            <div className='mt-3 flex flex-wrap items-center gap-x-6 gap-y-2'>
               <button
                 type='button'
                 onClick={onCopy}
@@ -130,6 +130,13 @@ export function Contact() {
               >
                 {copied ? 'Copied' : 'Copy email'}
               </button>
+              <a
+                href={cv.href}
+                download
+                className='text-sm text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline'
+              >
+                {cv.label} ↓
+              </a>
             </div>
 
             <ul className='mt-10 flex flex-wrap gap-x-8 gap-y-3'>

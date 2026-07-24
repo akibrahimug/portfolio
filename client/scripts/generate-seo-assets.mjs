@@ -86,7 +86,7 @@ await page.setContent(
   </style></head><body>
     <div class="frame"></div>
     <div class="col">
-      <div class="eyebrow">Senior Software Engineer</div>
+      <div class="eyebrow">Senior Frontend Engineer</div>
       <div class="name">Ibrahim<br>Kasoma.</div>
       <div class="sub">TypeScript · React · Node.js</div>
       <div class="sub2">80+ apps shipped · 3.4M+ users · 60+ markets</div>
