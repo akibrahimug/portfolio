@@ -19,7 +19,6 @@ export const redesignContent = {
       { href: '#contact', label: 'Contact' },
     ],
   },
-  // TODO: drop the actual file at client/public/Ibrahim_Kasoma_CV.pdf — this path 404s until then.
   cv: { label: 'Download CV', href: '/Ibrahim_Kasoma_CV.pdf' },
   hero: {
     eyebrow: 'Senior Frontend Engineer · TypeScript · React · Node.js',
