@@ -26,7 +26,7 @@ Key facts:
 - [Learner](https://learner.kasomaibrahim.dev): real-time AI teaching platform with character-based companions.
 - [Puur Uganda Reizen](https://www.puurugandareizen.nl): tailor-made safari trips, CMS-driven.
 - [Oliotya Uganda Safaris](https://www.oliotyaugandasafaris.com): marketing site for Uganda safaris.
-- [IGCFashion](https://igc.kasomaibrahim.dev): multi-brand fashion catalog.
+- [IGCFashion](https://www.igcfashion.africa): multi-brand fashion catalog.
 
 ## Profiles
 

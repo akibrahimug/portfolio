@@ -204,7 +204,7 @@ export const redesignContent = {
         summary:
           'A fashion catalog with multi-brand product grids, category navigation, an editorial layout, and image-led product cards on a JavaScript stack.',
         stack: ['JavaScript', 'Tailwind', 'Image-led'],
-        live: 'https://igc.kasomaibrahim.dev',
+        live: 'https://www.igcfashion.africa',
         repo: 'https://github.com/akibrahimug/igc-site',
       },
     ],
