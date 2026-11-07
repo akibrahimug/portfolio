@@ -1,14 +1,16 @@
 import type { Metadata, Viewport } from 'next'
 import type { ReactNode } from 'react'
-import { Syne, Hanken_Grotesk } from 'next/font/google'
+import { Newsreader, Hanken_Grotesk } from 'next/font/google'
 import '@/styles/globals.css'
 import { redesignContent } from '@/lib/redesign-content'
 import { SITE_URL, ogImage } from '@/lib/seo'
 
 // Typefaces are wired to tokens (`--font-display`, `--font-sans`) in globals.css.
-const display = Syne({
+// Editorial serif display (variable optical size + italic for accent emphasis) over a humanist sans.
+const display = Newsreader({
   subsets: ['latin'],
-  weight: ['400', '500', '600', '700', '800'],
+  style: ['normal', 'italic'],
+  axes: ['opsz'],
   variable: '--font-display-face',
   display: 'swap',
 })
@@ -60,6 +62,8 @@ export const metadata: Metadata = {
     apple: { url: '/icons/apple-touch-icon.png', sizes: '180x180' },
   },
   manifest: '/site.webmanifest',
+  // Page kind for the taste-skill checker (design-taste-frontend): a technical subject, so one effect is allowed.
+  other: { 'page-type': 'software', 'site-kind': 'software' },
 }
 
 export const viewport: Viewport = {
@@ -72,10 +76,10 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang='en-GB' className={`${display.variable} ${body.variable}`}>
+    <html lang='en-GB' data-type='software' className={`${display.variable} ${body.variable}`}>
       <body className='min-h-screen bg-background font-sans text-foreground antialiased'>
         <noscript>
-          <style>{'[data-reveal]{opacity:1!important;transform:none!important}[data-grow]{width:var(--pct)!important}'}</style>
+          <style>{'[data-grow]{width:var(--pct)!important}'}</style>
         </noscript>
         {children}
       </body>

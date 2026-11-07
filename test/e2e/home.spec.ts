@@ -5,7 +5,7 @@ const SECTION_IDS = ['top', 'work', 'impact', 'showcase', 'experience', 'skills'
 test('home loads with identity and every section', async ({ page }) => {
   await page.goto('/')
   await expect(page).toHaveTitle(/Ibrahim Kasoma/)
-  await expect(page.getByRole('heading', { level: 1 })).toContainText(/platforms/i)
+  await expect(page.getByRole('heading', { level: 1 })).toContainText(/AI-native interfaces/i)
   for (const id of SECTION_IDS) {
     await expect(page.locator(`#${id}`)).toBeAttached()
   }

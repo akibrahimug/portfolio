@@ -5,7 +5,7 @@ import { TextLink } from '@/components/ui/TextLink'
 export function Footer() {
   const { footer, contact } = redesignContent
   return (
-    <footer className='mt-24 border-t border-border'>
+    <footer className='closing border-t border-border'>
       <Container className='flex flex-col gap-4 py-10 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between'>
         <p>© {new Date().getFullYear()} Ibrahim Kasoma</p>
         <div className='flex items-center gap-6'>

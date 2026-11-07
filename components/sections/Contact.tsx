@@ -105,7 +105,7 @@ export function Contact() {
   }
 
   const fieldClass = (field: Field) =>
-    `w-full border-b bg-transparent py-2.5 text-base text-foreground placeholder:text-faint focus:outline-none transition-colors ${
+    `w-full border-b bg-transparent py-2.5 text-base text-foreground placeholder:text-faint transition-colors ${
       showError(field) ? 'border-accent' : 'border-border focus:border-accent'
     }`
 
@@ -123,7 +123,7 @@ export function Contact() {
           <div>
             <a
               href={`mailto:${email}`}
-              className='group inline-flex items-baseline gap-2 font-display text-2xl font-medium tracking-tight underline decoration-border-strong decoration-1 underline-offset-[6px] transition-colors hover:decoration-accent md:text-3xl'
+              className='group inline-flex items-baseline gap-2 font-display text-2xl tracking-tight underline decoration-border-strong decoration-1 underline-offset-[6px] transition-colors hover:decoration-accent md:text-3xl'
             >
               {email}
             </a>

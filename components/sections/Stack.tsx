@@ -6,7 +6,6 @@ import * as Dialog from '@radix-ui/react-dialog'
 import { redesignContent } from '@/lib/redesign-content'
 import techData from '@/lib/technologies.json'
 import { Section } from '@/components/patterns/Section'
-import { Reveal } from '@/components/motion/Reveal'
 
 type Tech = {
   name: string
@@ -48,9 +47,9 @@ export function Stack() {
         {/* capabilities — spec-sheet rows */}
         <div>
           {skills.groups.map((g, i) => (
-            <Reveal as='div' key={g.label} delay={i * 0.03}>
+            <div key={g.label}>
               <div className='grid gap-x-8 gap-y-3 border-t border-border py-6 md:grid-cols-[15rem_1fr]'>
-                <h3 className='flex items-baseline gap-3 font-display text-lg font-medium tracking-tight'>
+                <h3 className='flex items-baseline gap-3 font-display text-lg tracking-tight'>
                   <span className='text-sm text-accent'>{String(i + 1).padStart(2, '0')}</span>
                   {g.label}
                 </h3>
@@ -65,7 +64,7 @@ export function Stack() {
                   ))}
                 </ul>
               </div>
-            </Reveal>
+            </div>
           ))}
         </div>
 
@@ -85,7 +84,7 @@ export function Stack() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder='Search…'
-                className='w-full border-b border-border bg-transparent py-2 text-sm focus:border-accent focus:outline-none'
+                className='w-full border-b border-border bg-transparent py-2 text-sm focus:border-accent'
               />
             </label>
           </div>
@@ -116,7 +115,7 @@ export function Stack() {
             <Dialog.Portal>
               <Dialog.Overlay className='fixed inset-0 z-50 bg-background/70 backdrop-blur-sm' />
               <Dialog.Content
-                className='fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 border border-border-strong bg-card p-6 shadow-2xl focus:outline-none'
+                className='fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 border border-border-strong bg-card p-6 shadow-2xl'
                 aria-describedby={selected?.description ? 'tech-desc' : undefined}
               >
                 {selected && (
@@ -126,7 +125,7 @@ export function Stack() {
                         <Image src={selected.icon} alt='' fill sizes='36px' />
                       </span>
                       <div className='min-w-0 flex-1'>
-                        <Dialog.Title className='font-display text-lg font-medium'>
+                        <Dialog.Title className='font-display text-lg'>
                           {selected.name}
                         </Dialog.Title>
                         {selected.experience && (

@@ -1,4 +1,4 @@
-import type { ComponentPropsWithoutRef, ReactNode } from 'react'
+import type { ComponentPropsWithoutRef, CSSProperties, ReactNode } from 'react'
 import { cn } from './cn'
 
 type Level = 1 | 2 | 3 | 4
@@ -12,7 +12,10 @@ const displaySize: Record<DisplaySize, string> = {
   xs: 'text-display-xs',
 }
 
-/** Display heading. Semantic level and visual size are independent. */
+/**
+ * Display heading. Semantic level and visual size are independent.
+ * Wrap a word in <em> for the accent-italic emphasis.
+ */
 export function Heading({
   level = 2,
   size = 'lg',
@@ -22,7 +25,11 @@ export function Heading({
   const Tag = `h${level}` as const
   return (
     <Tag
-      className={cn('font-display font-medium text-balance', displaySize[size], className)}
+      className={cn(
+        'font-display text-balance [&_em]:text-accent [&_em]:italic',
+        displaySize[size],
+        className,
+      )}
       {...rest}
     />
   )
@@ -55,13 +62,17 @@ export function Text({
 export function Eyebrow({
   as: Tag = 'p',
   className,
+  style,
   children,
 }: {
   as?: 'p' | 'span' | 'dt' | 'dd' | 'div'
   className?: string
+  style?: CSSProperties
   children: ReactNode
 }) {
   return (
-    <Tag className={cn('text-xs uppercase tracking-[0.2em] text-faint', className)}>{children}</Tag>
+    <Tag className={cn('text-xs uppercase tracking-[0.2em] text-faint', className)} style={style}>
+      {children}
+    </Tag>
   )
 }

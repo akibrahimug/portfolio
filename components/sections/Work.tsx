@@ -1,6 +1,5 @@
 import { redesignContent } from '@/lib/redesign-content'
 import { Section } from '@/components/patterns/Section'
-import { Reveal } from '@/components/motion/Reveal'
 import { Heading, Text } from '@/components/ui/Typography'
 import { TextLink } from '@/components/ui/TextLink'
 import { TagList } from '@/components/ui/Lists'
@@ -18,7 +17,7 @@ export function Work() {
           {work.items.map((item, i) => {
             const { title, live } = item
             return (
-            <Reveal as='li' key={item.slug} delay={i * 0.05}>
+            <li key={item.slug}>
               <article className='grid gap-4 border-t border-border py-9 md:grid-cols-[7rem_1fr] md:gap-10'>
                 <div className='text-sm text-faint'>{item.year}</div>
                 <div>
@@ -54,7 +53,7 @@ export function Work() {
                   <TagList items={item.stack} className='mt-4' />
                 </div>
               </article>
-            </Reveal>
+            </li>
             )
           })}
         </ul>

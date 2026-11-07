@@ -3,7 +3,7 @@
  *  - square favicons 48/192/512 (transparent) from public/favicon.png
  *  - apple-touch-icon 180 (solid paper background)
  *  - favicon.ico (PNG-in-ICO, 48px)
- *  - og.png 1200x630 editorial card (Syne + Hanken, paper/ink/red palette)
+ *  - og.png 1200x630 editorial card (Newsreader + Hanken, paper/ink/red palette)
  *
  * Run:  node scripts/generate-seo-assets.mjs   (from client/)
  */
@@ -62,12 +62,12 @@ await renderIcon(180, path.join(PUB, 'icons/apple-touch-icon.png'), { bg: PAPER,
   console.log('wrote', path.join(PUB, 'favicon.ico'))
 }
 
-// OG card — editorial: paper, Syne display name, red eyebrow, portrait right
+// OG card — editorial: paper, Newsreader display name, red eyebrow, portrait right
 await page.setViewportSize({ width: 1200, height: 630 })
 await page.setContent(
   `<!doctype html><html><head>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Hanken+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400..500&family=Hanken+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; box-sizing: border-box; }
     body { width: 1200px; height: 630px; background: ${PAPER}; color: ${INK};
@@ -75,7 +75,7 @@ await page.setContent(
     .frame { position: absolute; inset: 28px; border: 1px solid rgba(46,42,37,.18); }
     .col { position: absolute; left: 84px; top: 112px; max-width: 600px; }
     .eyebrow { font-size: 21px; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: ${RED}; }
-    .name { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 90px; line-height: 1.04;
+    .name { font-family: 'Newsreader', serif; font-weight: 400; font-size: 96px; line-height: 1.02;
             letter-spacing: -0.02em; margin-top: 28px; }
     .sub { margin-top: 32px; font-size: 27px; color: ${INK}; font-weight: 600; }
     .sub2 { margin-top: 12px; font-size: 24px; color: ${MUTED}; font-weight: 500; }

@@ -1,6 +1,5 @@
 import { redesignContent } from '@/lib/redesign-content'
 import { Section } from '@/components/patterns/Section'
-import { Reveal } from '@/components/motion/Reveal'
 import { Text, Eyebrow } from '@/components/ui/Typography'
 
 export function About() {
@@ -21,17 +20,17 @@ export function About() {
             ))}
           </div>
 
-          <Reveal>
+          <div>
             <Eyebrow>Now · {currently.asOf}</Eyebrow>
             <dl className='mt-5 space-y-5'>
               {currently.items.map((item) => (
                 <div key={item.k} className='border-t border-border pt-4'>
-                  <dt className='font-display text-sm font-medium'>{item.k}</dt>
+                  <dt className='font-display text-sm'>{item.k}</dt>
                   <dd className='mt-1 text-sm leading-relaxed text-muted-foreground'>{item.v}</dd>
                 </div>
               ))}
             </dl>
-          </Reveal>
+          </div>
         </div>
       </Section.Body>
     </Section>

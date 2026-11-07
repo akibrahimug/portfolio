@@ -21,30 +21,26 @@ export const redesignContent = {
   },
   cv: { label: 'Download CV', href: '/Ibrahim_Kasoma_CV.pdf' },
   hero: {
-    eyebrow: 'Senior Frontend Engineer · TypeScript · React · Node.js',
-    name: 'Ibrahim Kasoma.',
-    rolePool: [
-      'Senior Frontend Engineer',
-      'Frontend Platform Engineer',
-      'API-driven Systems',
-      'Scalable Delivery',
-    ],
+    availability: 'Open to senior frontend roles · Stroud, UK',
+    /** h1 — names the category. `{ em }` segments render as the accent italic. */
+    headline: ['Senior frontend engineer building', { em: 'AI-native' }, 'interfaces.'] as const,
     statement:
-      'I build and scale production TypeScript across EF Education First, freelance client work, and personal projects: 80+ apps shipped end to end. Currently shipping seven concurrent projects at EF, where the flagship Next.js platform reaches 3.4M+ users in 60+ markets.',
-    availability: 'Open to senior frontend roles · UK',
+      'Six years of production TypeScript and React, 80+ apps shipped. At EF Education First I ship across a Next.js platform used by 3.4M people a month in 60+ markets.',
     location: 'Stroud, Gloucestershire, UK',
     primaryCta: { label: 'Email me', href: 'mailto:kasomaibrahim@gmail.com' },
-    avatarSrc: '/icons/avarta-cutout.webp',
-    avatarAlt: 'Ibrahim Kasoma · Senior Frontend Engineer',
-  },
-  stats: {
-    eyebrow: 'By the numbers',
-    items: [
-      { value: '6+', suffix: '', label: 'Years building production', sub: 'TypeScript · React · Node' },
-      { value: '80+', suffix: '', label: 'Frontend apps shipped', sub: 'Across all roles' },
-      { value: '7+', suffix: '', label: 'Concurrent EF projects', sub: 'Multi-brand consumer surfaces' },
-      { value: '3.4', suffix: 'M+', label: 'MAU on the flagship', sub: 'EF Next.js platform · 60+ markets' },
+    // Phase 3 repoints this to the live demo: { label: 'Try the live demo', href: '#demo' }.
+    secondaryCta: { label: 'See selected work', href: '#work' },
+    stats: [
+      { value: '6+', label: 'Years in production' },
+      { value: '80+', label: 'Apps shipped' },
+      { value: '3.4M', label: 'Monthly users' },
     ],
+    avatarSrc: '/icons/avarta-cutout.webp',
+    avatarWidth: 1221,
+    avatarHeight: 1472,
+    avatarAlt: 'Ibrahim Kasoma · Senior Frontend Engineer',
+    /** Face + beard on avarta-cutout, image space from the top-left; the ink shader keeps it still. */
+    avatarProtect: { x: 0.455, y: 0.34, rx: 0.15, ry: 0.19 },
   },
   ticker: [
     'TypeScript',

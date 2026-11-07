@@ -37,9 +37,10 @@ Path alias: `@/*` → repo root (see `tsconfig.json`).
 Composition flows one way — each layer only imports from the layers above it:
 
 1. **Tokens** — `styles/globals.css`: colours, typefaces, the `text-display-{xs..xl}` type scale, `.feature-invert`. A type or palette change is a token change.
-2. **Primitives** — `components/ui/`: `Container`, `Heading`/`Text`/`Eyebrow`, `Button`/`ButtonLink`/`Arrow`, `TextLink`, `BulletList`/`TagList`, `cn`. Server-safe, no state.
-3. **Motion** — `components/motion/`: `Reveal`, `CountUp`, `GrowBar` (client). They render the same element on server and client; reduced motion and no-JS are handled in CSS via `[data-reveal]` / `[data-grow]` (never branch on `useReducedMotion()` for SSR'd start states — React won't patch the stranded inline style on hydration).
-4. **Patterns** — `components/patterns/`: compound `Section` (`Section.Header/Title/Intro/Body`), `Band`.
+2. **Primitives** — `components/ui/`: `Container` (the `.wrap`: 1248px content box, 96px margins at 1440), `Heading`/`Text`/`Eyebrow`, `Button`/`ButtonLink`/`Arrow`, `TextLink`, `BulletList`/`TagList`, `cn`. Server-safe, no state.
+3. **Motion** — `components/motion/`: `RiseText` (CSS-only hero entrance, server-safe), `CountUp`, `GrowBar` (client). No scroll-reveals: content is at rest when scrolled to (a hidden-until-scrolled block also traps keyboard focus on invisible content). Never branch on `useReducedMotion()` for SSR'd start states — React won't patch the stranded inline style on hydration; handle reduced motion in CSS (`[data-grow]`, `.rise-word`, `.enter-up`).
+   - **Hero** — `components/hero/InkPortrait.tsx` + `ink-gl.ts`: the page's one effect. Raw WebGL1 ink shader over a priority `<Image>`, loaded after idle; dry frame == the image, so it swaps in invisibly. A face `protect` ellipse (from `hero.avatarProtect` in content) keeps the person still while the ink runs. Skipped under reduced motion / no WebGL.
+4. **Patterns** — `components/patterns/`: compound `Section` (`Section.Header/Title/Intro/Body`, renders a `<div>` scroll target), `Band` (the full-bleed `<section>` that sits directly in `<main>`).
 5. **Sections** — `components/sections/`: one per page section. Server Components by default; `'use client'` only where there is real state (SiteNav, ProjectCard, Stack, Contact).
 
 ### Content
@@ -84,6 +85,7 @@ If a sender domain has been verified in Resend (e.g. `kasomaibrahim.dev`), set `
 - **Tailwind v4** is active via `@tailwindcss/postcss` in `postcss.config.mjs` plus `@theme inline` blocks in `styles/globals.css`. Don't reintroduce a `tailwind.config.js`.
 - **Turbopack** is the active dev bundler (`next dev --turbo`). Webpack-specific tweaks in `next.config.js` will not apply in dev.
 - **TS errors are ignored at build time** today. Run `yarn typecheck` before pushing to catch regressions.
+- **Taste-skill gate** (`~/.claude/skills/design-taste-frontend`) needs **Node 22+** — run it with `~/.nvm/versions/node/v22.22.2/bin/node …/scripts/gate.mjs` against `yarn start` on localhost. The page declares `data-type='software'` + `page-type`/`site-kind` metas. Reasoned waivers live in `.taste-skill/waivers.json` (the rest of `.taste-skill/` is local state, gitignored).
 - **Playwright:** `reducedMotion` is not a `test.use` option — use `page.emulateMedia({ reducedMotion: 'reduce' })`.
 - **Avatar pipeline:** the brush-stroke portrait at `public/icons/avarta-cutout.{png,webp}` was processed from the original `avarta.webp` to mask out white background pixels with full per-pixel color decontamination. The algorithm lived in `docs/redesign.md` (removed 2026-11-07; recover it from git history if the source changes).
 - **The redesign deleted ~25 legacy components and ~93 more files in the static migration** (dashboard, sign-in/up, Clerk, shadcn ui, dashboard hooks/lib, Jest, RTL, axios, swr, react-hook-form, etc.). If you find an older doc mentioning any of these, treat it as historical.
