@@ -48,3 +48,4 @@ sa.json
 tsconfig.tsbuildinfo
 /test-results/
 /playwright-report/
+.vscode
