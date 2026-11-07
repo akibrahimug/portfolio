@@ -8,7 +8,8 @@ import { Heading, Text, Eyebrow } from '@/components/ui/Typography'
 import { ButtonLink, Arrow } from '@/components/ui/Button'
 import { BulletList, TagList } from '@/components/ui/Lists'
 import { CaseShot } from '@/components/case-study/CaseShot'
-import { MetricRow } from '@/components/case-study/MetricRow'
+import { LeadFigure } from '@/components/case-study/LeadFigure'
+import { FigureText } from '@/components/ui/FigureText'
 import { ImpactChart } from '@/components/demo/results/ImpactChart'
 
 type Params = { params: Promise<{ slug: string }> }
@@ -88,9 +89,11 @@ export default async function CaseStudyPage({ params }: Params) {
           <CaseShot slug={c.slug} src={c.image} alt={c.imageAlt} priority sizes='(max-width: 1312px) 100vw, 1248px' />
         </Container>
 
-        <Container className='mt-12'>
-          <MetricRow metrics={c.metrics} />
-        </Container>
+        {c.lead && (
+          <Container className='mt-12'>
+            <LeadFigure lead={c.lead} size='lg' />
+          </Container>
+        )}
 
         <Container className='mt-16'>
           <Chapter label='The project'>
@@ -109,13 +112,17 @@ export default async function CaseStudyPage({ params }: Params) {
             </dl>
           </Chapter>
           <Chapter label='The problem'>
-            <Text size='lead'>{c.problem}</Text>
+            <Text size='lead'>
+              <FigureText text={c.problem} />
+            </Text>
           </Chapter>
           <Chapter label='What I did'>
             <BulletList items={c.approach} className='[&_li]:text-base' />
           </Chapter>
           <Chapter label='What changed'>
-            <Text size='lead'>{c.outcome}</Text>
+            <Text size='lead'>
+              <FigureText text={c.outcome} />
+            </Text>
             {impact && (
               <div className='mt-10'>
                 <ImpactChart output={impact} />

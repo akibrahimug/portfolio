@@ -3,7 +3,7 @@ import Image from 'next/image'
 import { caseStudies, moreWork } from '@/lib/case-studies'
 import { Section } from '@/components/patterns/Section'
 import { CaseShot } from '@/components/case-study/CaseShot'
-import { MetricRow } from '@/components/case-study/MetricRow'
+import { LeadFigure } from '@/components/case-study/LeadFigure'
 import { Heading, Text, Eyebrow } from '@/components/ui/Typography'
 import { TextLink } from '@/components/ui/TextLink'
 import { TagList } from '@/components/ui/Lists'
@@ -50,7 +50,7 @@ export function CaseStudies() {
                     </Link>
                   </Heading>
                   <Text className='mt-3'>{c.lede}</Text>
-                  <MetricRow metrics={c.metrics.slice(0, 3)} size='sm' className='mt-6' />
+                  {c.lead && <LeadFigure lead={c.lead} className='mt-6' />}
                   <TagList items={c.stack} className='mt-6 gap-x-3' />
                   <TextLink
                     href={`/work/${c.slug}`}

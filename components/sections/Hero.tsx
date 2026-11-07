@@ -1,9 +1,10 @@
 import type { CSSProperties } from 'react'
 import { redesignContent } from '@/lib/redesign-content'
 import { Container } from '@/components/ui/Container'
-import { Heading, Text, Eyebrow } from '@/components/ui/Typography'
+import { Heading, Text } from '@/components/ui/Typography'
 import { ButtonLink, Arrow } from '@/components/ui/Button'
 import { RiseText } from '@/components/motion/RiseText'
+import { FigureText } from '@/components/ui/FigureText'
 import { InkPortrait } from '@/components/hero/InkPortrait'
 
 const delay = (ms: number) => ({ '--enter-delay': `${ms}ms` }) as CSSProperties
@@ -15,14 +16,11 @@ export function Hero() {
     <section id='top' aria-labelledby='hero-h' className='flex min-h-svh flex-col justify-center pb-10 pt-20 md:pb-20 md:pt-32'>
       <Container className='grid items-start gap-6 md:grid-cols-12 md:gap-6'>
         <div className='hero-text md:col-span-7'>
-          <Eyebrow className='enter-up text-balance' style={delay(0)}>
-            {hero.availability}
-          </Eyebrow>
-          <Heading level={1} size='xl' id='hero-h' className='mt-6'>
+          <Heading level={1} size='xl' id='hero-h'>
             <RiseText segments={hero.headline} />
           </Heading>
           <Text size='lead' className='enter-up mt-6 max-w-xl' style={delay(420)}>
-            {hero.statement}
+            <FigureText text={hero.statement} />
           </Text>
 
           <div className='enter-up mt-8 flex flex-wrap items-center gap-3' style={delay(520)}>
@@ -36,19 +34,6 @@ export function Hero() {
             </ButtonLink>
           </div>
 
-          <dl
-            className='enter-up mt-14 hidden max-w-xl grid-cols-3 divide-x divide-border border-t border-border md:grid'
-            style={delay(620)}
-          >
-            {hero.stats.map((s) => (
-              <div key={s.label} className='flex flex-col-reverse pt-8 first:pr-5 not-first:px-5'>
-                <dt className='mt-2 text-[11px] uppercase leading-snug tracking-wider text-faint'>
-                  {s.label}
-                </dt>
-                <dd className='font-display text-3xl tracking-tight md:text-4xl'>{s.value}</dd>
-              </div>
-            ))}
-          </dl>
         </div>
 
         <div className='order-first md:order-last md:col-span-5'>

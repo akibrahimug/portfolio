@@ -13,7 +13,7 @@ const limiter =
   url && token
     ? new Ratelimit({
         redis: new Redis({ url, token }),
-        limiter: Ratelimit.slidingWindow(12, '10 m'),
+        limiter: Ratelimit.slidingWindow(20, '10 m'),
         prefix: 'demo',
         // Rejections are cached in memory per instance: an abuser stops costing Redis calls.
         ephemeralCache: new Map(),

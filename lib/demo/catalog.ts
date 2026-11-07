@@ -98,7 +98,33 @@ export function getImpact({ focus }: { focus?: string } = {}) {
 }
 export const IMPACT_KEYS = c.impact.compares.map((m) => m.key) as [string, ...string[]]
 
-/** Roles, most recent first, with their top highlights. */
+const MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
+/** 'Feb 2020–Nov 2022' → the start as a Date (first of the month). */
+const startOf = (period: string) => {
+  const [mon, year] = period.split('–')[0].trim().split(' ')
+  return new Date(Number(year), MONTHS.indexOf(mon.toLowerCase().slice(0, 3)), 1)
+}
+const wholeYears = (from: Date, to: Date) =>
+  Math.floor((to.getFullYear() - from.getFullYear()) * 12 + (to.getMonth() - from.getMonth())) / 12
+
+/** Career totals, computed from the role dates (never typed in by hand). */
+export function careerTotals(now = new Date()) {
+  const starts = c.experience.roles.map((r) => startOf(r.period))
+  const first = new Date(Math.min(...starts.map((d) => d.getTime())))
+  const ef = c.experience.roles
+    .filter((r) => r.company.includes('EF Education First'))
+    .map((r) => startOf(r.period))
+  const efStart = new Date(Math.min(...ef.map((d) => d.getTime())))
+  const label = (d: Date) => d.toLocaleString('en-GB', { month: 'short', year: 'numeric' })
+  return {
+    professionalSince: label(first),
+    yearsProfessional: Math.floor(wholeYears(first, now)),
+    efSince: label(efStart),
+    yearsAtEf: Math.floor(wholeYears(efStart, now)),
+  }
+}
+
+/** Roles, most recent first, with their top highlights, plus computed career totals. */
 export function getExperience({ company }: { company?: string } = {}) {
   const roles = c.experience.roles
     .filter((r) => !company || r.company.toLowerCase().includes(company.toLowerCase()))
@@ -109,10 +135,10 @@ export function getExperience({ company }: { company?: string } = {}) {
       place: r.place,
       highlights: r.bullets.slice(0, 3),
     }))
-  return { roles }
+  return { totals: careerTotals(), roles }
 }
 
-type Tech = { name: string; icon: string; experience?: string; confidenceLevel?: number }
+type Tech = { name: string; icon: string; experience?: string; confidenceLevel?: number; description?: string; learningSource?: string }
 const TECH = (techData as { techStack: Tech[] }).techStack
 
 /** Skills by area, and the tools with depth of experience (most confident first). */
@@ -126,17 +152,24 @@ export function getStack({ area, query }: { area?: string; query?: string } = {}
     }))
     .filter((g) => g.items.length)
   const tech = TECH.filter((t) => !q || t.name.toLowerCase().includes(q))
-    .map((t) => ({ name: t.name, icon: t.icon, experience: t.experience, confidence: t.confidenceLevel ?? null }))
+    .map((t) => ({
+      name: t.name,
+      icon: t.icon,
+      experience: t.experience,
+      confidence: t.confidenceLevel ?? null,
+      /** Ibrahim's own note on how he has used it — the model must not claim more than this. */
+      note: t.description,
+      learnedFrom: t.learningSource,
+    }))
     .sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0))
     .slice(0, 14)
   return { groups, tech }
 }
 export const STACK_AREAS = c.skills.groups.map((g) => g.label) as [string, ...string[]]
 
-/** How to reach Ibrahim, and whether he's available. */
+/** How to reach Ibrahim. */
 export function getContact() {
   return {
-    availability: c.hero.availability,
     email: c.contact.email,
     cv: c.cv.href,
     socials: c.contact.socials.map((s) => ({ label: s.label, href: s.href })),

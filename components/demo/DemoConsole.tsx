@@ -35,60 +35,11 @@ function ToolResult({ part }: { part: Part }) {
   )
 }
 
-/** Live trace of the tool calls behind the current answer: pulsing while running, ticked when done. */
-function ToolTrace({ parts }: { parts: Part[] }) {
-  const calls = parts.filter(isStaticToolUIPart)
-  if (!calls.length) return null
-  return (
-    <ul className='flex flex-wrap gap-2' aria-label='Tool calls'>
-      {calls.map((p) => {
-        const running = p.state !== 'output-available' && p.state !== 'output-error'
-        const args = Object.entries((p.input ?? {}) as Record<string, unknown>)
-          .filter(([, v]) => v !== undefined && v !== '')
-          .map(([k, v]) => `${k}: ${String(v)}`)
-          .join(', ')
-        return (
-          <li
-            key={p.toolCallId}
-            className='demo-chip inline-flex items-center gap-2 border border-border bg-background px-2.5 py-1 text-xs text-muted-foreground'
-          >
-            <span
-              aria-hidden
-              className={cn('h-1.5 w-1.5 rounded-full', running ? 'demo-pulse bg-accent' : 'bg-foreground/60')}
-            />
-            <span className='font-mono text-[11px] text-foreground'>{toolName(p)}</span>
-            {args && <span className='text-faint'>{args}</span>}
-            <span className='sr-only'>{running ? 'running' : 'done'}</span>
-            {!running && <span aria-hidden>✓</span>}
-          </li>
-        )
-      })}
-    </ul>
-  )
-}
-
-/** Header status: live while working, then who answered and how fast. */
-function StatusPill({ working, answer }: { working: boolean; answer?: DemoUIMessage }) {
-  const m = answer?.metadata
-  const label = working
-    ? m?.model
-      ? `Streaming · ${m.model}`
-      : 'Working'
-    : m?.source === 'live'
-      ? `${m.model}${m.totalMs ? ` · ${(m.totalMs / 1000).toFixed(1)}s` : ''}`
-      : m?.source === 'offline'
-        ? 'Answered offline'
-        : 'Example'
-  return (
-    <span className='inline-flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground' aria-live='off'>
-      <span
-        aria-hidden
-        className={cn('h-2 w-2 rounded-full', working ? 'demo-pulse bg-accent' : m?.source === 'live' ? 'bg-accent' : 'bg-foreground/30')}
-      />
-      {label}
-    </span>
-  )
-}
+const OFFLINE_NOTE = {
+  'rate-limit': 'You’ve asked a lot in the last few minutes, so the live model is paused for you briefly. This answer comes straight from the site’s data.',
+  quota: 'The free models are out of quota right now, so this answer comes straight from the site’s data, without a model.',
+  unavailable: 'No live model is connected here, so this answer comes straight from the site’s data.',
+} as const
 
 /** The generative-UI demo: questions in, the site's own components out. */
 export function DemoConsole({ initialMessages }: { initialMessages: DemoUIMessage[] }) {
@@ -144,9 +95,6 @@ export function DemoConsole({ initialMessages }: { initialMessages: DemoUIMessag
               {questionText && <p className='demo-land mt-1 font-display text-display-sm italic'>“{questionText}”</p>}
             </div>
             <div className='flex shrink-0 items-center gap-4'>
-              <span className='hidden sm:inline-flex'>
-                <StatusPill working={working} answer={answerIsCurrent ? answer : undefined} />
-              </span>
               <button
                 type='button'
                 aria-pressed={showHow}
@@ -164,7 +112,11 @@ export function DemoConsole({ initialMessages }: { initialMessages: DemoUIMessag
               <p className='demo-pending text-sm text-muted-foreground'>Reading the site…</p>
             ) : answer && answerIsCurrent ? (
               <div className='space-y-6'>
-                <ToolTrace parts={answer.parts} />
+                {answer.metadata?.source === 'offline' && (
+                  <p className='demo-land border-l-2 border-accent pl-3 text-sm text-muted-foreground'>
+                    {OFFLINE_NOTE[answer.metadata.offlineReason ?? 'unavailable']}
+                  </p>
+                )}
                 {/* The model's framing sentence leads, whatever order it was streamed in. */}
                 {answer.parts.map((part, i) =>
                   part.type === 'text' && part.text.trim() ? (

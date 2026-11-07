@@ -1,13 +1,11 @@
 import type { getContact } from '@/lib/demo/catalog'
-import { Eyebrow } from '@/components/ui/Typography'
 import { ButtonLink, Arrow } from '@/components/ui/Button'
 import { TextLink } from '@/components/ui/TextLink'
 
 export function ContactCard({ output }: { output: ReturnType<typeof getContact> }) {
   return (
     <div>
-      <Eyebrow>{output.availability}</Eyebrow>
-      <div className='stagger mt-4 flex flex-wrap items-center gap-3'>
+      <div className='stagger flex flex-wrap items-center gap-3'>
         <ButtonLink href={`mailto:${output.email}`}>
           Email Ibrahim
           <Arrow />

@@ -7,7 +7,8 @@
  */
 import { redesignContent } from './redesign-content'
 
-export type CaseMetric = { value: string; label: string }
+/** The one figure that proves the case, with the sentence it belongs to. */
+export type LeadFigure = { value: string; sentence: string }
 
 export type CaseStudy = {
   slug: string
@@ -24,7 +25,8 @@ export type CaseStudy = {
   live?: string
   repo?: string
   stack: string[]
-  metrics: CaseMetric[]
+  /** Omitted when the project has no measured figure (Learner) — never filled with a label. */
+  lead?: LeadFigure
   problem: string
   approach: string[]
   outcome: string
@@ -41,7 +43,7 @@ export const caseStudies: CaseStudy[] = [
   {
     slug: 'ef-epi',
     title: 'EF EPI',
-    lede: 'Page loads 60% faster on a data-viz platform read by 3.4M people a month.',
+    lede: 'Making EF’s flagship data-visualisation site fast for every market it serves.',
     context:
       'The EF English Proficiency Index is the world’s largest ranking of countries and regions by English skills: a Next.js application serving 57 international markets.', // src: site work item + live page headline
     role: 'Senior Frontend Engineer · EF Education First',
@@ -51,12 +53,7 @@ export const caseStudies: CaseStudy[] = [
     imageAlt: 'The EF EPI homepage: “The world’s largest ranking of countries and regions by English skills”.',
     live: live('ef-epi'),
     stack: ['Next.js', 'TypeScript', 'Data visualisation', 'Core Web Vitals'],
-    metrics: [
-      { value: '−60%', label: 'Page load time' }, // src: CV
-      { value: '3s', label: 'Faster time to interactive' }, // src: CV
-      { value: '3.4M', label: 'Monthly users' }, // src: CV
-      { value: '57', label: 'Markets' }, // src: CV
-    ],
+    lead: { value: '−60%', sentence: 'page load time on a platform read by 3.4M people a month in 57 markets.' }, // src: CV / README figures above
     problem:
       'EF’s flagship data-visualisation site had grown slow. For a page whose job is to be read, shared and cited across 57 markets, load time was the product.',
     approach: [
@@ -75,7 +72,7 @@ export const caseStudies: CaseStudy[] = [
   {
     slug: 'ef-pg',
     title: 'EF Programs',
-    lede: 'Twenty microfrontends, eight teams, one Nx monorepo and one release pipeline.',
+    lede: 'Bringing eight product teams onto one monorepo and one release pipeline.',
     context:
       'The global catalogue of EF’s language and travel programmes, built and shipped by eight product teams.', // src: site work item
     role: 'Frontend architecture · EF Education First',
@@ -85,11 +82,7 @@ export const caseStudies: CaseStudy[] = [
     imageAlt: 'The EF programs page: “All EF programs” with a “Find a program” search.',
     live: live('ef-pg'),
     stack: ['Next.js', 'Nx', 'TypeScript', 'Microfrontends', 'Claude Code'],
-    metrics: [
-      { value: '20+', label: 'Microfrontends consolidated' }, // src: CV
-      { value: '−15k', label: 'Lines of duplicated code' }, // src: CV
-      { value: '8', label: 'Product teams on one pipeline' }, // src: CV
-    ],
+    lead: { value: '20+', sentence: 'microfrontends consolidated into one Nx monorepo, retiring 15,000+ lines of duplicated code.' }, // src: CV / README figures above
     problem:
       'Twenty-plus microfrontends had drifted apart across eight teams: duplicated code, duplicated components and separate releases. Every team paid for the fragmentation.',
     approach: [
@@ -107,7 +100,7 @@ export const caseStudies: CaseStudy[] = [
   {
     slug: 'ef-homepage',
     title: 'The platform behind ef.com',
-    lede: 'A CI/CD platform shipping 17 production frontends daily, in a third of the time.',
+    lede: 'Turning slow, risky releases into a daily routine across 60+ markets.',
     context:
       'EF’s global homepage and the consumer brand surfaces around it, released daily to 60+ markets from a shared delivery platform.', // src: site work item + CV
     role: 'Senior Frontend Engineer · EF Education First',
@@ -117,12 +110,7 @@ export const caseStudies: CaseStudy[] = [
     imageAlt: 'The ef.com homepage: “hello!” above a row of travel and study photographs.',
     live: live('ef-homepage'),
     stack: ['Next.js', 'TypeScript', 'GitHub Actions', 'Jest', 'React Testing Library'],
-    metrics: [
-      { value: '45→15', label: 'CI minutes' }, // src: CV
-      { value: '85%', label: 'Test coverage, from ~30%' }, // src: CV
-      { value: '−40%', label: 'Production incidents' }, // src: CV
-      { value: '17', label: 'Frontends shipped daily' }, // src: CV
-    ],
+    lead: { value: '45 → 15', sentence: 'minutes per CI run for the 17 frontends behind ef.com, with coverage up from ~30% to 85%.' }, // src: CV / README figures above
     problem:
       'Seventeen production frontends shared one CI/CD pipeline that took 45 minutes, and test coverage sat around 30%. Slow, risky releases across 60+ markets.',
     approach: [
@@ -152,11 +140,6 @@ export const caseStudies: CaseStudy[] = [
     live: live('learner'),
     repo: 'https://github.com/akibrahimug/learner',
     stack: ['Next.js 15', 'React 19', 'Vapi', 'Clerk', 'Supabase', 'Tailwind 4'],
-    metrics: [
-      { value: 'Live', label: 'Voice sessions with transcripts' }, // src: README
-      { value: '3 models', label: 'Speech-to-text, LLM, text-to-speech' }, // src: README (Deepgram, GPT-4, ElevenLabs)
-      { value: 'Free / Pro', label: 'Subscription tiers' }, // src: README
-    ],
     problem:
       'Tutoring is a conversation, not a chat box. The product had to hold a real-time voice session together across speech recognition, a language model and speech synthesis, and still feel like a normal web app.',
     approach: [
@@ -183,12 +166,7 @@ export const caseStudies: CaseStudy[] = [
     live: live('comp-lib'),
     repo: 'https://github.com/akibrahimug/comp-lib',
     stack: ['React', 'TypeScript', 'Tailwind', 'Storybook', 'tailwind-merge'],
-    metrics: [
-      { value: '40+', label: 'Accessible components' }, // src: README
-      { value: '24', label: 'Section blocks' }, // src: README
-      { value: '4', label: 'Runtime themes' }, // src: README
-      { value: 'AA', label: 'WCAG 2.1' }, // src: README
-    ],
+    lead: { value: '40+', sentence: 'accessible components and primitives, with 24 section blocks and four runtime themes.' }, // src: CV / README figures above
     problem:
       'Most component libraries are written for people reading docs. Coding agents now write much of the UI, and they need the API surface as data, not prose.',
     approach: [

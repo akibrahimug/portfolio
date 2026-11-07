@@ -67,6 +67,8 @@ export function MarginNotes({ message, busy }: { message?: DemoUIMessage; busy: 
     )
   }
 
+  if (m?.finishedBy)
+    notes.push(`The answering model stopped before writing its sentence (a free-tier limit, or it simply went quiet), so ${m.finishedBy} wrote it from the results already found, without re-running anything.`)
   if (m?.firstTokenMs !== undefined)
     notes.push(`First token after ${m.firstTokenMs} ms; finished after ${m.totalMs} ms.`)
   else if (m?.totalMs !== undefined && m.source !== 'example') notes.push(`Finished after ${m.totalMs} ms.`)
