@@ -1,0 +1,17 @@
+[
+  {
+    "check": "photo-print",
+    "target": "section#top > div.wrap.mx-auto > div.order-first > div.enter-settle.relative",
+    "reason": "Not a print: the canvas is the interactive ink shader (components/hero/ink-gl.ts). Dry, it renders the photograph pixel-for-pixel; it only displaces pigment where the pointer has wet it, then dries back. It is the page's one effect, on a software page."
+  },
+  {
+    "check": "scroll-reveal",
+    "target": "div.demo-frame.relative",
+    "reason": "The demo's self-playing intro (question types itself, result lands) runs once when it scrolls into view; Ibrahim explicitly asked for this section to 'feel alive'. Content is never hidden from reduced-motion users or keyboard users (any focus cancels it)."
+  },
+  {
+    "check": "moment-none",
+    "target": "(the page)",
+    "reason": "The demo's self-playing intro is the page's dealt moment: a once-only, scroll-entered sequence in its own section. The kit's catalogue doesn't model a generative-UI replay."
+  }
+]

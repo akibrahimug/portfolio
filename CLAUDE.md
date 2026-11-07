@@ -4,17 +4,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository layout
 
-This is a **single-app Next.js project** with a deprecated backend kept in-tree for history.
+A **single Next.js 16.4 app (App Router, React 19.3) at the repo root**, deployed on Vercel. TypeScript, Tailwind v4, Motion v12 (`motion/react`), AI SDK v7, Resend (contact form). Light (paper) theme only. The home page is statically prerendered; the only server-side code is `app/api/contact/route.ts` (Resend mailer).
 
-- `client/` — Next.js (Pages Router) frontend. **The deployed thing.** TypeScript, Tailwind v4, Framer Motion, next-themes, Resend (contact form).
-- `server/` — Express + WebSocket + MongoDB backend. **Deprecated 2026-04-30** (see `server/README.md`). Not deployed, not referenced by the client build.
-- `docs/` — `design-inspiration.md` (research) and `redesign.md` (architecture reference).
+**Branching:** the AI-era redesign lives on the long-lived `redesign/ai-era` branch. Phase PRs target `redesign/ai-era`, never `master`, until the whole redesign is ready — `master` still has the old `client/` layout and is what production deploys.
 
-The repo went through a redesign + a static migration. Today the public site is fully static; the only server-side code is `client/pages/api/contact.ts` (Resend mailer).
+The old `client/` subfolder, deprecated Express/Mongo `server/`, `docs/`, and server-only GitHub workflows were removed on 2026-11-07 (see git history if any of it is ever needed).
 
 ## Common commands
 
-All commands run from `client/`.
+All commands run from the repo root.
 
 ```bash
 yarn dev            # Next dev server with Turbopack on :3000
@@ -25,66 +23,98 @@ yarn test           # Vitest unit tests (test/unit/)
 yarn e2e            # Playwright E2E tests (test/e2e/)
 yarn typecheck      # tsc --noEmit — keep this green
 yarn seo:assets     # Regenerate favicons + og.png from public/favicon.png (Playwright)
-yarn format         # Prettier-write components/ and pages/
+yarn format         # Prettier-write components/ and app/
 ```
 
-ESLint runs through Next's build-time check (currently disabled via `eslint.ignoreDuringBuilds`). TypeScript build errors are bypassed via `typescript.ignoreBuildErrors: true` in `next.config.js`, so run `yarn typecheck` before pushing.
+ESLint is not installed. TypeScript build errors are bypassed via `typescript.ignoreBuildErrors: true` in `next.config.js`, so run `yarn typecheck` before pushing.
 
-Path alias: `@/*` → `client/*` (see `tsconfig.json`).
+Path alias: `@/*` → repo root (see `tsconfig.json`).
 
 ## Architecture
 
-### Fully static frontend
+### Component layers
 
-Every visible string on the home page comes from two files:
+Composition flows one way — each layer only imports from the layers above it:
 
-- `client/lib/redesign-content.ts` — hero, stats, skills, work, showcase, process, experience, currently, about, contact.
-- `client/lib/technologies.json` — the searchable Tech Showcase tile data.
+1. **Tokens** — `styles/globals.css`: colours, typefaces, the `text-display-{xs..xl}` type scale, `.feature-invert`. A type or palette change is a token change.
+2. **Primitives** — `components/ui/`: `Container` (the `.wrap`: 1248px content box, 96px margins at 1440), `Heading`/`Text`/`Eyebrow`, `Button`/`ButtonLink`/`Arrow`, `TextLink`, `BulletList`/`TagList`, `cn`. Server-safe, no state.
+3. **Motion** — `components/motion/`: `RiseText` (CSS-only hero entrance, server-safe), `GrowBar` (client). No scroll-reveals: content is at rest when scrolled to (a hidden-until-scrolled block also traps keyboard focus on invisible content). Never branch on `useReducedMotion()` for SSR'd start states — React won't patch the stranded inline style on hydration; handle reduced motion in CSS (`[data-grow]`, `.rise-word`, `.enter-up`).
+   - **Hero** — `components/hero/InkPortrait.tsx` + `ink-gl.ts`: the page's one effect. Raw WebGL1 ink shader over a priority `<Image>`, loaded after idle; dry frame == the image, so it swaps in invisibly. A face `protect` ellipse (from `hero.avatarProtect` in content) keeps the person still while the ink runs. Skipped under reduced motion / no WebGL.
+4. **Patterns** — `components/patterns/`: compound `Section` (`Section.Header/Title/Intro/Body`, renders a `<div>` scroll target), `Band` (the full-bleed `<section>` that sits directly in `<main>`).
+5. **Sections** — `components/sections/`: one per page section. Server Components by default; `'use client'` only where there is real state (SiteNav, Contact, and `components/demo/AskBar`).
 
-The home page composes the sections defined under `client/components/site/`:
+### Content
 
-```
-Hero → Work → Impact → Showcase → Process → Experience → Stack → About → Contact
-```
+Every visible string on the home page comes from:
 
-Plus `SiteNav` above, `Footer` below, and the `DarkSpace` background layer. Theme is light/dark via `next-themes` — toggle in `SiteNav`. Every motion is gated by `useReducedMotion()` from framer-motion.
+- `lib/redesign-content.ts` — hero, stats, skills, work, showcase, experience, currently, about, contact.
+- `lib/technologies.json` — the searchable Tech Showcase tile data.
+
+`app/page.tsx` composes: `Hero → Demo → CaseStudies → Experience → About → Contact`. `SiteNav`, the sticky `AskBar` and `Footer` live in `app/layout.tsx` inside `DemoChatProvider`, so every route gets them; nav links are `/#section` so they work from `/work/*`. Anchor offsets come from the global `scroll-padding-top` (nav + ask bar) — don't add per-section scroll margins. Metadata lives in `app/layout.tsx` (Metadata API); JSON-LD is rendered in `app/page.tsx`.
+
+### Case studies — `lib/case-studies.ts`, `components/case-study/`, `app/work/[slug]/page.tsx`
+
+Five deep pages (statically generated, `dynamicParams = false`): `ef-epi`, `ef-pg`, `ef-homepage`, `learner`, `comp-lib`. Every claim in `lib/case-studies.ts` carries a `// src:` note (CV, site content, or the project's README); unsourced details go in `openQuestions` (never rendered). The rest of the showcase renders as "More work" on the home page.
+
+- `CaseShot` wraps the screenshot in a named React `<ViewTransition>` (`case-shot-<slug>`), so it morphs between the index and the detail page; links pass `transitionTypes={['to-case']}` (Next ≥16.2). Disabled under reduced motion in `globals.css`.
+- EF case pages reuse the demo's `ImpactChart` for their before/after figures (`impactKeys` → `redesignContent.impact`).
+- Screenshots: `public/projects/<slug>.webp`, 1920×1200, captured from each live URL as stand-ins — replace by dropping a file with the same name.
+- `app/sitemap.ts` and `app/llms.txt/route.ts` are generated from content (the old static files went stale and are gone). Case pages render their own JSON-LD (`buildCaseStudyData` in `lib/seo.ts`).
+
+### Live demo (generative UI) — `lib/demo/`, `components/demo/`, `app/api/demo/route.ts`
+
+A free model answers questions about the site by calling **grounded tools** and the answer renders as the site's own components. No fine-tuning: the model only knows what tools return.
+
+- `lib/demo/catalog.ts` — pure queries over `redesign-content.ts` (`findWork`, `getImpact`, `getExperience`, `getStack`, `getContact`). The single source of truth; every figure on screen comes from here.
+- `lib/demo/tools.ts` — AI SDK v7 `tool()` wrappers (zod-validated). `lib/demo/types.ts` — `DemoUIMessage` inferred from the tools + `DemoMetadata` (source/model/timings for the notes).
+- `lib/demo/providers.ts` — free-tier chain + system prompt: Groq `gpt-oss-20b` → Groq `gpt-oss-120b` (separate quota) → Google `gemini-3.5-flash-lite` → offline. Answers speak *about* Ibrahim in the third person, never as him.
+- `app/api/demo/route.ts` — buffers each provider's stream until its first content chunk; a provider that errors before that (quota/503/blocked) is skipped invisibly. Then `lib/demo/offline.ts`: a model-free keyword router that runs the same tools (scripted lead-ins for `lib/demo/prompts.ts`). `lib/demo/ratelimit.ts` — Upstash sliding window (12 / 10 min per IP); rate-limited visitors are served offline, not errored.
+- **One conversation, two surfaces** (`components/demo/DemoChatProvider.tsx`: a single AI SDK `Chat` shared via `useChat({ chat })`):
+  - the **Demo section** (`DemoConsole`, `#demo`) — opens on `exampleMessages()` (server-rendered), plays it once as a self-playing intro when scrolled into view (`useIntroReplay`; any focus inside cancels it), typewriter placeholder;
+  - the **sticky `AskBar`** under the nav — the section's stand-in: on the home page it shows only while neither the hero nor the demo section is in view (a plain position check on scroll — IntersectionObservers started during a smooth hash scroll went stale); on other pages always. Answers open in a drop-down panel (`Answer` + `MarginNotes`); Esc / ✕ / click outside / following a link in the answer closes it. It ignores the example answer.
+  - No tool chips or status pills anywhere — Ibrahim rejected them as AI tells.
+- `components/demo/results/registry.tsx` — tool → view (`CaseCards`, `ImpactChart`, `Timeline`, `StackField`, `ContactCard`), exhaustive via `satisfies`. - **The model never answers from history.** The route sends it the visitor's questions only (no earlier answers or tool results — the section's example answer lives in that history), and `prepareStep` makes step 1 `toolChoice: 'required'`, so every answer is built on a lookup made this turn and always has its component. Off-topic questions call `findWork` and decline.
+- Motion: the typewriter placeholder (`useTypewriter`), streaming caret, `.stagger` result cascade and a scan line on the bar while answering. All still under reduced motion. `getImpact` and `getStack` deliberately take no area filter (small models over-narrowed them); `getStack` never returns empty (unmatched → full stack, `matched: false`).
+- Tests: `test/unit/demo.test.ts` (grounding, router, failover, finisher, compact outputs with `MockLanguageModelV4`); e2e runs with `DEMO_OFFLINE=1` (set in `playwright.config.ts`). Locally every request shares the `anonymous` rate-limit key, so heavy manual testing trips the limit (answers then come from the offline router, with an inline note).
+- **AI SDK v7 — don't write it from memory**: read `node_modules/ai/docs/`. Requires **Node 22+** (`.nvmrc`, `engines`).
 
 ### SEO / GEO / AEO
 
-- `client/lib/seo.ts` — canonical origin (`https://www.kasomaibrahim.dev`, the www host; Vercel redirects the apex to it) and the JSON-LD builders (`Person`, `WebSite`, `ProfilePage`, project `ItemList`), all derived from `redesign-content.ts`. Rendered into `<Head>` by `pages/index.tsx`; covered by `test/unit/seo.test.ts`.
-- `client/public/` — `robots.txt` (AI crawlers explicitly allowed), `sitemap.xml`, `llms.txt`, `site.webmanifest`, `og.png`, `favicon.ico`.
-- Icon set + `og.png` are generated by `yarn seo:assets` (`client/scripts/generate-seo-assets.mjs`) — rerun it if `public/favicon.png`, the avatar, or headline stats change. Google requires a square favicon ≥48px; the icon links live in `pages/_document.tsx`.
+- `lib/seo.ts` — canonical origin (`https://www.kasomaibrahim.dev`, the www host; Vercel redirects the apex to it) and the JSON-LD builders (`Person`, `WebSite`, `ProfilePage`, project `ItemList`), all derived from `redesign-content.ts`. Metadata in `app/layout.tsx`, JSON-LD rendered by `app/page.tsx`; covered by `test/unit/seo.test.ts`.
+- `public/` — `robots.txt` (AI crawlers explicitly allowed), `sitemap.xml`, `llms.txt`, `site.webmanifest`, `og.png`, `favicon.ico`.
+- Icon set + `og.png` are generated by `yarn seo:assets` (`scripts/generate-seo-assets.mjs`) — rerun it if `public/favicon.png`, the avatar, or headline stats change. Google requires a square favicon ≥48px; the icon links live in the `icons` metadata in `app/layout.tsx`.
 
 ### Contact form
 
-The only server-side surface is `client/pages/api/contact.ts`. It uses Resend to email submissions to `RESEND_TO_EMAIL`, with `replyTo` set to the visitor's email so replies go to their inbox. Validates name/email/message and fails-soft if `RESEND_API_KEY` is missing.
+The only server-side surface is `app/api/contact/route.ts` (covered by `test/unit/contact-route.test.ts`). It uses Resend to email submissions to `RESEND_TO_EMAIL`, with `replyTo` set to the visitor's email so replies go to their inbox. Validates name/email/message and fails-soft if `RESEND_API_KEY` is missing.
 
 ### Project images (when needed)
 
-Commit screenshots to `client/public/projects/<slug>.webp` (where `<slug>` matches the project's `slug` field in `redesign-content.ts`). See `client/public/projects/README.md` for export conventions. Vercel + `next/image` optimize automatically.
-
-### Deprecated backend
-
-`server/` contains a previous Express + WebSocket + MongoDB + Clerk implementation that backed an admin dashboard CRUD. Not deployed today, not referenced from the build. Preserved as a reference if a backend is ever needed again. See `server/README.md`.
+Commit screenshots to `public/projects/<slug>.webp` (where `<slug>` matches the project's `slug` field in `redesign-content.ts`). See `public/projects/README.md` for export conventions. Vercel + `next/image` optimize automatically.
 
 ## Environment
 
-`client/.env.local`:
+`.env.local`:
 
 ```
 RESEND_API_KEY=
 RESEND_TO_EMAIL=kasomaibrahim@gmail.com
 RESEND_FROM_EMAIL=onboarding@resend.dev
+GROQ_API_KEY=                      # demo, primary (free tier)
+GOOGLE_GENERATIVE_AI_API_KEY=      # demo, backup (free tier)
+KV_REST_API_URL= / KV_REST_API_TOKEN=   # Upstash rate limit (Vercel Marketplace)
 ```
 
-See `client/.env.example` for the full template. In Vercel, set these in **Settings → Environment Variables** for both Production and Preview environments.
+See `.env.example` for the full template. In Vercel, set these in **Settings → Environment Variables** for both Production and Preview environments.
 
 If a sender domain has been verified in Resend (e.g. `kasomaibrahim.dev`), set `RESEND_FROM_EMAIL` to a verified address (`hello@kasomaibrahim.dev`); otherwise leave it as `onboarding@resend.dev`.
 
 ## Conventions and gotchas
 
-- **Tailwind v4** is active via `@tailwindcss/postcss` in `postcss.config.mjs` plus `@theme inline` blocks in `client/styles/globals.css`. Don't reintroduce a `tailwind.config.js`.
+- **Tailwind v4** is active via `@tailwindcss/postcss` in `postcss.config.mjs` plus `@theme inline` blocks in `styles/globals.css`. Don't reintroduce a `tailwind.config.js`.
 - **Turbopack** is the active dev bundler (`next dev --turbo`). Webpack-specific tweaks in `next.config.js` will not apply in dev.
-- **TS errors and ESLint warnings are ignored at build time** today. Run `npx tsc --noEmit` before pushing to catch regressions.
-- **Avatar pipeline:** the brush-stroke portrait at `client/public/icons/avarta-cutout.{png,webp}` was processed from the original `avarta.webp` to mask out white background pixels with full per-pixel color decontamination. If the source ever changes, see `docs/redesign.md` for the algorithm.
+- **TS errors are ignored at build time** today. Run `yarn typecheck` before pushing to catch regressions.
+- **Node 22+** for everything (AI SDK v7, the taste gate): `nvm use` (reads `.nvmrc`). The taste-skill gate (`~/.claude/skills/design-taste-frontend`) runs as `node …/scripts/gate.mjs` against `yarn start` on localhost. The page declares `data-type='software'` + `page-type`/`site-kind` metas. Reasoned waivers live in `.taste-skill/waivers.json` (the rest of `.taste-skill/` is local state, gitignored).
+- **Playwright:** `reducedMotion` is not a `test.use` option — use `page.emulateMedia({ reducedMotion: 'reduce' })`.
+- **Avatar pipeline:** the brush-stroke portrait at `public/icons/avarta-cutout.{png,webp}` was processed from the original `avarta.webp` to mask out white background pixels with full per-pixel color decontamination. The algorithm lived in `docs/redesign.md` (removed 2026-11-07; recover it from git history if the source changes).
 - **The redesign deleted ~25 legacy components and ~93 more files in the static migration** (dashboard, sign-in/up, Clerk, shadcn ui, dashboard hooks/lib, Jest, RTL, axios, swr, react-hook-form, etc.). If you find an older doc mentioning any of these, treat it as historical.
