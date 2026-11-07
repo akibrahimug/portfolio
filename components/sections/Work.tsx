@@ -9,7 +9,7 @@ export function Work() {
 
   return (
     <Section id='work'>
-      <Section.Header index='01' eyebrow='Selected work'>
+      <Section.Header index='02' eyebrow='Selected work'>
         <Section.Title>{work.heading}</Section.Title>
       </Section.Header>
       <Section.Body>

@@ -12,7 +12,7 @@ export const redesignContent = {
   nav: {
     brand: 'Ibrahim Kasoma',
     links: [
-      { href: '#skills', label: 'Skills' },
+      { href: '#demo', label: 'Demo' },
       { href: '#work', label: 'Work' },
       { href: '#showcase', label: 'Showcase' },
       { href: '#experience', label: 'Experience' },
@@ -28,8 +28,7 @@ export const redesignContent = {
       'Six years of production TypeScript and React, 80+ apps shipped. At EF Education First I ship across a Next.js platform used by 3.4M people a month in 60+ markets.',
     location: 'Stroud, Gloucestershire, UK',
     primaryCta: { label: 'Email me', href: 'mailto:kasomaibrahim@gmail.com' },
-    // Phase 3 repoints this to the live demo: { label: 'Try the live demo', href: '#demo' }.
-    secondaryCta: { label: 'See selected work', href: '#work' },
+    secondaryCta: { label: 'Try the live demo', href: '#demo' },
     stats: [
       { value: '6+', label: 'Years in production' },
       { value: '80+', label: 'Apps shipped' },
@@ -136,6 +135,48 @@ export const redesignContent = {
         metric: '20+ MFEs · −15k LOC · 8 teams',
         live: 'https://www.ef.com/pg',
       },
+    ],
+  },
+  /** Before/after figures from the EF platform work (Impact section + demo `getImpact` tool). */
+  impact: {
+    compares: [
+      {
+        key: 'ci',
+        label: 'CI pipeline time',
+        delta: '−67%',
+        caption: 'Rebuilt the shared CI/CD pipeline that ships 17 production front-end apps.',
+        before: { pct: 100, value: '45 min' },
+        after: { pct: 33, value: '15 min' },
+      },
+      {
+        key: 'coverage',
+        label: 'Test coverage',
+        delta: '+55 pts',
+        caption: 'Brought Jest + React Testing Library in and made tests part of every PR.',
+        before: { pct: 30, value: '30%' },
+        after: { pct: 85, value: '85%' },
+      },
+      {
+        key: 'page-load',
+        label: 'EPI page load',
+        delta: '−60%',
+        caption: 'Re-architected the EF EPI front end and its data layer; all three Core Web Vitals improved.',
+        before: { pct: 100, value: 'baseline' },
+        after: { pct: 40, value: '−60%' },
+      },
+      {
+        key: 'incidents',
+        label: 'Production incidents',
+        delta: '−40%',
+        caption: 'A downstream result of the coverage work and faster, safer rollbacks.',
+        before: { pct: 100, value: 'baseline' },
+        after: { pct: 60, value: '−40%' },
+      },
+    ],
+    scale: [
+      { value: 3.4, decimals: 1, suffix: 'M', label: 'Monthly active users' },
+      { value: 57, suffix: '', label: 'International markets' },
+      { value: 17, suffix: '', label: 'Production apps, deployed daily' },
     ],
   },
   showcase: {

@@ -19,6 +19,8 @@ export default defineConfig({
   ],
   webServer: {
     command: `yarn start -p ${PORT}`,
+    // Deterministic, quota-free demo answers (the model-free offline router over the real tools).
+    env: { DEMO_OFFLINE: '1' },
     url: BASE_URL,
     timeout: 120_000,
     reuseExistingServer: !process.env.CI,
