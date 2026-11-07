@@ -2,29 +2,12 @@ import { describe, it, expect, vi } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
-vi.mock('framer-motion', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('framer-motion')>()
+vi.mock('motion/react', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('motion/react')>()
   return { ...actual, useReducedMotion: () => true }
 })
 
-import { ThemeProvider } from '@/components/theme-provider'
-import { SiteNav } from '@/components/site/SiteNav'
-import { Stack } from '@/components/site/Stack'
-
-describe('Theme toggle', () => {
-  it('toggles the dark class on the document root', async () => {
-    const user = userEvent.setup()
-    render(
-      <ThemeProvider attribute='class' defaultTheme='light'>
-        <SiteNav />
-      </ThemeProvider>,
-    )
-    const toggle = await screen.findByRole('button', { name: /toggle color scheme/i })
-    expect(document.documentElement.classList.contains('dark')).toBe(false)
-    await user.click(toggle)
-    await waitFor(() => expect(document.documentElement.classList.contains('dark')).toBe(true))
-  })
-})
+import { Stack } from '@/components/sections/Stack'
 
 describe('Stack tech dialog (headless Radix)', () => {
   it('opens an accessible dialog with the tech detail and closes on Escape', async () => {

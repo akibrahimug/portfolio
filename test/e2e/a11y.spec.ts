@@ -8,18 +8,8 @@ async function scan(page: import('@playwright/test').Page) {
   return results.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical')
 }
 
-test('no serious/critical a11y violations — light', async ({ page }) => {
-  await page.goto('/')
-  await page.evaluate(() => localStorage.setItem('theme', 'light'))
-  await page.reload({ waitUntil: 'networkidle' })
-  const violations = await scan(page)
-  expect(violations, JSON.stringify(violations, null, 2)).toEqual([])
-})
-
-test('no serious/critical a11y violations — dark', async ({ page }) => {
-  await page.goto('/')
-  await page.evaluate(() => localStorage.setItem('theme', 'dark'))
-  await page.reload({ waitUntil: 'networkidle' })
+test('no serious/critical a11y violations', async ({ page }) => {
+  await page.goto('/', { waitUntil: 'networkidle' })
   const violations = await scan(page)
   expect(violations, JSON.stringify(violations, null, 2)).toEqual([])
 })

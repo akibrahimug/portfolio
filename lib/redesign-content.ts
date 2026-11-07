@@ -209,57 +209,6 @@ export const redesignContent = {
       },
     ],
   },
-  process: {
-    eyebrow: '04 · How I work',
-    heading: 'Discover · Architect · Ship · Iterate.',
-    body: 'A pragmatic loop. Each step ends with something that ships. Click a card to see how I think about it.',
-    steps: [
-      {
-        n: '01',
-        title: 'Discover',
-        body: 'Sit with the problem before the keyboard. Read the code. Talk to users and to the people on either side of you.',
-        details: [
-          'Read the existing code top to bottom before pitching a change. Most “rewrites” are unread codebases.',
-          'Talk to two layers: the people who will use it, and the people who will maintain it after I am gone.',
-          'Define success in one sentence. If I cannot, I do not yet understand the problem.',
-          'Look for the deletion in the brief: what existing thing should this replace, not just add?',
-        ],
-      },
-      {
-        n: '02',
-        title: 'Architect',
-        body: 'Pick a path that survives a year of edits. Boring TypeScript, boring Postgres, boring component library, boring CI.',
-        details: [
-          'Write a one-page brief before the first PR. Forces tradeoffs to be visible to everyone, including me.',
-          'Sketch the data flow on paper before code. Most production bugs hide in the data flow, not the syntax.',
-          'Name every piece. Names age slower than implementations.',
-          'Choose boring on the load-bearing parts; spend the novelty budget on the leaf nodes.',
-        ],
-      },
-      {
-        n: '03',
-        title: 'Ship',
-        body: 'Small PRs, real feedback loops, real tests. Performance budgets and accessibility on day one, never bolted on.',
-        details: [
-          'Small PRs (under ~200 LOC where possible). Reviews stay sharp; bugs get caught while context is still warm.',
-          'Performance budget and accessibility checks land in the same PR as the feature, not as cleanup later.',
-          'Feature-flag anything user-visible. Roll out by market, by cohort, by 1%. Keep the blast radius small.',
-          'Tests that match the contract, not the implementation. Refactor freely without breaking the suite.',
-        ],
-      },
-      {
-        n: '04',
-        title: 'Iterate',
-        body: 'Watch the metrics that matter. Roll back fast. Pay down debt that slows the next person.',
-        details: [
-          'Watch Core Web Vitals, error rate, and real user latency, not just CI green.',
-          'Roll back fast. The ego cost is one Slack message; the user cost compounds.',
-          'Pay down debt that slows the next person, not whatever annoyed you yesterday.',
-          'Leave a trail: ADRs for non-obvious calls, runbooks for the on-call, postmortems for anything that hurt.',
-        ],
-      },
-    ],
-  },
   experience: {
     eyebrow: '05 · Experience',
     heading: 'Where I have worked, what I shipped there.',

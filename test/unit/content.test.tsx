@@ -1,15 +1,15 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 
-vi.mock('framer-motion', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('framer-motion')>()
+vi.mock('motion/react', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('motion/react')>()
   return { ...actual, useReducedMotion: () => true }
 })
 
-import { Work } from '@/components/site/Work'
-import { Showcase } from '@/components/site/Showcase'
-import { Experience } from '@/components/site/Experience'
-import { About } from '@/components/site/About'
+import { Work } from '@/components/sections/Work'
+import { Showcase } from '@/components/sections/Showcase'
+import { Experience } from '@/components/sections/Experience'
+import { About } from '@/components/sections/About'
 import { redesignContent } from '@/lib/redesign-content'
 
 describe('sections render content from redesign-content.ts', () => {

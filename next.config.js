@@ -2,11 +2,6 @@
 const nextConfig = {
   reactStrictMode: true,
 
-  // Performance optimizations
-  experimental: {
-    optimizePackageImports: ['@phosphor-icons/react', '@radix-ui/react-slot'],
-  },
-
   // Compiler optimizations
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production' ? { exclude: ['error'] } : false,
@@ -45,13 +40,6 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  // ⚠ Next 16 warns about eslint in next.config, but this is just a warning
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-
-  pageExtensions: ['js', 'jsx', 'ts', 'tsx'],
-
   // Tell Next we intentionally use Turbopack
   turbopack: {},
 }
