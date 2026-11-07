@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 
-const SECTION_IDS = ['top', 'demo', 'work', 'experience', 'about', 'contact']
+const SECTION_IDS = ['top', 'work', 'experience', 'about', 'contact', 'ask']
 
 test('home loads with identity and every section', async ({ page }) => {
   await page.goto('/')

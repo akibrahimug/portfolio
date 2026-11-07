@@ -14,20 +14,20 @@ export function CaseCards({ output }: { output: ReturnType<typeof findWork> }) {
           <Eyebrow as='span' className='tracking-wider'>
             {p.origin === 'ef' ? `EF Education First${p.year ? ` · ${p.year}` : ''}` : p.kind}
           </Eyebrow>
-          <Heading level={4} size='xs' className='mt-3 text-lg group-hover:text-accent'>
+          <Heading level={3} size='xs' className='mt-3 text-lg group-hover:text-accent'>
             {p.caseStudy ? (
-              <Link href={p.caseStudy} transitionTypes={['to-case']} className='before:absolute before:inset-0'>
+              <Link href={p.caseStudy} transitionTypes={['to-case']} className='inline-flex min-h-11 items-center before:absolute before:inset-0'>
                 {p.title}
               </Link>
             ) : p.live ? (
-              <a href={p.live} target='_blank' rel='noopener noreferrer' className='before:absolute before:inset-0'>
+              <a href={p.live} target='_blank' rel='noopener noreferrer' className='inline-flex min-h-11 items-center before:absolute before:inset-0'>
                 {p.title}
               </a>
             ) : (
               p.title
             )}
           </Heading>
-          <Text size='sm' className='mt-2 line-clamp-3'>
+          <Text size='sm' className='mt-2 sm:line-clamp-3'>
             {p.summary}
           </Text>
           {p.metric && <p className='mt-3 text-sm font-medium text-accent'>{p.metric}</p>}

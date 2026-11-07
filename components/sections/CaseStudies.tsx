@@ -11,7 +11,7 @@ import { TagList } from '@/components/ui/Lists'
 export function CaseStudies() {
   return (
     <Section id='work'>
-      <Section.Header index='02' eyebrow='Selected work'>
+      <Section.Header index='01' eyebrow='Selected work'>
         <Section.Title>
           Five case studies, <em>in depth.</em>
         </Section.Title>

@@ -2,12 +2,13 @@
  * SEO / GEO / AEO helpers — canonical URL + JSON-LD structured data.
  *
  * Everything is derived from `redesign-content.ts` so the structured data
- * stays in sync with the visible page. Consumed by `app/page.tsx` (JSON-LD) and `app/layout.tsx` (metadata).
+ * stays in sync with the visible page. Consumed by `app/page.tsx` + `app/work/[slug]/page.tsx` (JSON-LD), `app/layout.tsx` (metadata), `app/llms.txt/route.ts`.
  *
  * The canonical origin is the www host — Vercel 308s the apex to it.
  */
 
 import { redesignContent } from './redesign-content'
+import { getCaseStudy, type CaseStudy } from './case-studies'
 
 export const SITE_URL = 'https://www.kasomaibrahim.dev'
 
@@ -94,27 +95,31 @@ function profilePage() {
   }
 }
 
-/** Selected work (EF surfaces) + personal showcase as one project list. */
+/**
+ * Every project as one list. Projects with a case study point at that page (the canonical
+ * home for the work) with the live site as `sameAs`; the rest point at their live site.
+ */
 function projectList() {
-  const work = redesignContent.work.items.map((p) => ({
-    '@type': 'CreativeWork' as const,
-    name: p.title,
-    description: p.summary,
-    url: p.live,
-    contributor: { '@id': PERSON_ID },
-  }))
-  const showcase = redesignContent.showcase.items.map((p) => ({
-    '@type': 'CreativeWork' as const,
-    name: p.title,
-    description: p.summary,
-    url: p.live,
-    creator: { '@id': PERSON_ID },
-  }))
+  const all = [
+    ...redesignContent.work.items.map((p) => ({ ...p, ef: true })),
+    ...redesignContent.showcase.items.map((p) => ({ ...p, ef: false })),
+  ]
+  const items = all.map((p) => {
+    const cs = getCaseStudy(p.slug)
+    return {
+      '@type': 'CreativeWork' as const,
+      name: cs?.title ?? p.title,
+      description: cs?.lede ?? p.summary,
+      url: cs ? `${SITE_URL}/work/${cs.slug}` : p.live,
+      ...(cs && p.live ? { sameAs: p.live } : {}),
+      ...(p.ef ? { contributor: { '@id': PERSON_ID } } : { creator: { '@id': PERSON_ID } }),
+    }
+  })
   return {
     '@type': 'ItemList',
     '@id': `${SITE_URL}/#projects`,
     name: 'Projects by Ibrahim Kasoma',
-    itemListElement: [...work, ...showcase].map((item, i) => ({
+    itemListElement: items.map((item, i) => ({
       '@type': 'ListItem',
       position: i + 1,
       item,
@@ -122,33 +127,49 @@ function projectList() {
   }
 }
 
-/** Signals the freelance/contract service area for local ("near me") search. */
-function service() {
-  return {
-    '@type': 'Service',
-    '@id': `${SITE_URL}/#service`,
-    name: 'Freelance Software & Web Development',
-    serviceType: 'Software development',
-    provider: { '@id': PERSON_ID },
-    areaServed: [
-      { '@type': 'City', name: 'Gloucester' },
-      { '@type': 'City', name: 'Stroud' },
-      { '@type': 'City', name: 'London' },
-      { '@type': 'AdministrativeArea', name: 'Gloucestershire' },
-      { '@type': 'Country', name: 'United Kingdom' },
-    ],
-    url: `${SITE_URL}/#showcase`,
-  }
-}
-
 export function buildStructuredData() {
   return {
     '@context': 'https://schema.org',
-    '@graph': [person(), website(), profilePage(), projectList(), service()],
+    '@graph': [person(), website(), profilePage(), projectList()],
   }
 }
 
+/** JSON-LD for a case-study page: the work itself, and where it sits in the site. */
+export function buildCaseStudyData(c: CaseStudy) {
+  const url = `${SITE_URL}/work/${c.slug}`
+  return {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'CreativeWork',
+        '@id': `${url}#work`,
+        name: c.title,
+        headline: `${c.title}: case study`,
+        description: c.lede,
+        abstract: c.outcome,
+        url,
+        image: `${SITE_URL}${c.image}`,
+        ...(c.live ? { sameAs: c.live } : {}),
+        keywords: c.stack.join(', '),
+        [c.origin === 'ef' ? 'contributor' : 'creator']: { '@id': PERSON_ID },
+        isPartOf: { '@id': WEBSITE_ID },
+      },
+      {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Ibrahim Kasoma', item: `${SITE_URL}/` },
+          { '@type': 'ListItem', position: 2, name: 'Case studies', item: `${SITE_URL}/#work` },
+          { '@type': 'ListItem', position: 3, name: c.title, item: url },
+        ],
+      },
+    ],
+  }
+}
+
+const safeJson = (data: unknown) => JSON.stringify(data).replace(/</g, '\\u003c')
+
 /** JSON-LD payload, escaped so it is safe inside a <script> tag. */
 export function structuredDataJson(): string {
-  return JSON.stringify(buildStructuredData()).replace(/</g, '\\u003c')
+  return safeJson(buildStructuredData())
 }
+export const caseStudyJson = (c: CaseStudy) => safeJson(buildCaseStudyData(c))

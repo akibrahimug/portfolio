@@ -11,6 +11,7 @@ import { CaseShot } from '@/components/case-study/CaseShot'
 import { LeadFigure } from '@/components/case-study/LeadFigure'
 import { FigureText } from '@/components/ui/FigureText'
 import { ImpactChart } from '@/components/demo/results/ImpactChart'
+import { caseStudyJson } from '@/lib/seo'
 
 type Params = { params: Promise<{ slug: string }> }
 
@@ -55,6 +56,11 @@ export default async function CaseStudyPage({ params }: Params) {
 
   return (
     <main>
+      <script
+        type='application/ld+json'
+        // Built from static content at build time, never from user input.
+        dangerouslySetInnerHTML={{ __html: caseStudyJson(c) }}
+      />
       <article>
         <Container className='pt-28 md:pt-36'>
           <Link href='/#work' className='inline-flex min-h-11 items-center gap-2 text-sm text-muted-foreground hover:text-foreground'>

@@ -12,7 +12,6 @@ export const redesignContent = {
   nav: {
     brand: 'Ibrahim Kasoma',
     links: [
-      { href: '/#demo', label: 'Demo' },
       { href: '/#work', label: 'Work' },
       { href: '/#experience', label: 'Experience' },
       { href: '/#contact', label: 'Contact' },
@@ -26,7 +25,7 @@ export const redesignContent = {
       'Six years of production TypeScript and React, 80+ apps shipped. At EF Education First I ship across a Next.js platform used by 3.4M people a month in 60+ markets.',
     location: 'Stroud, Gloucestershire, UK',
     primaryCta: { label: 'Email me', href: 'mailto:kasomaibrahim@gmail.com' },
-    secondaryCta: { label: 'Ask AI (Live Demo)', href: '#demo' },
+    secondaryCta: { label: 'Ask AI (Live Demo)', href: '#ask' },
     avatarSrc: '/icons/avarta-cutout.webp',
     avatarWidth: 1221,
     avatarHeight: 1472,
@@ -34,26 +33,7 @@ export const redesignContent = {
     /** Face + beard on avarta-cutout, image space from the top-left; the ink shader keeps it still. */
     avatarProtect: { x: 0.455, y: 0.34, rx: 0.15, ry: 0.19 },
   },
-  ticker: [
-    'TypeScript',
-    'React',
-    'Next.js',
-    'Node.js',
-    'Tailwind',
-    'Nx',
-    'GraphQL',
-    'AWS',
-    'GCP',
-    'GitHub Actions',
-    'Storybook',
-    'Jest',
-    'Cypress',
-    'Performance',
-    'Accessibility',
-  ],
   skills: {
-    eyebrow: '01 · Core skills',
-    heading: 'What I am fluent in.',
     groups: [
       {
         label: 'Frontend',
@@ -70,6 +50,19 @@ export const redesignContent = {
         ],
       },
       {
+        // src: CV "AI-Assisted Development"; Vercel AI SDK: this site's live demo is built on it.
+        label: 'AI-Assisted Development',
+        items: [
+          'Claude Code',
+          'Coding agents',
+          'MCP servers',
+          'Agent context (CLAUDE.md, AGENTS.md)',
+          'Skills authoring',
+          'Agentic workflows',
+          'Vercel AI SDK',
+        ],
+      },
+      {
         label: 'Backend & APIs',
         items: ['Node.js', 'Express', 'REST', 'GraphQL', 'API Integration'],
       },
@@ -79,7 +72,7 @@ export const redesignContent = {
       },
       {
         label: 'Architecture & Tooling',
-        items: ['Nx Monorepos', 'Micro-frontends', 'Webpack', 'Vite', 'Storybook', 'Component Libraries'],
+        items: ['Nx Monorepos', 'Micro-frontends', 'Git', 'Webpack', 'Vite', 'Storybook', 'Component Libraries'],
       },
       {
         label: 'Testing & Reliability',
@@ -92,8 +85,6 @@ export const redesignContent = {
     ],
   },
   work: {
-    eyebrow: '02 · Selected Work',
-    heading: 'Public surfaces I have shipped.',
     items: [
       {
         slug: 'ef-epi',
@@ -178,9 +169,6 @@ export const redesignContent = {
     ],
   },
   showcase: {
-    eyebrow: '03 · Showcase',
-    heading: 'Things I built and shipped, outside of EF.',
-    body: 'Side projects and freelance builds with public live deploys. Each one was shipped end to end: design, build, deploy, iterate.',
     items: [
       {
         slug: 'comp-lib',
@@ -245,32 +233,24 @@ export const redesignContent = {
     ],
   },
   experience: {
-    eyebrow: '05 · Experience',
     heading: 'Where I have worked, what I shipped there.',
+    // Source of truth: public/Ibrahim_Kasoma_CV.pdf — keep the two in step.
     roles: [
       {
         company: 'EF Education First',
         place: 'London, UK · Hybrid',
-        title: 'Frontend Engineer',
-        period: 'Dec 2023–Present',
+        title: 'Senior Frontend Engineer',
+        period: 'Mar 2023–Present',
         href: 'https://www.ef.com',
         bullets: [
-          'Shipping seven concurrent EF projects across 80+ frontend apps and 60+ markets, including the EPI, Homepage, and Programs surfaces.',
-          'Built and owned a shared CI/CD platform: pipeline 45 → 15 minutes, with daily multi-region releases.',
-          'Cut page load times by 60% on a Next.js platform serving 57 international markets and 3.4M monthly users, improving Core Web Vitals across all three metrics.',
-          'Architected an Nx monorepo consolidating 20+ microfrontends across 8 product teams, eliminating 15,000+ lines of duplicate code.',
-          'Lifted test coverage from ~30% to 85% with Jest + React Testing Library, reducing production incidents by ~40%.',
-          'Mentored engineers through code reviews, shared standards, and architecture discussions.',
-        ],
-      },
-      {
-        company: 'EF Education First',
-        place: 'London, UK · Hybrid',
-        title: 'Junior Frontend Developer (Contract)',
-        period: 'Mar 2023–Dec 2023',
-        href: 'https://www.ef.com',
-        bullets: [
-          'Migrated a legacy WordPress site to Next.js, cutting page loads by 45% and extending language support to 40+ languages.',
+          'Owns the shared CI/CD platform behind 17 production frontends deployed across 60+ markets. Parallelised builds and removed repeated package installs to bring pipeline duration from 45 minutes to 15, enabling daily multi-region releases.',
+          'Diagnosed rendering and loading bottlenecks on a Next.js platform serving 57 markets and 3.4M monthly users; the work cut page load times by 60%, improved time to interactive by 3 seconds and lifted all three Core Web Vitals.',
+          'Architected the Nx monorepo now used by 8 product teams, consolidating 20+ microfrontends and retiring 15,000+ lines of duplicated code behind one shared build and release pipeline.',
+          'Led the headless CMS migration to Storyblok and Next.js for 3 production blogs covering 40+ languages, cutting load time by 45% and enabling same-day global content deployments.',
+          'Established the shared component library the frontend estate now standardises on.',
+          'Works agent-first with Claude Code, authoring the CLAUDE.md, AGENTS.md and Skills definitions that give coding agents the monorepo’s architecture and conventions.',
+          'Introduced structured testing with Jest and React Testing Library, lifting coverage from ~30% to 85% and reducing production incidents by ~40%.',
+          'Mentors engineers through code review and architecture discussions, and negotiates API contracts with backend teams for multi-region applications.',
         ],
       },
       {
@@ -279,21 +259,19 @@ export const redesignContent = {
         title: 'Frontend Engineer (Full-Stack JavaScript)',
         period: 'Jun 2022–Feb 2023',
         bullets: [
-          'Built internal tooling with React, Node.js, and Express, increasing employee productivity by ~40%.',
-          'Automated manual workflows end to end: 4 hours → under 5 minutes.',
-          'Designed and implemented REST APIs powering role-based frontend experiences for multiple internal user types.',
+          'Built internal tooling with React, Node.js and Express that streamlined core business operations and increased employee productivity by ~40%.',
+          'Automated manual workflows end to end, cutting critical processes from 4 hours to under 5 minutes.',
+          'Designed and implemented REST APIs powering role-based frontend experiences across multiple internal user types.',
         ],
       },
       {
-        company: 'Frontend Developer (Freelance)',
+        company: 'Freelance',
         place: 'London, UK',
-        title: '',
+        title: 'Web Application Developer',
         period: 'Feb 2020–Nov 2022',
         bullets: [
-          'Core stack: React, JavaScript, Node.js.',
-          'Delivered end-to-end web applications for multiple clients, managing requirements through production deployment.',
+          'Delivered end-to-end web applications for multiple clients using React, JavaScript and Node.js, owning each engagement from requirements through production deployment.',
           'Integrated third-party REST APIs and shipped production-ready releases with responsive, accessible frontends.',
-          'Translated business requirements into scalable technical solutions, balancing maintainability, usability, and delivery speed.',
         ],
       },
     ],
@@ -310,51 +288,34 @@ export const redesignContent = {
       },
     ],
   },
-  tech: {
-    eyebrow: '06 · Tech I reach for',
-    heading: 'Day-to-day tools.',
-    body: 'A live, searchable view of the stack I lean on across product engineering, platform work, and personal projects.',
-  },
   currently: {
-    eyebrow: '07 · Currently',
-    heading: 'What I am up to right now.',
-    asOf: 'Updated April 2026',
+    asOf: 'November 2026',
     items: [
       {
         k: 'Shipping',
-        v: 'Seven concurrent EF projects across 60+ markets, including the EPI data-viz, the homepage, and the programs catalog.',
+        v: 'Consumer-facing experiences across EF’s international digital platforms, including the EPI, homepage and programmes catalogue.',
       },
       {
         k: 'Building',
-        v: 'A platform CI/CD that ships 17 production frontend apps daily, and the Nx monorepo it sits on top of.',
+        v: 'Shared frontend infrastructure, deployment pipelines and developer tooling that help multiple teams deliver independently.',
       },
       {
-        k: 'Reading & writing',
-        v: 'Notes on platform engineering, design systems at scale, and the quiet revolution in AI-era tooling.',
-      },
-      {
-        k: 'Open to',
-        v: 'Senior frontend / platform roles in the UK. Strong product teams, real performance budgets, modern stack.',
+        k: 'Exploring',
+        v: 'AI-assisted engineering, distributed systems and cloud infrastructure — particularly where they intersect with frontend platform architecture.',
       },
     ],
   },
   about: {
-    eyebrow: '08 · About',
-    heading: 'Senior Frontend Engineer · TypeScript, React, Node.js.',
+    // Ibrahim's own words (2026-11-07). Edit here, not in the component.
+    heading: 'I engineer frontend systems built to scale.',
     paragraphs: [
-      'Senior Frontend Engineer with 6+ years of experience building and scaling production TypeScript applications across frontend and backend-integrated systems. Strong track record delivering API-driven features end-to-end, improving performance and reliability, and contributing to architecture, CI/CD, and engineering standards in fast-moving product environments.',
-      'Front-end engineer with strong Node.js and API integration experience, comfortable working across the stack to ship product features, improve developer workflows, and support scalable delivery in growing teams.',
-      'Also available for freelance and contract engagements, remote-first, with on-site availability across Gloucestershire (Gloucester, Stroud, Cheltenham) and London.',
-    ],
-    facts: [
-      { k: 'Years building', v: '6+' },
-      { k: 'Apps shipped', v: '80+' },
-      { k: 'Based in', v: 'Stroud, UK' },
-      { k: 'Currently', v: 'EF Education First' },
+      'I’m a frontend engineer based in Stroud, Gloucestershire. I work at the intersection of product engineering, frontend architecture and developer experience — turning complex systems into platforms that teams can build on confidently.',
+      'At EF Education First, much of my work involves bringing structure to a fragmented frontend ecosystem. I’ve helped consolidate applications into an Nx monorepo, establish shared engineering conventions and build the CI/CD infrastructure supporting 17 production frontends across more than 60 markets. The goal isn’t simply cleaner code. It’s making software easier to maintain, faster to deliver and more reliable at scale.',
+      'I’m particularly interested in how we build software, not just what we ship. I work with coding agents and build the architectural guidance, conventions and workflows that help them operate effectively within large codebases. I see AI as an opportunity to rethink engineering workflows while keeping technical judgement, ownership and quality firmly in human hands.',
+      'Before EF, I developed internal tools at San Damiano and built web applications for independent clients. Those experiences shaped how I approach engineering today: understand the problem, question unnecessary complexity and build systems that can evolve without becoming harder to work with.',
     ],
   },
   contact: {
-    eyebrow: '09 · Contact',
     heading: 'Let’s talk.',
     body: 'Fastest way to reach me is email. I read everything and reply within a day. The form is fine too if you prefer.',
     email: 'kasomaibrahim@gmail.com',
@@ -369,7 +330,6 @@ export const redesignContent = {
     ],
   },
   footer: {
-    line: '© 2026 Ibrahim Kasoma. Built with Next.js, Tailwind, and Framer Motion.',
     repo: 'https://github.com/akibrahimug/portfolio',
   },
 } as const

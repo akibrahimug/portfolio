@@ -113,55 +113,59 @@ export function Contact() {
 
   return (
     <Section id='contact'>
-      <Section.Header index='05' eyebrow='Contact'>
+      <Section.Header index='04' eyebrow='Contact'>
         <Section.Title>{contact.heading}</Section.Title>
         <Section.Intro>{contact.body}</Section.Intro>
       </Section.Header>
       <Section.Body>
-        <div className='grid gap-12 md:grid-cols-[1fr_1.1fr] md:gap-16'>
-          {/* direct + socials */}
-          <div>
-            <a
-              href={`mailto:${email}`}
-              className='group inline-flex items-baseline gap-2 font-display text-2xl tracking-tight underline decoration-border-strong decoration-1 underline-offset-[6px] transition-colors hover:decoration-accent md:text-3xl'
+        {/* The close: the main action is the email itself, set large. */}
+        <a
+          href={`mailto:${email}`}
+          className='block min-h-11 py-1 font-display text-[clamp(1.4rem,0.55rem+4.7vw,4.75rem)] leading-[1.05] tracking-tight underline decoration-border-strong decoration-1 underline-offset-[0.14em] transition-colors hover:text-accent hover:decoration-accent'
+        >
+          {/* If it must wrap (very narrow screens), it wraps after the @, never mid-domain. */}
+          {email.split('@')[0]}@<wbr />
+          {email.split('@')[1]}
+        </a>
+        <ul className='mt-6 flex flex-wrap items-center gap-x-8'>
+          <li>
+            <button
+              type='button'
+              onClick={onCopy}
+              className='inline-flex min-h-11 items-center text-sm text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline'
             >
-              {email}
+              {copied ? 'Copied' : 'Copy email'}
+            </button>
+          </li>
+          <li>
+            <a
+              href={cv.href}
+              download
+              className='inline-flex min-h-11 items-center text-sm text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline'
+            >
+              {cv.label} ↓
             </a>
-            <div className='mt-3 flex flex-wrap items-center gap-x-6 gap-y-2'>
-              <button
-                type='button'
-                onClick={onCopy}
-                className='text-sm text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline'
-              >
-                {copied ? 'Copied' : 'Copy email'}
-              </button>
+          </li>
+          {socials.map((s) => (
+            <li key={s.key}>
               <a
-                href={cv.href}
-                download
-                className='text-sm text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline'
+                href={s.href}
+                target='_blank'
+                rel='noopener noreferrer'
+                className='inline-flex min-h-11 items-center text-sm text-muted-foreground transition-colors hover:text-accent'
               >
-                {cv.label} ↓
+                {s.label} ↗
               </a>
-            </div>
+            </li>
+          ))}
+        </ul>
 
-            <ul className='mt-10 flex flex-wrap gap-x-8 gap-y-3'>
-              {socials.map((s) => (
-                <li key={s.key}>
-                  <a
-                    href={s.href}
-                    target='_blank'
-                    rel='noopener noreferrer'
-                    className='text-sm text-muted-foreground transition-colors hover:text-accent'
-                  >
-                    {s.label} ↗
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-
+        <div className='mt-16 grid gap-8 border-t border-border pt-10 md:grid-cols-12 md:gap-6'>
+          <p className='text-pretty text-base leading-relaxed text-muted-foreground md:col-span-4'>
+            Or leave a note here. It lands in the same inbox.
+          </p>
           {/* form */}
-          <form noValidate onSubmit={onSubmit} className='space-y-6'>
+          <form noValidate onSubmit={onSubmit} className='space-y-6 md:col-span-8'>
             <label className='block'>
               <span className='text-xs uppercase tracking-wider text-faint'>Name</span>
               <input

@@ -27,7 +27,8 @@ function Root({
   children: ReactNode
 }) {
   return (
-    <Container id={id} className={cn('scroll-mt-28', className)}>
+    // Anchor offset comes from the global scroll-padding-top (nav + ask bar); no per-section margin.
+    <Container id={id} className={className}>
       {children}
     </Container>
   )

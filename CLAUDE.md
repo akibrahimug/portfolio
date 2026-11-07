@@ -41,7 +41,7 @@ Composition flows one way — each layer only imports from the layers above it:
 3. **Motion** — `components/motion/`: `RiseText` (CSS-only hero entrance, server-safe), `CountUp`, `GrowBar` (client). No scroll-reveals: content is at rest when scrolled to (a hidden-until-scrolled block also traps keyboard focus on invisible content). Never branch on `useReducedMotion()` for SSR'd start states — React won't patch the stranded inline style on hydration; handle reduced motion in CSS (`[data-grow]`, `.rise-word`, `.enter-up`).
    - **Hero** — `components/hero/InkPortrait.tsx` + `ink-gl.ts`: the page's one effect. Raw WebGL1 ink shader over a priority `<Image>`, loaded after idle; dry frame == the image, so it swaps in invisibly. A face `protect` ellipse (from `hero.avatarProtect` in content) keeps the person still while the ink runs. Skipped under reduced motion / no WebGL.
 4. **Patterns** — `components/patterns/`: compound `Section` (`Section.Header/Title/Intro/Body`, renders a `<div>` scroll target), `Band` (the full-bleed `<section>` that sits directly in `<main>`).
-5. **Sections** — `components/sections/`: one per page section. Server Components by default; `'use client'` only where there is real state (SiteNav, ProjectCard, Contact, and `components/demo/DemoConsole`).
+5. **Sections** — `components/sections/`: one per page section. Server Components by default; `'use client'` only where there is real state (SiteNav, Contact, and `components/demo/AskBar`).
 
 ### Content
 
@@ -50,7 +50,7 @@ Every visible string on the home page comes from:
 - `lib/redesign-content.ts` — hero, stats, skills, work, showcase, experience, currently, about, contact.
 - `lib/technologies.json` — the searchable Tech Showcase tile data.
 
-`app/page.tsx` composes: `Hero → Demo → CaseStudies → Experience → About → Contact`. `SiteNav` and `Footer` live in `app/layout.tsx` (every route gets them; nav links are `/#section` so they work from `/work/*`). Metadata lives in `app/layout.tsx` (Metadata API); JSON-LD is rendered in `app/page.tsx`.
+`app/page.tsx` composes: `Hero → CaseStudies → Experience → About → Contact`. `SiteNav`, the sticky `AskBar` (the live demo) and `Footer` live in `app/layout.tsx`, so every route gets them; nav links are `/#section` so they work from `/work/*`. Anchor offsets come from the global `scroll-padding-top` (nav + ask bar) — don't add per-section scroll margins. Metadata lives in `app/layout.tsx` (Metadata API); JSON-LD is rendered in `app/page.tsx`.
 
 ### Case studies — `lib/case-studies.ts`, `components/case-study/`, `app/work/[slug]/page.tsx`
 
@@ -59,7 +59,7 @@ Five deep pages (statically generated, `dynamicParams = false`): `ef-epi`, `ef-p
 - `CaseShot` wraps the screenshot in a named React `<ViewTransition>` (`case-shot-<slug>`), so it morphs between the index and the detail page; links pass `transitionTypes={['to-case']}` (Next ≥16.2). Disabled under reduced motion in `globals.css`.
 - EF case pages reuse the demo's `ImpactChart` for their before/after figures (`impactKeys` → `redesignContent.impact`).
 - Screenshots: `public/projects/<slug>.webp`, 1920×1200, captured from each live URL as stand-ins — replace by dropping a file with the same name.
-- `app/sitemap.ts` generates `/sitemap.xml` from the case studies (the old static `public/sitemap.xml` is gone).
+- `app/sitemap.ts` and `app/llms.txt/route.ts` are generated from content (the old static files went stale and are gone). Case pages render their own JSON-LD (`buildCaseStudyData` in `lib/seo.ts`).
 
 ### Live demo (generative UI) — `lib/demo/`, `components/demo/`, `app/api/demo/route.ts`
 
@@ -69,9 +69,9 @@ A free model answers questions about the site by calling **grounded tools** and 
 - `lib/demo/tools.ts` — AI SDK v7 `tool()` wrappers (zod-validated). `lib/demo/types.ts` — `DemoUIMessage` inferred from the tools + `DemoMetadata` (source/model/timings for the notes).
 - `lib/demo/providers.ts` — free-tier chain + system prompt: Groq `gpt-oss-20b` → Groq `gpt-oss-120b` (separate quota) → Google `gemini-3.5-flash-lite` → offline. Answers speak *about* Ibrahim in the third person, never as him.
 - `app/api/demo/route.ts` — buffers each provider's stream until its first content chunk; a provider that errors before that (quota/503/blocked) is skipped invisibly. Then `lib/demo/offline.ts`: a model-free keyword router that runs the same tools (scripted lead-ins for `lib/demo/prompts.ts`). `lib/demo/ratelimit.ts` — Upstash sliding window (12 / 10 min per IP); rate-limited visitors are served offline, not errored.
-- `components/demo/results/registry.tsx` — tool → view (`CaseCards`, `ImpactChart`, `Timeline`, `StackField`, `ContactCard`), exhaustive via `satisfies`. `DemoConsole` (useChat) opens on `exampleMessages()` so the frame is never empty; `MarginNotes` is the "Show how" panel.
-- Motion ("feels alive"): `useIntroReplay` plays the example answer through `setMessages` the first time the demo scrolls into view (client-only — no model call); `useTypewriter` cycles suggested questions in the placeholder; live status pill, `ToolTrace` chips, streaming caret, `.stagger` result cascade and a scan line on the frame while working (`.demo-*` in `globals.css`). Any interaction cancels the replay; all of it stands still under reduced motion. `getImpact` deliberately takes no filter (small models over-narrowed it).
-- Tests: `test/unit/demo.test.ts` (grounding, router, failover with `MockLanguageModelV4`); e2e runs with `DEMO_OFFLINE=1` (set in `playwright.config.ts`).
+- `components/demo/AskBar.tsx` — **the demo is a sticky ask bar under the nav** (on the home page it appears once the hero's bottom rises into the top 40% of the screen; elsewhere always). Asking opens the answer in a panel that drops down over the page (`Answer` + `MarginNotes`); Esc / ✕ / click outside / following a link inside the answer closes it. `#ask` links (the hero button) open and focus it. No tool chips or status pills — Ibrahim rejected them as AI tells.
+- `components/demo/results/registry.tsx` — tool → view (`CaseCards`, `ImpactChart`, `Timeline`, `StackField`, `ContactCard`), exhaustive via `satisfies`. - Motion: the typewriter placeholder (`useTypewriter`), streaming caret, `.stagger` result cascade and a scan line on the bar while answering. All still under reduced motion. `getImpact` and `getStack` deliberately take no area filter (small models over-narrowed them); `getStack` never returns empty (unmatched → full stack, `matched: false`).
+- Tests: `test/unit/demo.test.ts` (grounding, router, failover, finisher, compact outputs with `MockLanguageModelV4`); e2e runs with `DEMO_OFFLINE=1` (set in `playwright.config.ts`). Locally every request shares the `anonymous` rate-limit key, so heavy manual testing trips the limit (answers then come from the offline router, with an inline note).
 - **AI SDK v7 — don't write it from memory**: read `node_modules/ai/docs/`. Requires **Node 22+** (`.nvmrc`, `engines`).
 
 ### SEO / GEO / AEO
