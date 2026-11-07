@@ -1,8 +1,0 @@
-node_modules
-.env
-.env*.local
-mykey.json
-dist
-bucket_key.json
-*_key.json
-sa.json
