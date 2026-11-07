@@ -15,7 +15,7 @@ class IO {
 }
 ;(globalThis as any).IntersectionObserver = IO
 
-if (!window.matchMedia) {
+if (typeof window !== 'undefined' && !window.matchMedia) {
   window.matchMedia = ((query: string) => ({
     matches: false,
     media: query,
@@ -28,4 +28,4 @@ if (!window.matchMedia) {
   })) as any
 }
 
-window.HTMLElement.prototype.scrollIntoView = vi.fn()
+if (typeof window !== 'undefined') window.HTMLElement.prototype.scrollIntoView = vi.fn()

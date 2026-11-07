@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 
-const SECTION_IDS = ['top', 'work', 'impact', 'showcase', 'experience', 'skills', 'about', 'contact']
+const SECTION_IDS = ['top', 'demo', 'work', 'impact', 'showcase', 'experience', 'about', 'contact']
 
 test('home loads with identity and every section', async ({ page }) => {
   await page.goto('/')
@@ -14,14 +14,4 @@ test('home loads with identity and every section', async ({ page }) => {
 test('anchor navigation reaches a section', async ({ page }) => {
   await page.goto('/#experience')
   await expect(page.locator('#experience')).toBeInViewport({ ratio: 0.05 })
-})
-
-test('opens a tech detail dialog and closes it', async ({ page }) => {
-  await page.goto('/#skills')
-  await page.getByRole('button', { name: /^React/ }).first().click()
-  const dialog = page.getByRole('dialog')
-  await expect(dialog).toBeVisible()
-  await expect(dialog.getByRole('heading', { name: 'React' })).toBeVisible()
-  await page.keyboard.press('Escape')
-  await expect(dialog).toBeHidden()
 })

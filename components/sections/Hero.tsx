@@ -32,7 +32,7 @@ export function Hero() {
             </ButtonLink>
             <ButtonLink href={hero.secondaryCta.href} variant='outline'>
               {hero.secondaryCta.label}
-              <Arrow />
+              <Arrow dir='down' />
             </ButtonLink>
           </div>
 

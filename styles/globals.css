@@ -158,6 +158,18 @@
   }
 }
 
+/* Demo: a quiet breathing placeholder while a tool result or first token is on its way. */
+@media (prefers-reduced-motion: no-preference) {
+  .demo-pending {
+    animation: pending 1.4s ease-in-out infinite;
+  }
+}
+@keyframes pending {
+  50% {
+    opacity: 0.45;
+  }
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;

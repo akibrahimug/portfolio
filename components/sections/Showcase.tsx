@@ -7,7 +7,7 @@ export function Showcase() {
 
   return (
     <Section id='showcase'>
-      <Section.Header index='03' eyebrow='Projects'>
+      <Section.Header index='04' eyebrow='Projects'>
         <Section.Title>{showcase.heading}</Section.Title>
         <Section.Intro>{showcase.body}</Section.Intro>
       </Section.Header>
