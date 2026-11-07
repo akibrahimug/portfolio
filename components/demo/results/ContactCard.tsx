@@ -7,7 +7,7 @@ export function ContactCard({ output }: { output: ReturnType<typeof getContact> 
   return (
     <div>
       <Eyebrow>{output.availability}</Eyebrow>
-      <div className='mt-4 flex flex-wrap items-center gap-3'>
+      <div className='stagger mt-4 flex flex-wrap items-center gap-3'>
         <ButtonLink href={`mailto:${output.email}`}>
           Email Ibrahim
           <Arrow />

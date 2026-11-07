@@ -7,7 +7,7 @@ export function About() {
 
   return (
     <Section id='about'>
-      <Section.Header index='06' eyebrow='About'>
+      <Section.Header index='04' eyebrow='About'>
         <Section.Title>{about.heading}</Section.Title>
       </Section.Header>
       <Section.Body>

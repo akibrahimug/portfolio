@@ -7,6 +7,7 @@
  */
 import { redesignContent as c } from '@/lib/redesign-content'
 import techData from '@/lib/technologies.json'
+import { caseStudySlugs } from '@/lib/case-studies'
 
 export const TOPICS = [
   'performance',
@@ -31,6 +32,8 @@ export type WorkRecord = {
   repo?: string
   /** Where it was built: inside EF, or independently (freelance / personal). */
   origin: 'ef' | 'independent'
+  /** Internal case-study page, when the project has one. */
+  caseStudy?: string
 }
 
 const TOPIC_PATTERNS: Record<Topic, RegExp> = {
@@ -66,6 +69,8 @@ const ALL_WORK: WorkRecord[] = [
     origin: 'independent' as const,
   })),
 ]
+
+for (const w of ALL_WORK) if (caseStudySlugs.has(w.slug)) w.caseStudy = `/work/${w.slug}`
 
 const haystack = (w: WorkRecord) => [w.title, w.kind, w.summary, w.metric ?? '', ...w.stack].join(' ')
 

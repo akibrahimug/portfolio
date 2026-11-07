@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository layout
 
-A **single Next.js app (App Router) at the repo root**, deployed on Vercel. TypeScript, Tailwind v4, Motion v12 (`motion/react`), Radix, Resend (contact form). Light (paper) theme only. The home page is statically prerendered; the only server-side code is `app/api/contact/route.ts` (Resend mailer).
+A **single Next.js 16.4 app (App Router, React 19.3) at the repo root**, deployed on Vercel. TypeScript, Tailwind v4, Motion v12 (`motion/react`), AI SDK v7, Resend (contact form). Light (paper) theme only. The home page is statically prerendered; the only server-side code is `app/api/contact/route.ts` (Resend mailer).
 
 **Branching:** the AI-era redesign lives on the long-lived `redesign/ai-era` branch. Phase PRs target `redesign/ai-era`, never `master`, until the whole redesign is ready — `master` still has the old `client/` layout and is what production deploys.
 
@@ -50,7 +50,16 @@ Every visible string on the home page comes from:
 - `lib/redesign-content.ts` — hero, stats, skills, work, showcase, experience, currently, about, contact.
 - `lib/technologies.json` — the searchable Tech Showcase tile data.
 
-`app/page.tsx` composes: `Hero → Demo → Work → Impact → Showcase → Experience → About → Contact`, plus `SiteNav` and `Footer`. Metadata lives in `app/layout.tsx` (Metadata API); JSON-LD is rendered in `app/page.tsx`.
+`app/page.tsx` composes: `Hero → Demo → CaseStudies → Experience → About → Contact`. `SiteNav` and `Footer` live in `app/layout.tsx` (every route gets them; nav links are `/#section` so they work from `/work/*`). Metadata lives in `app/layout.tsx` (Metadata API); JSON-LD is rendered in `app/page.tsx`.
+
+### Case studies — `lib/case-studies.ts`, `components/case-study/`, `app/work/[slug]/page.tsx`
+
+Five deep pages (statically generated, `dynamicParams = false`): `ef-epi`, `ef-pg`, `ef-homepage`, `learner`, `comp-lib`. Every claim in `lib/case-studies.ts` carries a `// src:` note (CV, site content, or the project's README); unsourced details go in `openQuestions` (never rendered). The rest of the showcase renders as "More work" on the home page.
+
+- `CaseShot` wraps the screenshot in a named React `<ViewTransition>` (`case-shot-<slug>`), so it morphs between the index and the detail page; links pass `transitionTypes={['to-case']}` (Next ≥16.2). Disabled under reduced motion in `globals.css`.
+- EF case pages reuse the demo's `ImpactChart` for their before/after figures (`impactKeys` → `redesignContent.impact`).
+- Screenshots: `public/projects/<slug>.webp`, 1920×1200, captured from each live URL as stand-ins — replace by dropping a file with the same name.
+- `app/sitemap.ts` generates `/sitemap.xml` from the case studies (the old static `public/sitemap.xml` is gone).
 
 ### Live demo (generative UI) — `lib/demo/`, `components/demo/`, `app/api/demo/route.ts`
 
@@ -61,6 +70,7 @@ A free model answers questions about the site by calling **grounded tools** and 
 - `lib/demo/providers.ts` — free-tier chain + system prompt: Groq `gpt-oss-20b` → Groq `gpt-oss-120b` (separate quota) → Google `gemini-3.5-flash-lite` → offline. Answers speak *about* Ibrahim in the third person, never as him.
 - `app/api/demo/route.ts` — buffers each provider's stream until its first content chunk; a provider that errors before that (quota/503/blocked) is skipped invisibly. Then `lib/demo/offline.ts`: a model-free keyword router that runs the same tools (scripted lead-ins for `lib/demo/prompts.ts`). `lib/demo/ratelimit.ts` — Upstash sliding window (12 / 10 min per IP); rate-limited visitors are served offline, not errored.
 - `components/demo/results/registry.tsx` — tool → view (`CaseCards`, `ImpactChart`, `Timeline`, `StackField`, `ContactCard`), exhaustive via `satisfies`. `DemoConsole` (useChat) opens on `exampleMessages()` so the frame is never empty; `MarginNotes` is the "Show how" panel.
+- Motion ("feels alive"): `useIntroReplay` plays the example answer through `setMessages` the first time the demo scrolls into view (client-only — no model call); `useTypewriter` cycles suggested questions in the placeholder; live status pill, `ToolTrace` chips, streaming caret, `.stagger` result cascade and a scan line on the frame while working (`.demo-*` in `globals.css`). Any interaction cancels the replay; all of it stands still under reduced motion. `getImpact` deliberately takes no filter (small models over-narrowed it).
 - Tests: `test/unit/demo.test.ts` (grounding, router, failover with `MockLanguageModelV4`); e2e runs with `DEMO_OFFLINE=1` (set in `playwright.config.ts`).
 - **AI SDK v7 — don't write it from memory**: read `node_modules/ai/docs/`. Requires **Node 22+** (`.nvmrc`, `engines`).
 

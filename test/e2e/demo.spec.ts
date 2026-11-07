@@ -1,6 +1,9 @@
 import { test, expect } from '@playwright/test'
 
 test.describe('live demo (offline mode: real tools, no model)', () => {
+  // Static example answer: the self-playing intro is covered separately below.
+  test.beforeEach(async ({ page }) => page.emulateMedia({ reducedMotion: 'reduce' }))
+
   test('opens on a real example answer, never an empty frame', async ({ page }) => {
     await page.goto('/#demo')
     const demo = page.locator('#demo')
@@ -28,4 +31,24 @@ test.describe('live demo (offline mode: real tools, no model)', () => {
     await expect(notes).toContainText('getExperience')
     await expect(notes).toContainText('<Timeline />')
   })
+})
+
+test('with motion, the demo plays its example answer once it is scrolled into view', async ({ page }) => {
+  await page.goto('/')
+  const demo = page.locator('#demo')
+  await demo.scrollIntoViewIfNeeded()
+  // It runs the tool call visibly, then lands on the finished example.
+  await expect(demo.getByRole('list', { name: 'Tool calls' })).toBeVisible({ timeout: 8000 })
+  await expect(demo.getByText('“Show me his performance work”')).toBeVisible({ timeout: 8000 })
+  await expect(demo.getByRole('link', { name: /EF EPI/ })).toBeVisible({ timeout: 8000 })
+  await expect(demo.locator('[aria-busy=true]')).toHaveCount(0, { timeout: 8000 })
+})
+
+test('typing into the demo cancels the intro immediately', async ({ page }) => {
+  await page.goto('/')
+  const demo = page.locator('#demo')
+  await demo.scrollIntoViewIfNeeded()
+  await demo.getByRole('textbox', { name: /Ask about Ibrahim/ }).click()
+  await expect(demo.locator('[aria-busy=true]')).toHaveCount(0)
+  await expect(demo.getByRole('link', { name: /EF EPI/ })).toBeVisible()
 })

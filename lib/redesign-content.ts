@@ -12,11 +12,10 @@ export const redesignContent = {
   nav: {
     brand: 'Ibrahim Kasoma',
     links: [
-      { href: '#demo', label: 'Demo' },
-      { href: '#work', label: 'Work' },
-      { href: '#showcase', label: 'Showcase' },
-      { href: '#experience', label: 'Experience' },
-      { href: '#contact', label: 'Contact' },
+      { href: '/#demo', label: 'Demo' },
+      { href: '/#work', label: 'Work' },
+      { href: '/#experience', label: 'Experience' },
+      { href: '/#contact', label: 'Contact' },
     ],
   },
   cv: { label: 'Download CV', href: '/Ibrahim_Kasoma_CV.pdf' },

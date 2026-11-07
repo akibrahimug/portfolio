@@ -1,6 +1,6 @@
 import { tool, type ToolSet } from 'ai'
 import { z } from 'zod'
-import { TOPICS, IMPACT_KEYS, STACK_AREAS, findWork, getImpact, getExperience, getStack, getContact } from './catalog'
+import { TOPICS, STACK_AREAS, findWork, getImpact, getExperience, getStack, getContact } from './catalog'
 
 /**
  * The only way the model can learn anything about Ibrahim. Each tool is a thin, validated
@@ -25,14 +25,11 @@ export const demoTools = {
   }),
   getImpact: tool({
     description:
-      'Measured before/after results from the EF platform work (CI time, test coverage, page load, incidents) and the scale it runs at. Use for questions about impact, results, numbers, or metrics. Renders a chart.',
-    inputSchema: z.object({
-      focus: z
-        .enum(IMPACT_KEYS)
-        .optional()
-        .describe('Only when the visitor names one specific metric; omit for general questions about results'),
-    }),
-    execute: async (input) => getImpact(input),
+      'All measured before/after results from the EF platform work (CI time, test coverage, page load, incidents) and the scale it runs at. Use for questions about impact, results, numbers, or metrics. Renders a chart.',
+    // Deliberately no filter: with four metrics, the whole chart always answers better,
+    // and small models over-narrowed it when given the option.
+    inputSchema: z.object({}),
+    execute: async () => getImpact(),
   }),
   getExperience: tool({
     description: 'His roles and employers, most recent first. Use for career, jobs, or "where have you worked". Renders a timeline.',

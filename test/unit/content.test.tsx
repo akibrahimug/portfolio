@@ -6,25 +6,26 @@ vi.mock('motion/react', async (importOriginal) => {
   return { ...actual, useReducedMotion: () => true }
 })
 
-import { Work } from '@/components/sections/Work'
-import { Showcase } from '@/components/sections/Showcase'
+import { CaseStudies } from '@/components/sections/CaseStudies'
+import { caseStudies, moreWork } from '@/lib/case-studies'
 import { Experience } from '@/components/sections/Experience'
 import { About } from '@/components/sections/About'
 import { redesignContent } from '@/lib/redesign-content'
 
 describe('sections render content from redesign-content.ts', () => {
-  it('Work renders each selected-work title', () => {
-    render(<Work />)
-    for (const item of redesignContent.work.items) {
-      expect(screen.getByRole('heading', { name: new RegExp(item.title.slice(0, 12), 'i') })).toBeInTheDocument()
+  it('CaseStudies links every case study to its page, and lists the rest as more work', () => {
+    render(<CaseStudies />)
+    for (const c of caseStudies) {
+      const link = screen.getByRole('link', { name: `Read the ${c.title} case study` })
+      expect(link).toHaveAttribute('href', `/work/${c.slug}`)
     }
+    for (const p of moreWork) expect(screen.getByRole('link', { name: p.title })).toHaveAttribute('href', p.live)
   })
 
-  it('Showcase renders every project title', () => {
-    render(<Showcase />)
-    for (const item of redesignContent.showcase.items) {
-      expect(screen.getByText(item.title)).toBeInTheDocument()
-    }
+  it('every case study and more-work project has a committed screenshot', async () => {
+    const { existsSync } = await import('node:fs')
+    for (const c of caseStudies) expect(existsSync(`public${c.image}`), c.image).toBe(true)
+    for (const p of moreWork) expect(existsSync(`public/projects/${p.slug}.webp`), p.slug).toBe(true)
   })
 
   it('Experience renders each role', () => {

@@ -5,7 +5,7 @@ import { Text } from '@/components/ui/Typography'
 export function ImpactChart({ output }: { output: ReturnType<typeof getImpact> }) {
   return (
     <div>
-      <div className='grid gap-x-10 gap-y-7 sm:grid-cols-2'>
+      <div className='stagger grid gap-x-10 gap-y-7 sm:grid-cols-2'>
         {output.compares.map((c) => (
           <div key={c.key}>
             <div className='flex items-baseline justify-between gap-4'>

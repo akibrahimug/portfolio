@@ -24,7 +24,7 @@ const count = (output: unknown): string | null => {
   const roles = n('roles')
   if (roles !== null) return `${roles} role${roles === 1 ? '' : 's'}`
   const compares = n('compares')
-  if (compares !== null) return `${compares} metrics`
+  if (compares !== null) return `${compares} metric${compares === 1 ? '' : 's'}`
   const tech = n('tech')
   if (tech !== null) return `${tech} technologies`
   return null
