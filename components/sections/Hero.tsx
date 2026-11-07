@@ -19,7 +19,7 @@ export function Hero() {
         <div>
           <Eyebrow>{hero.availability}</Eyebrow>
           <Heading level={1} size='xl' className='mt-6'>
-            I build and scale the web platforms behind products millions of people use.
+            I build and scale the web platforms behind products <em>millions</em> of people use.
           </Heading>
           <Text size='lead' className='mt-6 max-w-xl'>
             {hero.statement}
@@ -39,7 +39,7 @@ export function Hero() {
           <dl className='mt-14 grid max-w-xl grid-cols-3 divide-x divide-border border-t border-border'>
             {HERO_STATS.map((s) => (
               <div key={s.label} className='pt-8 first:pr-5 not-first:px-5'>
-                <dt className='font-display text-3xl font-medium tracking-tight md:text-4xl'>
+                <dt className='font-display text-3xl tracking-tight md:text-4xl'>
                   {s.value}
                 </dt>
                 <dd className='mt-2 text-[11px] uppercase leading-snug tracking-wider text-faint'>

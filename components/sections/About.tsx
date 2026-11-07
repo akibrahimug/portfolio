@@ -26,7 +26,7 @@ export function About() {
             <dl className='mt-5 space-y-5'>
               {currently.items.map((item) => (
                 <div key={item.k} className='border-t border-border pt-4'>
-                  <dt className='font-display text-sm font-medium'>{item.k}</dt>
+                  <dt className='font-display text-sm'>{item.k}</dt>
                   <dd className='mt-1 text-sm leading-relaxed text-muted-foreground'>{item.v}</dd>
                 </div>
               ))}

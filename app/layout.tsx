@@ -1,14 +1,16 @@
 import type { Metadata, Viewport } from 'next'
 import type { ReactNode } from 'react'
-import { Syne, Hanken_Grotesk } from 'next/font/google'
+import { Newsreader, Hanken_Grotesk } from 'next/font/google'
 import '@/styles/globals.css'
 import { redesignContent } from '@/lib/redesign-content'
 import { SITE_URL, ogImage } from '@/lib/seo'
 
 // Typefaces are wired to tokens (`--font-display`, `--font-sans`) in globals.css.
-const display = Syne({
+// Editorial serif display (variable optical size + italic for accent emphasis) over a humanist sans.
+const display = Newsreader({
   subsets: ['latin'],
-  weight: ['400', '500', '600', '700', '800'],
+  style: ['normal', 'italic'],
+  axes: ['opsz'],
   variable: '--font-display-face',
   display: 'swap',
 })

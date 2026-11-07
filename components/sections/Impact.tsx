@@ -66,8 +66,8 @@ export function Impact() {
           {COMPARES.map((c) => (
             <Reveal key={c.label}>
               <div className='flex items-baseline justify-between gap-4'>
-                <span className='font-display text-lg font-medium'>{c.label}</span>
-                <span className='font-display text-2xl font-medium text-accent'>{c.delta}</span>
+                <span className='font-display text-lg'>{c.label}</span>
+                <span className='font-display text-2xl text-accent'>{c.delta}</span>
               </div>
               <Text size='sm' className='mt-2 max-w-md'>
                 {c.caption}
@@ -85,7 +85,7 @@ export function Impact() {
           <div className='mt-6 grid gap-x-10 gap-y-8 sm:grid-cols-3'>
             {SCALE.map((s) => (
               <Reveal key={s.label}>
-                <div className='font-display text-4xl font-medium tracking-tight md:text-5xl'>
+                <div className='font-display text-4xl tracking-tight md:text-5xl'>
                   <CountUp value={s.value} decimals={s.decimals ?? 0} suffix={s.suffix} />
                 </div>
                 <Eyebrow className='mt-2 tracking-wider'>{s.label}</Eyebrow>

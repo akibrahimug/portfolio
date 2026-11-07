@@ -11,7 +11,7 @@
   --radius: 0.15rem;
 
   /* Typefaces — CSS variables are injected by next/font in app/layout.tsx */
-  --font-display: var(--font-display-face), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-display-face), ui-serif, Georgia, serif;
   --font-sans: var(--font-body-face), ui-sans-serif, system-ui, sans-serif;
 
   --color-background: var(--background);
@@ -29,11 +29,11 @@
 /* Display type scale → utilities `text-display-{xs..xl}` */
 @theme {
   --text-display-xl: clamp(2.25rem, 1.4rem + 3.6vw, 3.75rem);
-  --text-display-xl--line-height: 1.04;
-  --text-display-xl--letter-spacing: -0.025em;
+  --text-display-xl--line-height: 1.02;
+  --text-display-xl--letter-spacing: -0.02em;
   --text-display-lg: clamp(1.875rem, 1.35rem + 2.2vw, 3rem);
   --text-display-lg--line-height: 1.05;
-  --text-display-lg--letter-spacing: -0.025em;
+  --text-display-lg--letter-spacing: -0.02em;
   --text-display-md: clamp(1.5rem, 1.3rem + 0.8vw, 1.875rem);
   --text-display-md--line-height: 1.15;
   --text-display-md--letter-spacing: -0.02em;

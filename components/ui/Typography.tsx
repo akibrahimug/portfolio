@@ -12,7 +12,10 @@ const displaySize: Record<DisplaySize, string> = {
   xs: 'text-display-xs',
 }
 
-/** Display heading. Semantic level and visual size are independent. */
+/**
+ * Display heading. Semantic level and visual size are independent.
+ * Wrap a word in <em> for the accent-italic emphasis.
+ */
 export function Heading({
   level = 2,
   size = 'lg',
@@ -22,7 +25,11 @@ export function Heading({
   const Tag = `h${level}` as const
   return (
     <Tag
-      className={cn('font-display font-medium text-balance', displaySize[size], className)}
+      className={cn(
+        'font-display text-balance [&_em]:text-accent [&_em]:italic',
+        displaySize[size],
+        className,
+      )}
       {...rest}
     />
   )

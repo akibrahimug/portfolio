@@ -52,7 +52,7 @@ export function Experience() {
           {experience.education.map((e) => (
             <div key={e.school}>
               <Eyebrow className='tracking-wider'>{e.period}</Eyebrow>
-              <p className='mt-1 font-display text-base font-medium'>{e.school}</p>
+              <p className='mt-1 font-display text-base'>{e.school}</p>
               <p className='text-sm text-muted-foreground'>{e.course}</p>
             </div>
           ))}

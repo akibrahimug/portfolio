@@ -50,7 +50,7 @@ export function Stack() {
           {skills.groups.map((g, i) => (
             <Reveal as='div' key={g.label} delay={i * 0.03}>
               <div className='grid gap-x-8 gap-y-3 border-t border-border py-6 md:grid-cols-[15rem_1fr]'>
-                <h3 className='flex items-baseline gap-3 font-display text-lg font-medium tracking-tight'>
+                <h3 className='flex items-baseline gap-3 font-display text-lg tracking-tight'>
                   <span className='text-sm text-accent'>{String(i + 1).padStart(2, '0')}</span>
                   {g.label}
                 </h3>
@@ -126,7 +126,7 @@ export function Stack() {
                         <Image src={selected.icon} alt='' fill sizes='36px' />
                       </span>
                       <div className='min-w-0 flex-1'>
-                        <Dialog.Title className='font-display text-lg font-medium'>
+                        <Dialog.Title className='font-display text-lg'>
                           {selected.name}
                         </Dialog.Title>
                         {selected.experience && (
