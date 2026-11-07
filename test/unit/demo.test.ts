@@ -311,6 +311,39 @@ describe('POST /api/demo', () => {
     expect(create).not.toHaveBeenCalled()
   })
 
+  it('never lets the model answer from history: questions only, and step 1 must call a tool', async () => {
+    const seen: Array<{ roles: string[]; toolChoice: unknown; text: string }> = []
+    let step = 0
+    const spy = new MockLanguageModelV4({
+      doStream: async (options: any) => {
+        seen.push({
+          roles: options.prompt.map((m: any) => m.role),
+          toolChoice: options.toolChoice,
+          text: JSON.stringify(options.prompt),
+        })
+        return answering().doStream({} as never).then((r) => (step++, r))
+      },
+    })
+    chain.models = [{ id: 'a', provider: 'Groq', model: 'model-a', create: () => spy }]
+    // History holds the page's answered example; the visitor asks the same question again.
+    const [exampleQ, exampleA] = exampleMessages()
+    const res = await POST(
+      new Request('http://localhost/api/demo', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          messages: [exampleQ, exampleA, { id: 'u2', role: 'user', parts: [{ type: 'text', text: 'Show me his performance work' }] }],
+        }),
+      }),
+    )
+    await res.text()
+    expect(seen[0].roles).toEqual(['system', 'user']) // no assistant turns, no tool results
+    expect(seen[0].text).not.toContain('English Proficiency Index') // the example's data never reaches it
+    expect(seen[0].text).toContain('Earlier questions from this visitor')
+    expect(seen[0].toolChoice).toEqual({ type: 'required' })
+    expect(step).toBeGreaterThan(0)
+  })
+
   it('rejects empty and over-long questions', async () => {
     expect((await ask('   ')).res.status).toBe(400)
     expect((await ask('x'.repeat(281))).res.status).toBe(400)

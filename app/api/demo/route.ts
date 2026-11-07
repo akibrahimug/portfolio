@@ -1,10 +1,10 @@
 import {
-  convertToModelMessages,
   createUIMessageStream,
   createUIMessageStreamResponse,
   isStepCount,
   streamText,
   toUIMessageStream,
+  type ModelMessage,
   type UIMessageStreamWriter,
 } from 'ai'
 import { demoTools, forModel, type DemoToolName } from '@/lib/demo/tools'
@@ -52,7 +52,7 @@ type Attempt =
 async function tryLive(
   writer: UIMessageStreamWriter<DemoUIMessage>,
   p: Provider,
-  messages: Awaited<ReturnType<typeof convertToModelMessages>>,
+  messages: ModelMessage[],
   skipped: string[],
   signal: AbortSignal,
 ): Promise<Attempt> {
@@ -62,6 +62,9 @@ async function tryLive(
     instructions: INSTRUCTIONS,
     messages,
     tools: demoTools,
+    // Every answer is built on a lookup made *now*: the first step must call a tool, so an answer
+    // can never exist without the component that proves it.
+    prepareStep: ({ stepNumber }) => (stepNumber === 0 ? { toolChoice: 'required' } : {}),
     stopWhen: isStepCount(3),
     maxOutputTokens: 400,
     maxRetries: 0,
@@ -184,6 +187,24 @@ async function finishSentence(
   writer.write({ type: 'finish' })
 }
 
+/**
+ * The model sees the visitor's questions, never earlier answers or their tool results. Reused
+ * results from history let it answer from memory ("the projects are listed below") with nothing
+ * rendered — and the page's example answer lives in that history too.
+ */
+function questionsOnly(messages: DemoUIMessage[], current: string): ModelMessage[] {
+  const earlier = messages
+    .filter((m) => m.role === 'user')
+    .slice(0, -1)
+    .map((m) => m.parts.filter((p) => p.type === 'text').map((p) => p.text).join(' ').trim())
+    .filter(Boolean)
+    .slice(-3)
+  const content = earlier.length
+    ? `Earlier questions from this visitor, for context only:\n${earlier.map((q) => `- ${q}`).join('\n')}\n\nQuestion: ${current}`
+    : current
+  return [{ role: 'user', content }]
+}
+
 export async function POST(req: Request) {
   const body = (await req.json().catch(() => null)) as { messages?: DemoUIMessage[] } | null
   const messages = Array.isArray(body?.messages) ? body.messages.slice(-HISTORY) : []
@@ -204,7 +225,7 @@ export async function POST(req: Request) {
       if (!allowed) return writeOffline(writer, text, { offlineReason: 'rate-limit' })
 
       const chain = providerChain()
-      const modelMessages = await convertToModelMessages(messages)
+      const modelMessages = questionsOnly(messages, text)
       const skipped: string[] = []
       for (const [i, p] of chain.entries()) {
         if (req.signal.aborted) return
