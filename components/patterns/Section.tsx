@@ -14,7 +14,8 @@ import { cn } from '@/components/ui/cn'
  *     <Section.Body>…</Section.Body>
  *   </Section>
  *
- * Server-safe: no context, no client hooks.
+ * Server-safe: no context, no client hooks. Renders a <div> (the scroll target); the page wraps
+ * it in a `Band`, which is the real <section> in <main>.
  */
 function Root({
   id,
@@ -26,7 +27,7 @@ function Root({
   children: ReactNode
 }) {
   return (
-    <Container as='section' id={id} className={cn('scroll-mt-28', className)}>
+    <Container id={id} className={cn('scroll-mt-28', className)}>
       {children}
     </Container>
   )

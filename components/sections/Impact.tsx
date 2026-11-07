@@ -1,5 +1,4 @@
 import { Section } from '@/components/patterns/Section'
-import { Reveal } from '@/components/motion/Reveal'
 import { CountUp } from '@/components/motion/CountUp'
 import { GrowBar } from '@/components/motion/GrowBar'
 import { Eyebrow, Text } from '@/components/ui/Typography'
@@ -64,7 +63,7 @@ export function Impact() {
       <Section.Body>
         <div className='grid gap-x-14 gap-y-12 sm:grid-cols-2'>
           {COMPARES.map((c) => (
-            <Reveal key={c.label}>
+            <div key={c.label}>
               <div className='flex items-baseline justify-between gap-4'>
                 <span className='font-display text-lg'>{c.label}</span>
                 <span className='font-display text-2xl text-accent'>{c.delta}</span>
@@ -76,7 +75,7 @@ export function Impact() {
                 <GrowBar pct={c.before.pct} value={c.before.value} />
                 <GrowBar pct={c.after.pct} value={c.after.value} accent delay={0.12} />
               </div>
-            </Reveal>
+            </div>
           ))}
         </div>
 
@@ -84,12 +83,12 @@ export function Impact() {
           <Eyebrow>At the scale of</Eyebrow>
           <div className='mt-6 grid gap-x-10 gap-y-8 sm:grid-cols-3'>
             {SCALE.map((s) => (
-              <Reveal key={s.label}>
+              <div key={s.label}>
                 <div className='font-display text-4xl tracking-tight md:text-5xl'>
                   <CountUp value={s.value} decimals={s.decimals ?? 0} suffix={s.suffix} />
                 </div>
                 <Eyebrow className='mt-2 tracking-wider'>{s.label}</Eyebrow>
-              </Reveal>
+              </div>
             ))}
           </div>
         </div>

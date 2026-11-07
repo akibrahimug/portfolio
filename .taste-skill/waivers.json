@@ -1,0 +1,7 @@
+[
+  {
+    "check": "photo-print",
+    "target": "section#top div.enter-settle.relative",
+    "reason": "Not a print: the canvas is the interactive ink shader (components/hero/ink-gl.ts). Dry, it renders the photograph pixel-for-pixel; it only displaces pigment where the pointer has wet it, then dries back. It is the page's one effect, on a software page."
+  }
+]

@@ -1,6 +1,5 @@
 import { redesignContent } from '@/lib/redesign-content'
 import { Section } from '@/components/patterns/Section'
-import { Reveal } from '@/components/motion/Reveal'
 import { Text, Eyebrow } from '@/components/ui/Typography'
 
 export function About() {
@@ -21,7 +20,7 @@ export function About() {
             ))}
           </div>
 
-          <Reveal>
+          <div>
             <Eyebrow>Now · {currently.asOf}</Eyebrow>
             <dl className='mt-5 space-y-5'>
               {currently.items.map((item) => (
@@ -31,7 +30,7 @@ export function About() {
                 </div>
               ))}
             </dl>
-          </Reveal>
+          </div>
         </div>
       </Section.Body>
     </Section>

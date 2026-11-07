@@ -105,7 +105,7 @@ export function Contact() {
   }
 
   const fieldClass = (field: Field) =>
-    `w-full border-b bg-transparent py-2.5 text-base text-foreground placeholder:text-faint focus:outline-none transition-colors ${
+    `w-full border-b bg-transparent py-2.5 text-base text-foreground placeholder:text-faint transition-colors ${
       showError(field) ? 'border-accent' : 'border-border focus:border-accent'
     }`
 

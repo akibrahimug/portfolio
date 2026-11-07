@@ -1,6 +1,5 @@
 import { redesignContent } from '@/lib/redesign-content'
 import { Section } from '@/components/patterns/Section'
-import { Reveal } from '@/components/motion/Reveal'
 import { Heading, Eyebrow } from '@/components/ui/Typography'
 import { TextLink } from '@/components/ui/TextLink'
 import { BulletList } from '@/components/ui/Lists'
@@ -18,7 +17,7 @@ export function Experience() {
           {experience.roles.map((role, i) => {
             const href = 'href' in role ? (role.href as string) : undefined
             return (
-              <Reveal key={`${role.company}-${role.title}-${role.period}`} delay={i * 0.04}>
+              <div key={`${role.company}-${role.title}-${role.period}`}>
                 <div className='grid gap-4 border-t border-border py-9 md:grid-cols-[12rem_1fr] md:gap-10'>
                   <div className='text-sm'>
                     <p className='text-faint'>{role.period}</p>
@@ -43,7 +42,7 @@ export function Experience() {
                     <BulletList items={role.bullets} className='mt-4' />
                   </div>
                 </div>
-              </Reveal>
+              </div>
             )
           })}
         </div>
