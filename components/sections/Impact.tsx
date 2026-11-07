@@ -1,58 +1,14 @@
+import { redesignContent } from '@/lib/redesign-content'
 import { Section } from '@/components/patterns/Section'
 import { CountUp } from '@/components/motion/CountUp'
 import { GrowBar } from '@/components/motion/GrowBar'
 import { Eyebrow, Text } from '@/components/ui/Typography'
 
-type Compare = {
-  label: string
-  delta: string
-  caption: string
-  before: { pct: number; value: string }
-  after: { pct: number; value: string }
-}
-
-// Real before/after figures from the EF platform work, each with the story behind it.
-const COMPARES: Compare[] = [
-  {
-    label: 'CI pipeline time',
-    delta: '−67%',
-    caption: 'Rebuilt the shared CI/CD pipeline that ships 17 production front-end apps.',
-    before: { pct: 100, value: '45 min' },
-    after: { pct: 33, value: '15 min' },
-  },
-  {
-    label: 'Test coverage',
-    delta: '+55 pts',
-    caption: 'Brought Jest + React Testing Library in and made tests part of every PR.',
-    before: { pct: 30, value: '30%' },
-    after: { pct: 85, value: '85%' },
-  },
-  {
-    label: 'EPI page load',
-    delta: '−60%',
-    caption: 'Re-architected the EF EPI front end and its data layer; all three Core Web Vitals improved.',
-    before: { pct: 100, value: 'baseline' },
-    after: { pct: 40, value: '−60%' },
-  },
-  {
-    label: 'Production incidents',
-    delta: '−40%',
-    caption: 'A downstream result of the coverage work and faster, safer rollbacks.',
-    before: { pct: 100, value: 'baseline' },
-    after: { pct: 60, value: '−40%' },
-  },
-]
-
-const SCALE = [
-  { value: 3.4, decimals: 1, suffix: 'M', label: 'Monthly active users' },
-  { value: 57, suffix: '', label: 'International markets' },
-  { value: 17, suffix: '', label: 'Production apps, deployed daily' },
-]
-
 export function Impact() {
+  const { compares: COMPARES, scale: SCALE } = redesignContent.impact
   return (
     <Section id='impact'>
-      <Section.Header index='02' eyebrow='Measured impact'>
+      <Section.Header index='03' eyebrow='Measured impact'>
         <Section.Title>I own a shared delivery platform at EF.</Section.Title>
         <Section.Intro>
           It sits behind 17 production front-end apps across 60+ markets. Rebuilding it (the
@@ -85,7 +41,7 @@ export function Impact() {
             {SCALE.map((s) => (
               <div key={s.label}>
                 <div className='font-display text-4xl tracking-tight md:text-5xl'>
-                  <CountUp value={s.value} decimals={s.decimals ?? 0} suffix={s.suffix} />
+                  <CountUp value={s.value} decimals={'decimals' in s ? s.decimals : 0} suffix={s.suffix} />
                 </div>
                 <Eyebrow className='mt-2 tracking-wider'>{s.label}</Eyebrow>
               </div>
