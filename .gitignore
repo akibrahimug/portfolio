@@ -49,3 +49,7 @@ tsconfig.tsbuildinfo
 /test-results/
 /playwright-report/
 .vscode
+
+# taste-skill local state (keep the reasoned waivers)
+.taste-skill/*
+!.taste-skill/waivers.json

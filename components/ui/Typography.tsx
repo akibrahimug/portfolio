@@ -1,4 +1,4 @@
-import type { ComponentPropsWithoutRef, ReactNode } from 'react'
+import type { ComponentPropsWithoutRef, CSSProperties, ReactNode } from 'react'
 import { cn } from './cn'
 
 type Level = 1 | 2 | 3 | 4
@@ -62,13 +62,17 @@ export function Text({
 export function Eyebrow({
   as: Tag = 'p',
   className,
+  style,
   children,
 }: {
   as?: 'p' | 'span' | 'dt' | 'dd' | 'div'
   className?: string
+  style?: CSSProperties
   children: ReactNode
 }) {
   return (
-    <Tag className={cn('text-xs uppercase tracking-[0.2em] text-faint', className)}>{children}</Tag>
+    <Tag className={cn('text-xs uppercase tracking-[0.2em] text-faint', className)} style={style}>
+      {children}
+    </Tag>
   )
 }

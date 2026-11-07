@@ -3,7 +3,6 @@
 import { useRef, type MouseEvent } from 'react'
 import { useReducedMotion } from 'motion/react'
 import type { redesignContent } from '@/lib/redesign-content'
-import { Reveal } from '@/components/motion/Reveal'
 import { Heading, Text, Eyebrow } from '@/components/ui/Typography'
 import { TagList } from '@/components/ui/Lists'
 
@@ -25,7 +24,7 @@ export function ProjectCard({ item, index }: { item: Item; index: number }) {
   }
 
   return (
-    <Reveal delay={(index % 2) * 0.06} className='h-full'>
+    <div className='h-full'>
       <article
         ref={ref}
         onMouseMove={onMove}
@@ -81,6 +80,6 @@ export function ProjectCard({ item, index }: { item: Item; index: number }) {
           </div>
         </div>
       </article>
-    </Reveal>
+    </div>
   )
 }
