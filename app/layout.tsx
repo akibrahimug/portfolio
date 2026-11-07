@@ -80,7 +80,15 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang='en-GB' data-type='software' className={`${display.variable} ${body.variable}`}>
+    // suppressHydrationWarning: browser extensions write attributes onto <html> before React loads
+    // (e.g. style="transition-property:none;margin-right:0px"). Applies to this element's own
+    // attributes only — they're static here — so it can't mask a real mismatch in the page.
+    <html
+      lang='en-GB'
+      data-type='software'
+      className={`${display.variable} ${body.variable}`}
+      suppressHydrationWarning
+    >
       <body className='min-h-screen bg-background font-sans text-foreground antialiased'>
         <noscript>
           <style>{'[data-grow]{width:var(--pct)!important}'}</style>
