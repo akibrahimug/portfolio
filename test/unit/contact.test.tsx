@@ -2,12 +2,12 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
-vi.mock('framer-motion', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('framer-motion')>()
+vi.mock('motion/react', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('motion/react')>()
   return { ...actual, useReducedMotion: () => true }
 })
 
-import { Contact } from '@/components/site/Contact'
+import { Contact } from '@/components/sections/Contact'
 
 const sendButton = () => screen.getByRole('button', { name: /send message/i })
 

@@ -2,7 +2,7 @@
 
 Personal portfolio for **Ibrahim Kasoma**, Senior Software Engineer (TypeScript · React · Node.js).
 
-Single Next.js app (Pages Router), fully static, deployed on Vercel. The only server-side surface is `pages/api/contact.ts`, a Resend-backed mailer.
+Single Next.js app (App Router), statically prerendered, deployed on Vercel. The only server-side surface is `app/api/contact/route.ts`, a Resend-backed mailer.
 
 ## Local dev
 

@@ -2,7 +2,7 @@
  * SEO / GEO / AEO helpers — canonical URL + JSON-LD structured data.
  *
  * Everything is derived from `redesign-content.ts` so the structured data
- * stays in sync with the visible page. Consumed by `pages/index.tsx`.
+ * stays in sync with the visible page. Consumed by `app/page.tsx` (JSON-LD) and `app/layout.tsx` (metadata).
  *
  * The canonical origin is the www host — Vercel 308s the apex to it.
  */
