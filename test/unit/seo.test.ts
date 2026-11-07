@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { SITE_URL, ogImage, buildStructuredData, structuredDataJson } from '@/lib/seo'
+import { SITE_URL, ogImage, buildStructuredData, buildCaseStudyData, structuredDataJson } from '@/lib/seo'
+import { caseStudies } from '@/lib/case-studies'
 import { redesignContent } from '@/lib/redesign-content'
 
 describe('structured data (JSON-LD)', () => {
@@ -26,14 +27,24 @@ describe('structured data (JSON-LD)', () => {
     expect(page.primaryImageOfPage.url).toBe(ogImage.url)
   })
 
-  it('ItemList covers every work and showcase project', () => {
+  it('ItemList covers every project, pointing case studies at their own pages', () => {
     const list = byType('ItemList')!
     const expected = redesignContent.work.items.length + redesignContent.showcase.items.length
     expect(list.itemListElement).toHaveLength(expected)
-    for (const el of list.itemListElement) {
-      expect(el.item.url).toMatch(/^https:\/\//)
-      expect(el.item.name).toBeTruthy()
-    }
+    const urls = list.itemListElement.map((e: any) => e.item.url)
+    for (const c of caseStudies) expect(urls).toContain(`${SITE_URL}/work/${c.slug}`)
+  })
+
+  it('case-study JSON-LD names the work, its page and its breadcrumb', () => {
+    const c = caseStudies[0]
+    const graph = buildCaseStudyData(c)['@graph'] as Array<Record<string, any>>
+    expect(graph[0]).toMatchObject({ '@type': 'CreativeWork', name: c.title, url: `${SITE_URL}/work/${c.slug}` })
+    expect(graph[1].itemListElement.at(-1).item).toBe(`${SITE_URL}/work/${c.slug}`)
+  })
+
+  it('no structured data points at an anchor that no longer exists', () => {
+    const json = JSON.stringify(buildStructuredData())
+    for (const gone of ['#showcase', '#skills', '#process', '#impact']) expect(json).not.toContain(gone)
   })
 
   it('serializes to valid JSON with < escaped for safe <script> embedding', () => {

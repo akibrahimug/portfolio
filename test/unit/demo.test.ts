@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { simulateReadableStream } from 'ai'
 import { MockLanguageModelV4 } from 'ai/test'
 import { findWork, getImpact, getStack, getContact, getExperience, careerTotals } from '@/lib/demo/catalog'
-import { routeOffline, exampleMessages } from '@/lib/demo/offline'
+import { routeOffline } from '@/lib/demo/offline'
 import { SUGGESTED_PROMPTS } from '@/lib/demo/prompts'
 import { redesignContent } from '@/lib/redesign-content'
 // vi.mock calls below are hoisted above this import, so the route sees the mocks.
@@ -30,11 +30,33 @@ describe('demo catalog (grounding)', () => {
     expect(getImpact({ focus: 'ci' }).compares).toHaveLength(1)
   })
 
+  it.each([
+    ['MCP', 'MCP servers'],
+    ['AI', 'Claude Code'],
+    ['cloud', 'GitHub Actions'],
+    ['testing', 'Cypress'],
+  ])('a "%s" query finds %s', (query, item) => {
+    const r = getStack({ query })
+    expect(r.matched).toBe(true)
+    expect(r.groups.flatMap((g) => g.items)).toContain(item)
+  })
+
+  it('an unfiltered stack lookup returns every area and every technology', () => {
+    const all = getStack()
+    expect(all.groups.map((g) => g.label)).toEqual(redesignContent.skills.groups.map((g) => g.label))
+    expect(all.groups.map((g) => g.label)).toContain('AI-Assisted Development')
+    const items = all.groups.flatMap((g) => g.items)
+    for (const t of ['MCP servers', 'Claude Code', 'GitHub Actions', 'Vercel', 'Git', 'Jest', 'Docker']) expect(items).toContain(t)
+    expect(all.tech).toHaveLength(25) // no cap
+  })
+
   it('stack lookups filter, and an unknown technology returns nothing (no guessing)', () => {
     expect(getStack({ query: 'typescript' }).tech.map((t) => t.name)).toContain('TypeScript')
+    // An unknown technology never comes back empty (a model would read that as "doesn't use it"):
+    // the whole stack returns, flagged unmatched.
     const none = getStack({ query: 'cobol' })
-    expect(none.tech).toHaveLength(0)
-    expect(none.groups).toHaveLength(0)
+    expect(none.matched).toBe(false)
+    expect(none.groups.length).toBe(redesignContent.skills.groups.length)
   })
 
   it('experience and contact mirror the content', () => {
@@ -87,13 +109,6 @@ describe('offline router', () => {
     expect(routeOffline('tell me something').lead).toMatch(/closest match/)
   })
 
-  it('the example answer is a real, rendered tool result', () => {
-    const [q, a] = exampleMessages()
-    expect(q.role).toBe('user')
-    const tool = a.parts.find((p) => p.type === 'tool-findWork') as { state: string; output: { projects: unknown[] } }
-    expect(tool.state).toBe('output-available')
-    expect(tool.output.projects.length).toBeGreaterThan(0)
-  })
 })
 
 /* ----------------------------------------------------------------------------

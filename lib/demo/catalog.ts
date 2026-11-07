@@ -142,30 +142,44 @@ type Tech = { name: string; icon: string; experience?: string; confidenceLevel?:
 const TECH = (techData as { techStack: Tech[] }).techStack
 
 /** Skills by area, and the tools with depth of experience (most confident first). */
-export function getStack({ area, query }: { area?: string; query?: string } = {}) {
-  const q = query?.trim().toLowerCase()
-  const groups = c.skills.groups
-    .filter((g) => !area || g.label.toLowerCase().includes(area.toLowerCase()))
-    .map((g) => ({
-      label: g.label,
-      items: [...g.items].filter((i) => !q || i.toLowerCase().includes(q)),
-    }))
-    .filter((g) => g.items.length)
-  const tech = TECH.filter((t) => !q || t.name.toLowerCase().includes(q))
-    .map((t) => ({
-      name: t.name,
-      icon: t.icon,
-      experience: t.experience,
-      confidence: t.confidenceLevel ?? null,
-      /** Ibrahim's own note on how he has used it — the model must not claim more than this. */
-      note: t.description,
-      learnedFrom: t.learningSource,
-    }))
-    .sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0))
-    .slice(0, 14)
-  return { groups, tech }
+const toTech = (t: Tech) => ({
+  name: t.name,
+  icon: t.icon,
+  experience: t.experience,
+  confidence: t.confidenceLevel ?? null,
+  /** Ibrahim's own note on how he has used it — the model must not claim more than this. */
+  note: t.description,
+  learnedFrom: t.learningSource,
+})
+const STOP = new Set(['and', 'or', 'the', 'does', 'he', 'use', 'uses', 'his', 'with', 'tools', 'tool', 'any', 'know'])
+/** Loose, whole-word-ish matching: "AI" finds the AI group, "cloud" finds Cloud & Delivery. */
+const matches = (hay: string, words: string[]) => {
+  const h = hay.toLowerCase()
+  return words.some((w) => (w.length <= 3 ? new RegExp(`(^|[^a-z])${w.replace(/[.+#]/g, '\\$&')}([^a-z]|$)`).test(h) : h.includes(w)))
 }
-export const STACK_AREAS = c.skills.groups.map((g) => g.label) as [string, ...string[]]
+
+/**
+ * Skills by area and technologies with depth of experience (most confident first).
+ * With no query: everything. With a query: the groups and technologies that match it — and if
+ * nothing matches, still everything, flagged `matched: false`, so a model can never read an
+ * empty result as "he doesn't use that".
+ */
+export function getStack({ area, query }: { area?: string; query?: string } = {}) {
+  const all = c.skills.groups.map((g) => ({ label: g.label, items: [...g.items] }))
+  const allTech = TECH.map(toTech).sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0))
+  const words = (query ?? area ?? '')
+    .toLowerCase()
+    .split(/[^a-z0-9.+#]+/)
+    .filter((w) => w.length >= 2 && !STOP.has(w))
+  if (!words.length) return { matched: true, groups: all, tech: allTech }
+
+  const groups = all
+    .map((g) => (matches(g.label, words) ? g : { ...g, items: g.items.filter((i) => matches(i, words)) }))
+    .filter((g) => g.items.length)
+  const tech = allTech.filter((t) => matches(t.name, words))
+  if (!groups.length && !tech.length) return { matched: false, groups: all, tech: allTech }
+  return { matched: true, groups, tech }
+}
 
 /** How to reach Ibrahim. */
 export function getContact() {

@@ -61,30 +61,18 @@
   --accent-foreground: oklch(0.99 0 0);
 }
 
-/* Inverted feature band: overrides the semantic tokens on a wrapper so every
-   component inside flips automatically (ink panel, cream text). */
-.feature-invert {
-  --background: oklch(0.17 0.008 60);
-  --foreground: oklch(0.955 0.014 90);
-  --card: oklch(0.23 0.008 60);
-  --muted: oklch(0.3 0.01 60);
-  --muted-foreground: oklch(0.84 0.012 88);
-  --faint: oklch(0.7 0.012 85);
-  --border: oklch(1 0 0 / 0.16);
-  --border-strong: oklch(1 0 0 / 0.32);
-  --accent: oklch(0.7 0.19 27);
-  --accent-foreground: oklch(0.16 0.02 27);
-}
-
 @layer base {
   * {
     border-color: var(--border);
+    /* Resting outline colour = the focus colour, so a focus ring is there at once: Tailwind's
+       transition-colors also animates outline-color, which faded rings in from grey. */
+    outline-color: var(--accent);
   }
   html {
     -webkit-text-size-adjust: 100%;
     scroll-behavior: smooth;
     /* Keep focused/anchored content clear of the fixed nav (h-16 + breathing room). */
-    scroll-padding-top: 5.5rem;
+    scroll-padding-top: 9rem; /* nav (4rem) + sticky ask bar + air */
   }
   @media (prefers-reduced-motion: reduce) {
     html {
@@ -191,20 +179,12 @@
   .stagger > :nth-child(5) { animation-delay: 280ms; }
   .stagger > :nth-child(6) { animation-delay: 350ms; }
   .stagger > :nth-child(n + 7) { animation-delay: 420ms; }
-  /* While working, an indeterminate line runs along the frame's top edge. */
-  .demo-frame[data-working]::before {
-    content: '';
-    position: absolute;
-    inset: -1px -1px auto;
-    height: 2px;
+  /* While answering, an indeterminate line runs along the ask bar's edge. */
+  .demo-scan {
     background: linear-gradient(90deg, transparent, var(--accent), transparent);
     background-size: 40% 100%;
     background-repeat: no-repeat;
     animation: scan 1.2s ease-in-out infinite;
-  }
-  /* The replay "presses" Ask as the typed question is sent. */
-  .demo-press {
-    animation: press 600ms ease-out 1;
   }
 }
 @keyframes pending {
@@ -216,9 +196,6 @@
 @keyframes scan {
   from { background-position: -40% 0; }
   to { background-position: 140% 0; }
-}
-@keyframes press {
-  60% { transform: translateY(1px); opacity: 0.85; }
 }
 
 /* View transitions (case-study image morphs) honour reduced motion. */

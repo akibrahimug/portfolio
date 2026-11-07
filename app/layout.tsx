@@ -6,6 +6,7 @@ import { redesignContent } from '@/lib/redesign-content'
 import { SITE_URL, ogImage } from '@/lib/seo'
 import { SiteNav } from '@/components/sections/SiteNav'
 import { Footer } from '@/components/sections/Footer'
+import { AskBar } from '@/components/demo/AskBar'
 
 // Typefaces are wired to tokens (`--font-display`, `--font-sans`) in globals.css.
 // Editorial serif display (variable optical size + italic for accent emphasis) over a humanist sans.
@@ -84,6 +85,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <style>{'[data-grow]{width:var(--pct)!important}'}</style>
         </noscript>
         <SiteNav />
+        <AskBar />
         {children}
         <Footer />
       </body>

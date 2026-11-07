@@ -12,7 +12,7 @@ export function Timeline({ output }: { output: ReturnType<typeof getExperience> 
           <p className='text-xs uppercase tracking-wider text-faint'>
             {r.period} · {r.place}
           </p>
-          <Heading level={4} size='xs' className='mt-1'>
+          <Heading level={3} size='xs' className='mt-1'>
             {r.title ? `${r.title} · ` : ''}
             {r.company}
           </Heading>

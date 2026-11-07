@@ -29,10 +29,3 @@ test('unknown case study slugs 404', async ({ page }) => {
   const res = await page.goto('/work/not-a-project')
   expect(res?.status()).toBe(404)
 })
-
-test('demo project cards link into the case studies', async ({ page }) => {
-  await page.emulateMedia({ reducedMotion: 'reduce' })
-  await page.goto('/#demo')
-  await page.locator('#demo').getByRole('link', { name: /EF EPI/ }).click()
-  await expect(page).toHaveURL(/\/work\/ef-epi$/)
-})

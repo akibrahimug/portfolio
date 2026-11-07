@@ -1,7 +1,7 @@
 import { tool, type ToolSet } from 'ai'
 import type { findWork as FindWork, getImpact as GetImpact, getExperience as GetExperience, getStack as GetStack, getContact as GetContact } from './catalog'
 import { z } from 'zod'
-import { TOPICS, STACK_AREAS, findWork, getImpact, getExperience, getStack, getContact } from './catalog'
+import { TOPICS, findWork, getImpact, getExperience, getStack, getContact } from './catalog'
 
 const firstSentence = (s?: string) => (s ? (s.match(/^.*?[.!?](\s|$)/)?.[0] ?? s).trim().slice(0, 220) : undefined)
 
@@ -32,6 +32,7 @@ export const forModel = {
     roles: o.roles.map((r) => ({ company: r.company, title: r.title, period: r.period, topHighlight: r.highlights[0] })),
   }),
   getStack: (o: ReturnType<typeof GetStack>) => ({
+    matched: o.matched,
     tech: o.tech.map((t) => ({ name: t.name, experience: t.experience, note: firstSentence(t.note), learnedFrom: t.learnedFrom })),
     areas: o.groups.map((g) => `${g.label}: ${g.items.join(', ')}`),
   }),
@@ -84,14 +85,14 @@ export const demoTools = {
   }),
   getStack: tool({
     description:
-      'Technologies and skills with depth of experience. Use for stack, languages, frameworks, tools, or "do you know X". Renders a skills field.',
+      'Every technology and skill Ibrahim lists, by area (frontend, AI-assisted development, backend, cloud and delivery, tooling, testing, CMS), with depth of experience. For broad questions call it with no query. For a named technology or area, pass it as `query`. If `matched` is false nothing matched and the whole stack came back: say it is not listed, never that he "does not use" it. Renders a skills field.',
+    // Deliberately no `area` filter: small models kept narrowing broad questions to "Frontend".
     inputSchema: z.object({
-      area: z.enum(STACK_AREAS).optional(),
       query: z
         .string()
         .max(40)
         .optional()
-        .describe('Only when the visitor names a specific technology; omit otherwise'),
+        .describe('Only when the visitor names a technology or area, e.g. "MCP", "testing", "cloud"'),
     }),
     execute: async (input) => getStack(input),
     toModelOutput: json(forModel.getStack),
