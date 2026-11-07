@@ -19,7 +19,7 @@ export function StackField({ output }: { output: ReturnType<typeof getStack> }) 
   return (
     <div>
       {output.tech.length > 0 && (
-        <ul className='flex flex-wrap items-baseline gap-x-6 gap-y-2'>
+        <ul className='stagger flex flex-wrap items-baseline gap-x-6 gap-y-2'>
           {output.tech.map((t) => (
             <li key={t.name} className={cn('font-display leading-tight', tier(t.confidence))}>
               {t.name}

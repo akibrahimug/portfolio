@@ -12,28 +12,21 @@ export const redesignContent = {
   nav: {
     brand: 'Ibrahim Kasoma',
     links: [
-      { href: '#demo', label: 'Demo' },
-      { href: '#work', label: 'Work' },
-      { href: '#showcase', label: 'Showcase' },
-      { href: '#experience', label: 'Experience' },
-      { href: '#contact', label: 'Contact' },
+      { href: '/#demo', label: 'Demo' },
+      { href: '/#work', label: 'Work' },
+      { href: '/#experience', label: 'Experience' },
+      { href: '/#contact', label: 'Contact' },
     ],
   },
   cv: { label: 'Download CV', href: '/Ibrahim_Kasoma_CV.pdf' },
   hero: {
-    availability: 'Open to senior frontend roles · Stroud, UK',
     /** h1 — names the category. `{ em }` segments render as the accent italic. */
     headline: ['Senior frontend engineer building', { em: 'AI-native' }, 'interfaces.'] as const,
     statement:
       'Six years of production TypeScript and React, 80+ apps shipped. At EF Education First I ship across a Next.js platform used by 3.4M people a month in 60+ markets.',
     location: 'Stroud, Gloucestershire, UK',
     primaryCta: { label: 'Email me', href: 'mailto:kasomaibrahim@gmail.com' },
-    secondaryCta: { label: 'Try the live demo', href: '#demo' },
-    stats: [
-      { value: '6+', label: 'Years in production' },
-      { value: '80+', label: 'Apps shipped' },
-      { value: '3.4M', label: 'Monthly users' },
-    ],
+    secondaryCta: { label: 'Ask AI (Live Demo)', href: '#demo' },
     avatarSrc: '/icons/avarta-cutout.webp',
     avatarWidth: 1221,
     avatarHeight: 1472,
@@ -143,6 +136,8 @@ export const redesignContent = {
       {
         key: 'ci',
         label: 'CI pipeline time',
+        /** Unambiguous, direction included: this is what the demo's model reads. */
+        plain: 'CI pipeline runs 67% faster: 45 minutes down to 15.',
         delta: '−67%',
         caption: 'Rebuilt the shared CI/CD pipeline that ships 17 production front-end apps.',
         before: { pct: 100, value: '45 min' },
@@ -151,6 +146,7 @@ export const redesignContent = {
       {
         key: 'coverage',
         label: 'Test coverage',
+        plain: 'Test coverage up 55 points: from 30% to 85%.',
         delta: '+55 pts',
         caption: 'Brought Jest + React Testing Library in and made tests part of every PR.',
         before: { pct: 30, value: '30%' },
@@ -159,6 +155,7 @@ export const redesignContent = {
       {
         key: 'page-load',
         label: 'EPI page load',
+        plain: 'EF EPI pages load 60% faster.',
         delta: '−60%',
         caption: 'Re-architected the EF EPI front end and its data layer; all three Core Web Vitals improved.',
         before: { pct: 100, value: 'baseline' },
@@ -167,6 +164,7 @@ export const redesignContent = {
       {
         key: 'incidents',
         label: 'Production incidents',
+        plain: '40% fewer production incidents.',
         delta: '−40%',
         caption: 'A downstream result of the coverage work and faster, safer rollbacks.',
         before: { pct: 100, value: 'baseline' },
@@ -176,7 +174,7 @@ export const redesignContent = {
     scale: [
       { value: 3.4, decimals: 1, suffix: 'M', label: 'Monthly active users' },
       { value: 57, suffix: '', label: 'International markets' },
-      { value: 17, suffix: '', label: 'Production apps, deployed daily' },
+      { value: 17, suffix: '', label: 'Production apps deployed daily' },
     ],
   },
   showcase: {

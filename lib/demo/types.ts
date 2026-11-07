@@ -12,6 +12,8 @@ export type DemoMetadata = {
   offlineReason?: 'quota' | 'rate-limit' | 'unavailable'
   /** Providers tried and skipped before this one answered. */
   skipped?: string[]
+  /** When the answering model broke part-way, the model that wrote the closing sentence. */
+  finishedBy?: string
   firstTokenMs?: number
   totalMs?: number
 }

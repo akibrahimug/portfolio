@@ -7,7 +7,7 @@ import {
   toUIMessageStream,
   type UIMessageStreamWriter,
 } from 'ai'
-import { demoTools } from '@/lib/demo/tools'
+import { demoTools, forModel, type DemoToolName } from '@/lib/demo/tools'
 import { providerChain, INSTRUCTIONS, type Provider } from '@/lib/demo/providers'
 import { writeOffline } from '@/lib/demo/offline'
 import { allow } from '@/lib/demo/ratelimit'
@@ -33,10 +33,21 @@ const lastUserText = (messages: DemoUIMessage[]) => {
     .trim()
 }
 
+type Result = { tool: DemoToolName; output: unknown }
+type Attempt =
+  | { kind: 'ok' }
+  | { kind: 'skip' }
+  /** Broke part-way (e.g. a tokens-per-minute limit between steps): results shown, no sentence. */
+  | { kind: 'broken'; results: Result[] }
+  /** Finished cleanly but never wrote its sentence (small models sometimes stop after a tool). */
+  | { kind: 'mute'; results: Result[] }
+
 /**
  * Try one provider. Its stream is buffered until the first content chunk: an error before
  * that (quota, 503, blocked model) means nothing reached the visitor, so the caller can move
- * to the next rung. Once committed, chunks pipe straight through.
+ * to the next rung. Once committed, chunks pipe straight through; if it then breaks part-way
+ * (e.g. a tokens-per-minute limit between steps), it reports the results already shown so
+ * another provider can finish the sentence.
  */
 async function tryLive(
   writer: UIMessageStreamWriter<DemoUIMessage>,
@@ -44,7 +55,7 @@ async function tryLive(
   messages: Awaited<ReturnType<typeof convertToModelMessages>>,
   skipped: string[],
   signal: AbortSignal,
-): Promise<boolean> {
+): Promise<Attempt> {
   const t0 = Date.now()
   const result = streamText({
     model: p.create(),
@@ -66,7 +77,10 @@ async function tryLive(
   }).getReader()
 
   const buffered: Chunk[] = []
+  const names = new Map<string, DemoToolName>()
+  const results: Result[] = []
   let firstTokenMs: number | undefined
+  let wroteText = false
   for (;;) {
     const { done, value } = await reader.read()
     if (done) break
@@ -74,7 +88,7 @@ async function tryLive(
     if (firstTokenMs === undefined) {
       if (chunk.type === 'error') {
         await reader.cancel().catch(() => {})
-        return false
+        return { kind: 'skip' }
       }
       buffered.push(chunk)
       if (NON_CONTENT.has(chunk.type)) continue
@@ -84,14 +98,90 @@ async function tryLive(
         messageMetadata: { source: 'live', provider: p.provider, model: p.model, skipped },
       })
       buffered.forEach((b) => writer.write(b))
+      buffered.forEach(track)
       continue
     }
+    if (chunk.type === 'error') {
+      await reader.cancel().catch(() => {})
+      return { kind: 'broken', results }
+    }
+    track(chunk)
     writer.write(chunk)
   }
-  if (firstTokenMs === undefined) return false
+  if (firstTokenMs === undefined) return { kind: 'skip' }
+  if (!wroteText && results.length) return { kind: 'mute', results }
   writer.write({ type: 'message-metadata', messageMetadata: { firstTokenMs, totalMs: Date.now() - t0 } })
   writer.write({ type: 'finish' })
-  return true
+  return { kind: 'ok' }
+
+  function track(chunk: Chunk) {
+    if (chunk.type === 'text-delta' && chunk.delta.trim()) wroteText = true
+    if (chunk.type === 'tool-input-available') names.set(chunk.toolCallId, chunk.toolName as DemoToolName)
+    if (chunk.type === 'tool-output-available') {
+      const tool = names.get(chunk.toolCallId)
+      if (tool) results.push({ tool, output: chunk.output })
+    }
+  }
+}
+
+const FINISH_INSTRUCTIONS = `You write the one or two sentences that answer a visitor's question about Ibrahim Kasoma, a senior frontend engineer, using ONLY the tool results given. Answer the question directly first; you may derive a duration, a count or a yes/no from the data. Never state or imply anything the results don't say (no "in production", "at scale", "led" unless stated). Refer to him as Ibrahim or he. Plain sentences, no markdown.`
+
+/**
+ * Results are on screen but there's no sentence: the answering model broke part-way, or stopped
+ * after its tool call. Discard any half-written step and have a provider write just the sentence
+ * from those results (no tools, nothing re-run).
+ */
+async function finishSentence(
+  writer: UIMessageStreamWriter<DemoUIMessage>,
+  providers: Provider[],
+  question: string,
+  results: Result[],
+  signal: AbortSignal,
+) {
+  writer.write({ type: 'reset-step' })
+  writer.write({ type: 'start-step' })
+  const facts = results.map((r) => ({ tool: r.tool, result: forModel[r.tool](r.output as never) }))
+  for (const p of providers) {
+    const id = `finish-${Date.now()}`
+    let started = false
+    try {
+      const r = streamText({
+        model: p.create(),
+        instructions: FINISH_INSTRUCTIONS,
+        prompt: `Question: ${question}\n\nTool results (JSON):\n${JSON.stringify(facts)}`,
+        maxOutputTokens: 160,
+        maxRetries: 0,
+        abortSignal: signal,
+        onError: () => {},
+      })
+      for await (const delta of r.textStream) {
+        if (!started) {
+          writer.write({ type: 'text-start', id })
+          started = true
+        }
+        writer.write({ type: 'text-delta', id, delta })
+      }
+    } catch {
+      /* fall through to the next provider */
+    }
+    if (started) {
+      writer.write({ type: 'text-end', id })
+      writer.write({ type: 'finish-step' })
+      writer.write({ type: 'message-metadata', messageMetadata: { finishedBy: p.model } })
+      writer.write({ type: 'finish' })
+      return
+    }
+  }
+  const id = `finish-fallback-${Date.now()}`
+  writer.write({ type: 'text-start', id })
+  writer.write({
+    type: 'text-delta',
+    id,
+    delta: 'The free model reached its usage limit before it could write a summary. What it found is below.',
+  })
+  writer.write({ type: 'text-end', id })
+  writer.write({ type: 'finish-step' })
+  writer.write({ type: 'finish' })
 }
 
 export async function POST(req: Request) {
@@ -116,9 +206,14 @@ export async function POST(req: Request) {
       const chain = providerChain()
       const modelMessages = await convertToModelMessages(messages)
       const skipped: string[] = []
-      for (const p of chain) {
+      for (const [i, p] of chain.entries()) {
         if (req.signal.aborted) return
-        if (await tryLive(writer, p, modelMessages, skipped, req.signal)) return
+        const attempt = await tryLive(writer, p, modelMessages, skipped, req.signal)
+        if (attempt.kind === 'ok') return
+        // Broken: that provider is out of capacity, so the next ones finish. Mute: it's fine, so it
+        // goes first (a single tool-free call is cheap).
+        if (attempt.kind === 'broken') return finishSentence(writer, chain.slice(i + 1), text, attempt.results, req.signal)
+        if (attempt.kind === 'mute') return finishSentence(writer, chain.slice(i), text, attempt.results, req.signal)
         skipped.push(p.model)
       }
       await writeOffline(writer, text, {

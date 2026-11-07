@@ -2,7 +2,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { simulateReadableStream } from 'ai'
 import { MockLanguageModelV4 } from 'ai/test'
-import { findWork, getImpact, getStack, getContact, getExperience } from '@/lib/demo/catalog'
+import { findWork, getImpact, getStack, getContact, getExperience, careerTotals } from '@/lib/demo/catalog'
 import { routeOffline, exampleMessages } from '@/lib/demo/offline'
 import { SUGGESTED_PROMPTS } from '@/lib/demo/prompts'
 import { redesignContent } from '@/lib/redesign-content'
@@ -62,6 +62,31 @@ describe('offline router', () => {
     expect(routeOffline(q).calls[0].name).toBe(tool)
   })
 
+  it('answers "how many years" specifically, computed from the role dates', () => {
+    const r = routeOffline('how many years of experience does he have with product sites')
+    expect(r.calls[0].name).toBe('getExperience')
+    expect(r.lead).toMatch(/^About \d+ years of professional frontend work, since Feb 2020/)
+    expect(r.lead).not.toMatch(/closest match/)
+  })
+
+  it('career totals come from the dates, not a hand-typed number', () => {
+    const t = careerTotals(new Date(2026, 10, 7))
+    expect(t).toMatchObject({ professionalSince: 'Feb 2020', yearsProfessional: 6, efSince: 'Mar 2023', yearsAtEf: 3 })
+    expect(getExperience().totals.professionalSince).toBe('Feb 2020')
+  })
+
+  it('answers "does he know X" with a yes, or an honest "not listed"', () => {
+    const yes = routeOffline('does he know TypeScript?')
+    expect(yes.lead).toMatch(/^Yes/)
+    expect(yes.calls[0]).toEqual({ name: 'getStack', input: { query: 'TypeScript' } })
+    const no = routeOffline('does he have experience with cobol')
+    expect(no.lead).toMatch(/cobol isn't listed/i)
+  })
+
+  it('admits when it is only a loose match', () => {
+    expect(routeOffline('tell me something').lead).toMatch(/closest match/)
+  })
+
   it('the example answer is a real, rendered tool result', () => {
     const [q, a] = exampleMessages()
     expect(q.role).toBe('user')
@@ -78,6 +103,33 @@ const usage = {
   inputTokens: { total: 1, noCache: 1, cacheRead: undefined, cacheWrite: undefined },
   outputTokens: { total: 1, text: 1, reasoning: undefined },
 }
+/** Answers step 1 with a tool call, then dies between steps like a tokens-per-minute limit. */
+const breaksAfterTool = () => {
+  let step = 0
+  return new MockLanguageModelV4({
+    doStream: async () => {
+      if (++step > 1) throw new Error('Rate limit reached: tokens per minute (TPM)')
+      const chunks = [
+        { type: 'tool-call', toolCallId: 'c1', toolName: 'getExperience', input: '{}' },
+        { type: 'finish', finishReason: { unified: 'tool-calls', raw: undefined }, usage },
+      ]
+      return { stream: simulateReadableStream({ chunks: chunks as never[] }) }
+    },
+  })
+}
+const writesSentence = () =>
+  new MockLanguageModelV4({
+    doStream: async () => ({
+      stream: simulateReadableStream({
+        chunks: [
+          { type: 'text-start', id: 't' },
+          { type: 'text-delta', id: 't', delta: 'About six years, since Feb 2020.' },
+          { type: 'text-end', id: 't' },
+          { type: 'finish', finishReason: { unified: 'stop', raw: undefined }, usage },
+        ] as never[],
+      }),
+    }),
+  })
 const failing = () =>
   new MockLanguageModelV4({
     doStream: async () => {
@@ -150,6 +202,74 @@ describe('POST /api/demo', () => {
     const output = chunks.find((c) => c.type === 'tool-output-available')?.output
     expect(output.projects.map((p: { slug: string }) => p.slug)).toEqual(['learner'])
     expect(typeof meta.firstTokenMs).toBe('number')
+  })
+
+  it('finishes the sentence with the next provider when one breaks after its results are on screen', async () => {
+    chain.models = [
+      { id: 'a', provider: 'Groq', model: 'model-a', create: breaksAfterTool },
+      { id: 'b', provider: 'Groq', model: 'model-b', create: writesSentence },
+    ]
+    const { chunks, meta } = await ask('how many years of experience does he have?')
+    expect(chunks.some((c) => c.type === 'error')).toBe(false) // the visitor never sees an error
+    expect(chunks.find((c) => c.type === 'tool-output-available')?.output.totals).toBeDefined() // results kept
+    expect(chunks.some((c) => c.type === 'reset-step')).toBe(true) // half-written step discarded
+    const text = chunks.filter((c) => c.type === 'text-delta').map((c) => c.delta).join('')
+    expect(text).toBe('About six years, since Feb 2020.')
+    expect(meta).toMatchObject({ source: 'live', model: 'model-a', finishedBy: 'model-b' })
+  })
+
+  it('writes the missing sentence when a model stops after its tool call without one', async () => {
+    let calls = 0
+    const mute = () => {
+      // Step 1: tool call. Step 2: finishes with no text. Step 3 (the finisher call): writes it.
+      return new MockLanguageModelV4({
+        doStream: async () => {
+          calls++
+          if (calls === 1) {
+            const chunks = [
+              { type: 'tool-call', toolCallId: 'c1', toolName: 'getExperience', input: '{}' },
+              { type: 'finish', finishReason: { unified: 'tool-calls', raw: undefined }, usage },
+            ]
+            return { stream: simulateReadableStream({ chunks: chunks as never[] }) }
+          }
+          if (calls === 2) {
+            return { stream: simulateReadableStream({ chunks: [{ type: 'finish', finishReason: { unified: 'stop', raw: undefined }, usage }] as never[] }) }
+          }
+          return writesSentence().doStream({} as never)
+        },
+      })
+    }
+    const shared = mute()
+    chain.models = [{ id: 'a', provider: 'Groq', model: 'model-a', create: () => shared }]
+    const { chunks, meta } = await ask('how many years of experience does he have?')
+    const text = chunks.filter((c) => c.type === 'text-delta').map((c) => c.delta).join('')
+    expect(text).toBe('About six years, since Feb 2020.')
+    expect(meta).toMatchObject({ source: 'live', finishedBy: 'model-a' })
+  })
+
+  it('says so plainly when no provider is left to finish the sentence', async () => {
+    chain.models = [{ id: 'a', provider: 'Groq', model: 'model-a', create: breaksAfterTool }]
+    const { chunks } = await ask('how many years of experience does he have?')
+    expect(chunks.some((c) => c.type === 'error')).toBe(false)
+    const text = chunks.filter((c) => c.type === 'text-delta').map((c) => c.delta).join('')
+    expect(text).toMatch(/reached its usage limit/)
+  })
+
+  it('impact results reach the model as plain sentences with their direction', async () => {
+    const { forModel } = await import('@/lib/demo/tools')
+    const r = forModel.getImpact(getImpact()).results
+    expect(r).toContain('EF EPI pages load 60% faster.')
+    for (const line of r) expect(line).toMatch(/faster|up|fewer/)
+  })
+
+  it('the model sees compact results, not the full component data', async () => {
+    const { forModel } = await import('@/lib/demo/tools')
+    const full = getStack()
+    const compact = forModel.getStack(full)
+    expect(JSON.stringify(compact).length).toBeLessThan(JSON.stringify(full).length * 0.75)
+    // A "does he know GraphQL" question queries it directly; the honest scope travels with it.
+    const graphql = forModel.getStack(getStack({ query: 'graphql' })).tech[0]
+    expect(graphql).toMatchObject({ name: 'GraphQL', learnedFrom: 'Documentation, courses' })
   })
 
   it('falls back to the offline router with real data when every model fails', async () => {

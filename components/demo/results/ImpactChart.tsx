@@ -1,11 +1,12 @@
 import type { getImpact } from '@/lib/demo/catalog'
 import { GrowBar } from '@/components/motion/GrowBar'
 import { Text } from '@/components/ui/Typography'
+import { FigureText } from '@/components/ui/FigureText'
 
 export function ImpactChart({ output }: { output: ReturnType<typeof getImpact> }) {
   return (
     <div>
-      <div className='grid gap-x-10 gap-y-7 sm:grid-cols-2'>
+      <div className='stagger grid gap-x-10 gap-y-7 sm:grid-cols-2'>
         {output.compares.map((c) => (
           <div key={c.key}>
             <div className='flex items-baseline justify-between gap-4'>
@@ -22,17 +23,14 @@ export function ImpactChart({ output }: { output: ReturnType<typeof getImpact> }
           </div>
         ))}
       </div>
-      <dl className='mt-8 grid grid-cols-3 gap-4 border-t border-border pt-5'>
-        {output.scale.map((s) => (
-          <div key={s.label} className='flex flex-col-reverse'>
-            <dt className='mt-1 text-[11px] uppercase tracking-wider text-faint'>{s.label}</dt>
-            <dd className='font-display text-2xl'>
-              {s.value}
-              {s.suffix}
-            </dd>
-          </div>
-        ))}
-      </dl>
+      <Text size='sm' className='mt-8 border-t border-border pt-5'>
+        <FigureText
+          text={`All of it at the scale of ${output.scale
+            .map((s) => `${s.value}${s.suffix} ${s.label.toLowerCase()}`)
+            .join(', ')
+            .replace(/, ([^,]*)$/, ' and $1')}.`}
+        />
+      </Text>
     </div>
   )
 }

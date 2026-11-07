@@ -158,15 +158,75 @@
   }
 }
 
-/* Demo: a quiet breathing placeholder while a tool result or first token is on its way. */
+/* ---------------------------------------------------------------------------
+   Demo motion — the answer should feel produced live. Transform/opacity only;
+   all of it stands still under reduced motion.
+   ------------------------------------------------------------------------- */
+.demo-caret {
+  display: inline-block;
+  width: 0.5em;
+  height: 1.05em;
+  margin-left: 0.15em;
+  vertical-align: text-bottom;
+  background: var(--accent);
+}
 @media (prefers-reduced-motion: no-preference) {
   .demo-pending {
     animation: pending 1.4s ease-in-out infinite;
   }
+  .demo-caret {
+    animation: caret 0.9s steps(1) infinite;
+  }
+  /* Results, the question and the notes land with a short rise. */
+  .demo-land {
+    animation: enter-up 520ms var(--ease-enter) both;
+  }
+  /* Result items cascade in, one after another. */
+  .stagger > * {
+    animation: enter-up 520ms var(--ease-enter) both;
+  }
+  .stagger > :nth-child(2) { animation-delay: 70ms; }
+  .stagger > :nth-child(3) { animation-delay: 140ms; }
+  .stagger > :nth-child(4) { animation-delay: 210ms; }
+  .stagger > :nth-child(5) { animation-delay: 280ms; }
+  .stagger > :nth-child(6) { animation-delay: 350ms; }
+  .stagger > :nth-child(n + 7) { animation-delay: 420ms; }
+  /* While working, an indeterminate line runs along the frame's top edge. */
+  .demo-frame[data-working]::before {
+    content: '';
+    position: absolute;
+    inset: -1px -1px auto;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    background-size: 40% 100%;
+    background-repeat: no-repeat;
+    animation: scan 1.2s ease-in-out infinite;
+  }
+  /* The replay "presses" Ask as the typed question is sent. */
+  .demo-press {
+    animation: press 600ms ease-out 1;
+  }
 }
 @keyframes pending {
-  50% {
-    opacity: 0.45;
+  50% { opacity: 0.45; }
+}
+@keyframes caret {
+  50% { opacity: 0; }
+}
+@keyframes scan {
+  from { background-position: -40% 0; }
+  to { background-position: 140% 0; }
+}
+@keyframes press {
+  60% { transform: translateY(1px); opacity: 0.85; }
+}
+
+/* View transitions (case-study image morphs) honour reduced motion. */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
   }
 }
 

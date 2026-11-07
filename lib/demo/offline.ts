@@ -5,7 +5,7 @@
  * to a live answer — only the sentence on top is canned.
  */
 import type { UIMessageStreamWriter } from 'ai'
-import { findWork, getImpact, getExperience, getStack, getContact, type Topic } from './catalog'
+import { findWork, getImpact, getExperience, getStack, getContact, careerTotals, type Topic } from './catalog'
 import type { DemoUIMessage, DemoMetadata } from './types'
 import type { DemoToolName } from './tools'
 import { SUGGESTED_PROMPTS } from './prompts'
@@ -48,11 +48,52 @@ const TOPIC_WORDS: Array<[RegExp, Topic]> = [
   [/cms|content/i, 'cms'],
 ]
 
-/** Deterministic keyword router: free text → the tool call a model would most likely make. */
+/** Every technology name the site lists (tech field + skill groups), longest first for matching. */
+const KNOWN_TECH = [
+  ...new Set([...getStack().tech.map((t) => t.name), ...getStack().groups.flatMap((g) => g.items)]),
+].sort((a, b) => b.length - a.length)
+
+const LOOSE = "The live model isn't answering right now, so this is the closest match from the site's data:"
+
+/**
+ * Deterministic router: free text → a specific answer where the question has a computable shape
+ * (how long, does he know X), otherwise the tool call a model would most likely make — with a
+ * lead that admits it's only the closest match.
+ */
 export function routeOffline(text: string): { lead: string; calls: Call[] } {
   const scripted = SCRIPTS[text.trim() as keyof typeof SCRIPTS]
   if (scripted) return scripted
   const t = text.toLowerCase()
+
+  // "How many years / how long …" → computed from the role dates.
+  if (/how (many|much) (years|experience)|how long|years of experience|years.*experience/.test(t)) {
+    const y = careerTotals()
+    return {
+      lead: `About ${y.yearsProfessional} years of professional frontend work, since ${y.professionalSince}, including ${y.yearsAtEf}+ years at EF Education First, whose consumer product sites reach 3.4M people a month.`,
+      calls: [{ name: 'getExperience', input: {} }],
+    }
+  }
+
+  // "Does he know / use / have experience with X?" → a yes or an honest no.
+  const tech = KNOWN_TECH.find((n) => new RegExp(`(^|[^a-z])${n.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}([^a-z]|$)`).test(t))
+  const asksAboutTech = /know|use[sd]?|using|experience (with|in)|worked with|familiar|skill|good at|proficien/.test(t)
+  if (tech && asksAboutTech) {
+    const found = getStack({ query: tech }).tech.find((x) => x.name.toLowerCase() === tech.toLowerCase())
+    return {
+      lead: found?.experience
+        ? `Yes. Ibrahim lists ${found.name} with ${found.experience} of experience.`
+        : `Yes, ${tech} is part of Ibrahim's listed stack.`,
+      calls: [{ name: 'getStack', input: { query: tech } }],
+    }
+  }
+  const unknownTech = t.match(/(?:know|use|using|experience with|worked with|familiar with)\s+([a-z0-9.+#-]{2,20})/)?.[1]
+  if (unknownTech && asksAboutTech && !/\b(ai|react|typescript|node|javascript)\b/.test(unknownTech)) {
+    return {
+      lead: `${unknownTech} isn't listed anywhere on this site, so I can't say. Here is what Ibrahim does list:`,
+      calls: [{ name: 'getStack', input: {} }],
+    }
+  }
+
   if (/hire|contact|email|reach|available|cv|resume/.test(t))
     return { lead: 'How to reach Ibrahim:', calls: [{ name: 'getContact', input: {} }] }
   if (/result|impact|metric|number|moved|improv|measur/.test(t))
@@ -60,10 +101,10 @@ export function routeOffline(text: string): { lead: string; calls: Call[] } {
   if (/worked|work(s|ed)? (at|for)|where .*work|career|experience|job|role|employ|compan/.test(t))
     return { lead: 'Where Ibrahim has worked:', calls: [{ name: 'getExperience', input: {} }] }
   const topic = TOPIC_WORDS.find(([re]) => re.test(t))?.[1]
-  if (topic) return { lead: 'The closest match on this site:', calls: [{ name: 'findWork', input: { topic } }] }
-  if (/stack|tech|language|framework|tool|know|react|typescript|node/.test(t))
+  if (topic) return { lead: LOOSE, calls: [{ name: 'findWork', input: { topic } }] }
+  if (/stack|tech|language|framework|tool/.test(t))
     return { lead: "Ibrahim's stack, by depth of experience:", calls: [{ name: 'getStack', input: {} }] }
-  return { lead: "A good place to start, Ibrahim's strongest work:", calls: [{ name: 'findWork', input: {} }] }
+  return { lead: LOOSE, calls: [{ name: 'findWork', input: {} }] }
 }
 
 export const RUN: Record<DemoToolName, (input: never) => unknown> = {

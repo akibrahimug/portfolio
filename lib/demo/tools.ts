@@ -1,6 +1,43 @@
 import { tool, type ToolSet } from 'ai'
+import type { findWork as FindWork, getImpact as GetImpact, getExperience as GetExperience, getStack as GetStack, getContact as GetContact } from './catalog'
 import { z } from 'zod'
-import { TOPICS, IMPACT_KEYS, STACK_AREAS, findWork, getImpact, getExperience, getStack, getContact } from './catalog'
+import { TOPICS, STACK_AREAS, findWork, getImpact, getExperience, getStack, getContact } from './catalog'
+
+const firstSentence = (s?: string) => (s ? (s.match(/^.*?[.!?](\s|$)/)?.[0] ?? s).trim().slice(0, 220) : undefined)
+
+/**
+ * What the *model* sees of each result: a compact summary. The UI still receives the full
+ * output for its component. Free tiers meter tokens per minute, and every step re-sends
+ * earlier results, so this keeps a multi-step answer to a fraction of the tokens.
+ */
+export const forModel = {
+  findWork: (o: ReturnType<typeof FindWork>) => ({
+    total: o.total,
+    projects: o.projects.map((p) => ({
+      title: p.title,
+      where: p.origin === 'ef' ? 'EF Education First' : 'independent',
+      year: p.year,
+      metric: p.metric,
+      about: firstSentence(p.summary),
+      stack: p.stack.slice(0, 4),
+    })),
+  }),
+  getImpact: (o: ReturnType<typeof GetImpact>) => ({
+    // Plain sentences carry the direction (faster, up, fewer); raw deltas like "−60%" got misread.
+    results: o.compares.map((m) => m.plain),
+    scale: o.scale.map((s) => `${s.value}${s.suffix} ${s.label.toLowerCase()}`),
+  }),
+  getExperience: (o: ReturnType<typeof GetExperience>) => ({
+    totals: o.totals,
+    roles: o.roles.map((r) => ({ company: r.company, title: r.title, period: r.period, topHighlight: r.highlights[0] })),
+  }),
+  getStack: (o: ReturnType<typeof GetStack>) => ({
+    tech: o.tech.map((t) => ({ name: t.name, experience: t.experience, note: firstSentence(t.note), learnedFrom: t.learnedFrom })),
+    areas: o.groups.map((g) => `${g.label}: ${g.items.join(', ')}`),
+  }),
+  getContact: (o: ReturnType<typeof GetContact>) => ({ email: o.email, cv: 'downloadable', socials: o.socials.map((s) => s.label) }),
+}
+const json = <T,>(fn: (o: T) => unknown) => ({ output }: { output: T }) => ({ type: 'json' as const, value: fn(output) as never })
 
 /**
  * The only way the model can learn anything about Ibrahim. Each tool is a thin, validated
@@ -22,17 +59,16 @@ export const demoTools = {
       limit: z.number().int().min(1).max(6).optional(),
     }),
     execute: async (input) => findWork(input),
+    toModelOutput: json(forModel.findWork),
   }),
   getImpact: tool({
     description:
-      'Measured before/after results from the EF platform work (CI time, test coverage, page load, incidents) and the scale it runs at. Use for questions about impact, results, numbers, or metrics. Renders a chart.',
-    inputSchema: z.object({
-      focus: z
-        .enum(IMPACT_KEYS)
-        .optional()
-        .describe('Only when the visitor names one specific metric; omit for general questions about results'),
-    }),
-    execute: async (input) => getImpact(input),
+      'All measured before/after results from the EF platform work (CI time, test coverage, page load, incidents) and the scale it runs at. Use for questions about impact, results, numbers, or metrics. Renders a chart.',
+    // Deliberately no filter: with four metrics, the whole chart always answers better,
+    // and small models over-narrowed it when given the option.
+    inputSchema: z.object({}),
+    execute: async () => getImpact(),
+    toModelOutput: json(forModel.getImpact),
   }),
   getExperience: tool({
     description: 'His roles and employers, most recent first. Use for career, jobs, or "where have you worked". Renders a timeline.',
@@ -44,6 +80,7 @@ export const demoTools = {
         .describe('Only when the visitor names a specific employer; omit otherwise'),
     }),
     execute: async (input) => getExperience(input),
+    toModelOutput: json(forModel.getExperience),
   }),
   getStack: tool({
     description:
@@ -57,11 +94,13 @@ export const demoTools = {
         .describe('Only when the visitor names a specific technology; omit otherwise'),
     }),
     execute: async (input) => getStack(input),
+    toModelOutput: json(forModel.getStack),
   }),
   getContact: tool({
-    description: 'How to contact or hire him, and his availability. Renders a contact card.',
+    description: 'How to contact or hire him. Renders a contact card.',
     inputSchema: z.object({}),
     execute: async () => getContact(),
+    toModelOutput: json(forModel.getContact),
   }),
 } satisfies ToolSet
 
