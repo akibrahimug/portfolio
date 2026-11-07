@@ -12,6 +12,7 @@ export const redesignContent = {
   nav: {
     brand: 'Ibrahim Kasoma',
     links: [
+      { href: '/#demo', label: 'Demo' },
       { href: '/#work', label: 'Work' },
       { href: '/#experience', label: 'Experience' },
       { href: '/#contact', label: 'Contact' },
@@ -25,7 +26,7 @@ export const redesignContent = {
       'Six years of production TypeScript and React, 80+ apps shipped. At EF Education First I ship across a Next.js platform used by 3.4M people a month in 60+ markets.',
     location: 'Stroud, Gloucestershire, UK',
     primaryCta: { label: 'Email me', href: 'mailto:kasomaibrahim@gmail.com' },
-    secondaryCta: { label: 'Ask AI (Live Demo)', href: '#ask' },
+    secondaryCta: { label: 'Ask AI (Live Demo)', href: '#demo' },
     avatarSrc: '/icons/avarta-cutout.webp',
     avatarWidth: 1221,
     avatarHeight: 1472,

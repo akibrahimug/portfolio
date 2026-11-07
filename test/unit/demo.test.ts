@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { simulateReadableStream } from 'ai'
 import { MockLanguageModelV4 } from 'ai/test'
 import { findWork, getImpact, getStack, getContact, getExperience, careerTotals } from '@/lib/demo/catalog'
-import { routeOffline } from '@/lib/demo/offline'
+import { routeOffline, exampleMessages } from '@/lib/demo/offline'
 import { SUGGESTED_PROMPTS } from '@/lib/demo/prompts'
 import { redesignContent } from '@/lib/redesign-content'
 // vi.mock calls below are hoisted above this import, so the route sees the mocks.
@@ -103,6 +103,14 @@ describe('offline router', () => {
     expect(yes.calls[0]).toEqual({ name: 'getStack', input: { query: 'TypeScript' } })
     const no = routeOffline('does he have experience with cobol')
     expect(no.lead).toMatch(/cobol isn't listed/i)
+  })
+
+  it('the demo section opens on a real, rendered tool result', () => {
+    const [q, a] = exampleMessages()
+    expect(q.role).toBe('user')
+    const tool = a.parts.find((p) => p.type === 'tool-findWork') as { state: string; output: { projects: unknown[] } }
+    expect(tool.state).toBe('output-available')
+    expect(tool.output.projects.length).toBeGreaterThan(0)
   })
 
   it('admits when it is only a loose match', () => {
@@ -301,6 +309,39 @@ describe('POST /api/demo', () => {
     const { meta } = await ask('How do I hire him?')
     expect(meta).toMatchObject({ source: 'offline', offlineReason: 'rate-limit' })
     expect(create).not.toHaveBeenCalled()
+  })
+
+  it('never lets the model answer from history: questions only, and step 1 must call a tool', async () => {
+    const seen: Array<{ roles: string[]; toolChoice: unknown; text: string }> = []
+    let step = 0
+    const spy = new MockLanguageModelV4({
+      doStream: async (options: any) => {
+        seen.push({
+          roles: options.prompt.map((m: any) => m.role),
+          toolChoice: options.toolChoice,
+          text: JSON.stringify(options.prompt),
+        })
+        return answering().doStream({} as never).then((r) => (step++, r))
+      },
+    })
+    chain.models = [{ id: 'a', provider: 'Groq', model: 'model-a', create: () => spy }]
+    // History holds the page's answered example; the visitor asks the same question again.
+    const [exampleQ, exampleA] = exampleMessages()
+    const res = await POST(
+      new Request('http://localhost/api/demo', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          messages: [exampleQ, exampleA, { id: 'u2', role: 'user', parts: [{ type: 'text', text: 'Show me his performance work' }] }],
+        }),
+      }),
+    )
+    await res.text()
+    expect(seen[0].roles).toEqual(['system', 'user']) // no assistant turns, no tool results
+    expect(seen[0].text).not.toContain('English Proficiency Index') // the example's data never reaches it
+    expect(seen[0].text).toContain('Earlier questions from this visitor')
+    expect(seen[0].toolChoice).toEqual({ type: 'required' })
+    expect(step).toBeGreaterThan(0)
   })
 
   it('rejects empty and over-long questions', async () => {

@@ -2,11 +2,10 @@
 
 import { useCallback, useEffect, useId, useRef, useState, type FormEvent } from 'react'
 import { usePathname } from 'next/navigation'
-import { useChat } from '@ai-sdk/react'
-import { DefaultChatTransport } from 'ai'
 import type { DemoUIMessage } from '@/lib/demo/types'
 import { SUGGESTED_PROMPTS } from '@/lib/demo/prompts'
 import { Answer } from './Answer'
+import { useDemoChat } from './DemoChatProvider'
 import { MarginNotes } from './MarginNotes'
 import { useTypewriter } from './useTypewriter'
 import { Container } from '@/components/ui/Container'
@@ -16,47 +15,55 @@ import { cn } from '@/components/ui/cn'
 
 const MAX_INPUT = 280
 const PLACEHOLDER = 'Ask about his work, results, stack…'
-const transport = new DefaultChatTransport<DemoUIMessage>({ api: '/api/demo' })
 
 /**
- * Show the bar once the home page's hero has scrolled away; everywhere else, always.
+ * The bar stands in for the live-demo section: on the home page it shows only while neither the
+ * hero nor the demo section is in view; on every other page, always.
  * A plain position check on scroll, not an IntersectionObserver: one started during the browser's
- * smooth scroll to a hash (e.g. /#work) reported the hero as visible and never fired again.
+ * smooth scroll to a hash (e.g. /#work) reported stale visibility and never fired again.
  */
 function useBarVisible(pathname: string) {
-  const [heroGone, setHeroGone] = useState(pathname !== '/')
+  const [show, setShow] = useState(pathname !== '/')
   useEffect(() => {
-    if (pathname !== '/') return setHeroGone(true)
+    if (pathname !== '/') return setShow(true)
     let frame = 0
     const check = () => {
       frame = 0
-      const hero = document.getElementById('top')
+      const vh = window.innerHeight
+      const hero = document.getElementById('top')?.getBoundingClientRect()
+      const demo = document.getElementById('demo')?.getBoundingClientRect()
       // Moved on from the hero: its bottom edge has risen into the top 40% of the screen.
-      setHeroGone(!hero || hero.getBoundingClientRect().bottom <= window.innerHeight * 0.4)
+      const heroGone = !hero || hero.bottom <= vh * 0.4
+      // The demo section is "in view" while any meaningful slice of it is on screen under the nav.
+      const demoInView = !!demo && demo.top < vh - 120 && demo.bottom > 160
+      setShow(heroGone && !demoInView)
     }
     const onScroll = () => {
       if (!frame) frame = requestAnimationFrame(check)
     }
     check()
     window.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('resize', onScroll)
     window.addEventListener('hashchange', onScroll)
     return () => {
       cancelAnimationFrame(frame)
       window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onScroll)
       window.removeEventListener('hashchange', onScroll)
     }
   }, [pathname])
-  return heroGone
+  return show
 }
 
 /**
- * The live demo, as a sticky ask bar under the nav on every page. Asking opens the answer in a
- * panel that drops down from the bar, over the page; Esc, ✕ or a click outside closes it and the
- * reader is exactly where they were. `#ask` links (the hero button) open and focus it.
+ * The live demo's stand-in when its section is out of view: a sticky ask bar under the nav (on
+ * every page). Same conversation as the section. Asking opens the answer in a panel that drops
+ * down over the page; Esc, ✕, a click outside or following a link in the answer closes it, and the
+ * reader is exactly where they were. `#ask` links open and focus it.
  */
 export function AskBar() {
   const pathname = usePathname()
-  const heroGone = useBarVisible(pathname ?? '/')
+  const barVisible = useBarVisible(pathname ?? '/')
   const [input, setInput] = useState('')
   const [open, setOpen] = useState(false)
   const [focused, setFocused] = useState(false)
@@ -65,10 +72,12 @@ export function AskBar() {
   const panelId = useId()
   const rootRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
-  const { messages, sendMessage, status, stop, error, regenerate } = useChat<DemoUIMessage>({ transport })
+  const { messages: all, sendMessage, status, stop, error, regenerate } = useDemoChat()
+  // The section's example answer isn't something the visitor asked: the bar starts after it.
+  const messages = all.filter((m) => m.metadata?.source !== 'example' && !m.id.startsWith('example-'))
 
   const busy = status === 'submitted' || status === 'streaming'
-  const visible = heroGone || focused || open
+  const visible = barVisible || focused || open
   const answer = [...messages].reverse().find((m) => m.role === 'assistant')
   const question = [...messages].reverse().find((m) => m.role === 'user')
   const questionText = question?.parts.find((p) => p.type === 'text')?.text

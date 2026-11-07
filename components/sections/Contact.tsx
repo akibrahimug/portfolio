@@ -113,7 +113,7 @@ export function Contact() {
 
   return (
     <Section id='contact'>
-      <Section.Header index='04' eyebrow='Contact'>
+      <Section.Header index='05' eyebrow='Contact'>
         <Section.Title>{contact.heading}</Section.Title>
         <Section.Intro>{contact.body}</Section.Intro>
       </Section.Header>
