@@ -145,3 +145,33 @@ export async function writeOffline(
   writer.write({ type: 'message-metadata', messageMetadata: { totalMs: Date.now() - t0 } })
   writer.write({ type: 'finish' })
 }
+
+/**
+ * The frame's resting state: a real answer to the first suggested prompt, computed from the
+ * same tools at render time, so the demo never shows an empty box.
+ */
+export function exampleMessages(): DemoUIMessage[] {
+  const question = SUGGESTED_PROMPTS[0]
+  const { lead, calls } = routeOffline(question)
+  return [
+    { id: 'example-q', role: 'user', parts: [{ type: 'text', text: question }] },
+    {
+      id: 'example-a',
+      role: 'assistant',
+      metadata: { source: 'example' },
+      parts: [
+        { type: 'text', text: lead, state: 'done' },
+        ...calls.map(
+          (call, i) =>
+            ({
+              type: `tool-${call.name}`,
+              toolCallId: `example-${i}`,
+              state: 'output-available',
+              input: call.input,
+              output: RUN[call.name](call.input as never),
+            }) as DemoUIMessage['parts'][number],
+        ),
+      ],
+    },
+  ]
+}

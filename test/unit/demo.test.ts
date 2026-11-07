@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { simulateReadableStream } from 'ai'
 import { MockLanguageModelV4 } from 'ai/test'
 import { findWork, getImpact, getStack, getContact, getExperience, careerTotals } from '@/lib/demo/catalog'
-import { routeOffline } from '@/lib/demo/offline'
+import { routeOffline, exampleMessages } from '@/lib/demo/offline'
 import { SUGGESTED_PROMPTS } from '@/lib/demo/prompts'
 import { redesignContent } from '@/lib/redesign-content'
 // vi.mock calls below are hoisted above this import, so the route sees the mocks.
@@ -103,6 +103,14 @@ describe('offline router', () => {
     expect(yes.calls[0]).toEqual({ name: 'getStack', input: { query: 'TypeScript' } })
     const no = routeOffline('does he have experience with cobol')
     expect(no.lead).toMatch(/cobol isn't listed/i)
+  })
+
+  it('the demo section opens on a real, rendered tool result', () => {
+    const [q, a] = exampleMessages()
+    expect(q.role).toBe('user')
+    const tool = a.parts.find((p) => p.type === 'tool-findWork') as { state: string; output: { projects: unknown[] } }
+    expect(tool.state).toBe('output-available')
+    expect(tool.output.projects.length).toBeGreaterThan(0)
   })
 
   it('admits when it is only a loose match', () => {

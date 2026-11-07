@@ -1,6 +1,7 @@
 import { structuredDataJson } from '@/lib/seo'
 import { Band } from '@/components/patterns/Band'
 import { Hero } from '@/components/sections/Hero'
+import { Demo } from '@/components/sections/Demo'
 import { CaseStudies } from '@/components/sections/CaseStudies'
 import { Experience } from '@/components/sections/Experience'
 import { About } from '@/components/sections/About'
@@ -16,6 +17,9 @@ export default function HomePage() {
       />
       <main>
         <Hero />
+        <Band>
+          <Demo />
+        </Band>
         <Band>
           <CaseStudies />
         </Band>

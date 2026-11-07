@@ -7,6 +7,7 @@ import { SITE_URL, ogImage } from '@/lib/seo'
 import { SiteNav } from '@/components/sections/SiteNav'
 import { Footer } from '@/components/sections/Footer'
 import { AskBar } from '@/components/demo/AskBar'
+import { DemoChatProvider } from '@/components/demo/DemoChatProvider'
 
 // Typefaces are wired to tokens (`--font-display`, `--font-sans`) in globals.css.
 // Editorial serif display (variable optical size + italic for accent emphasis) over a humanist sans.
@@ -84,10 +85,12 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <noscript>
           <style>{'[data-grow]{width:var(--pct)!important}'}</style>
         </noscript>
-        <SiteNav />
-        <AskBar />
-        {children}
-        <Footer />
+        <DemoChatProvider>
+          <SiteNav />
+          <AskBar />
+          {children}
+          <Footer />
+        </DemoChatProvider>
       </body>
     </html>
   )

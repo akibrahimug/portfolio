@@ -9,7 +9,7 @@ export function Experience() {
 
   return (
     <Section id='experience'>
-      <Section.Header index='02' eyebrow='Experience'>
+      <Section.Header index='03' eyebrow='Experience'>
         <Section.Title>{experience.heading}</Section.Title>
       </Section.Header>
       <Section.Body>
