@@ -4,7 +4,7 @@ import { Fragment } from 'react'
 const FIGURE = /([−~]?\d[\d,.]*(?:\s?→\s?\d[\d,.]*)?(?:%|M\+?|k\+?|\+)?)/g
 
 /**
- * Sets each figure in a sentence in the display serif, so numbers carry weight inside the
+ * Sets each figure in a sentence bold and in ink, so numbers carry weight inside the
  * sentence they prove — instead of a strip of figures under it (a known model-page tell).
  */
 export function FigureText({ text }: { text: string }) {
@@ -13,7 +13,7 @@ export function FigureText({ text }: { text: string }) {
     <>
       {parts.map((part, i) =>
         i % 2 === 1 ? (
-          <span key={i} className='whitespace-nowrap font-display text-[1.18em] leading-none text-foreground'>
+          <span key={i} data-figure className='whitespace-nowrap font-semibold text-foreground'>
             {part}
           </span>
         ) : (

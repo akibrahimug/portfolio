@@ -21,11 +21,11 @@ export function SiteNav() {
     <header
       className={cn(
         'nav fixed inset-x-0 top-0 z-50 border-b transition-colors duration-300',
-        scrolled ? 'border-border bg-background/85 backdrop-blur-md' : 'border-transparent',
+        scrolled ? 'border-border bg-background/90 backdrop-blur-md' : 'border-transparent',
       )}
     >
       <Container className='flex h-16 items-center justify-between gap-6'>
-        <a href='/' className='font-display text-lg tracking-tight'>
+        <a href='/' className='font-display text-lg tracking-[-0.02em]'>
           {nav.brand}
         </a>
         <nav aria-label='Primary'>
@@ -36,7 +36,7 @@ export function SiteNav() {
               </li>
             ))}
             <li>
-              <TextLink href={cv.href} download>
+              <TextLink href={cv.href} download className='font-semibold text-foreground'>
                 {cv.label}
               </TextLink>
             </li>

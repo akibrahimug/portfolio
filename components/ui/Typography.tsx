@@ -13,8 +13,7 @@ const displaySize: Record<DisplaySize, string> = {
 }
 
 /**
- * Display heading. Semantic level and visual size are independent.
- * Wrap a word in <em> for the accent-italic emphasis.
+ * Display heading (bold, tight). Semantic level and visual size are independent.
  */
 export function Heading({
   level = 2,
@@ -26,7 +25,7 @@ export function Heading({
   return (
     <Tag
       className={cn(
-        'font-display text-balance [&_em]:text-accent [&_em]:italic',
+        'font-display text-balance',
         displaySize[size],
         className,
       )}
@@ -58,7 +57,7 @@ export function Text({
   return <p className={cn('text-pretty', textSize[size], tone[t], className)} {...rest} />
 }
 
-/** Small uppercase label. Renders a <p> unless `as` is given. */
+/** Small quiet label above a heading or value, in sentence case. Renders a <p> unless `as` is given. */
 export function Eyebrow({
   as: Tag = 'p',
   className,
@@ -71,7 +70,7 @@ export function Eyebrow({
   children: ReactNode
 }) {
   return (
-    <Tag className={cn('text-xs uppercase tracking-[0.2em] text-faint', className)} style={style}>
+    <Tag className={cn('text-sm font-medium text-faint', className)} style={style}>
       {children}
     </Tag>
   )

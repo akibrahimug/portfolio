@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useId, useRef, useState, type FormEvent } from 'react'
 import { usePathname } from 'next/navigation'
-import type { DemoUIMessage } from '@/lib/demo/types'
 import { SUGGESTED_PROMPTS } from '@/lib/demo/prompts'
 import { Answer } from './Answer'
 import { useDemoChat } from './DemoChatProvider'
@@ -12,6 +11,7 @@ import { Container } from '@/components/ui/Container'
 import { Eyebrow } from '@/components/ui/Typography'
 import { Button, Arrow } from '@/components/ui/Button'
 import { cn } from '@/components/ui/cn'
+import { XIcon } from '@phosphor-icons/react/ssr'
 
 const MAX_INPUT = 280
 const PLACEHOLDER = 'Ask about his work, results, stack…'
@@ -58,7 +58,7 @@ function useBarVisible(pathname: string) {
 /**
  * The live demo's stand-in when its section is out of view: a sticky ask bar under the nav (on
  * every page). Same conversation as the section. Asking opens the answer in a panel that drops
- * down over the page; Esc, ✕, a click outside or following a link in the answer closes it, and the
+ * down over the page; Esc, the close button, a click outside or following a link in the answer closes it, and the
  * reader is exactly where they were. `#ask` links open and focus it.
  */
 export function AskBar() {
@@ -141,7 +141,7 @@ export function AskBar() {
         <Container>
           <form onSubmit={onSubmit} className='relative flex items-center gap-3 py-2.5'>
             {busy && <span aria-hidden className='demo-scan pointer-events-none absolute inset-x-0 -bottom-px h-0.5' />}
-            <label htmlFor={inputId} className='shrink-0 text-xs uppercase tracking-wider text-faint'>
+            <label htmlFor={inputId} className='shrink-0 text-sm font-semibold'>
               Ask AI
             </label>
             <input
@@ -159,7 +159,7 @@ export function AskBar() {
               autoComplete='off'
               aria-expanded={open}
               aria-controls={panelId}
-              className='min-w-0 flex-1 bg-transparent py-2 text-base placeholder:text-faint'
+              className='min-w-0 flex-1 rounded-full bg-muted px-5 py-2 text-base placeholder:text-faint'
             />
             {busy ? (
               <Button variant='outline' className='py-2' onClick={() => stop()}>
@@ -180,15 +180,15 @@ export function AskBar() {
           <section
             id={panelId}
             aria-label='Answer'
-            className='demo-land max-h-[calc(100svh-10rem)] overflow-y-auto border border-border-strong bg-background shadow-[0_24px_48px_-24px_rgb(0_0_0/0.25)]'
+            className='demo-land max-h-[calc(100svh-10rem)] overflow-y-auto rounded-3xl border border-border-strong bg-background shadow-[0_24px_48px_-24px_rgb(0_0_0/0.25)]'
           >
             <div className='flex items-start justify-between gap-4 border-b border-border px-5 py-4 md:px-7'>
               <div className='min-w-0'>
-                <Eyebrow as='span' className='tracking-wider'>
+                <Eyebrow as='span'>
                   {questionText ? 'You asked' : 'Ask about Ibrahim’s work'}
                 </Eyebrow>
                 {questionText ? (
-                  <p className='mt-1 font-display text-display-sm italic'>“{questionText}”</p>
+                  <p className='mt-1 font-display text-display-sm'>{questionText}</p>
                 ) : (
                   <p className='mt-1 max-w-xl text-sm text-muted-foreground'>
                     A free model answers from this site’s own data and shows the answer as the same components the
@@ -202,7 +202,7 @@ export function AskBar() {
                     type='button'
                     aria-pressed={showHow}
                     onClick={() => setShowHow((v) => !v)}
-                    className='min-h-9 border border-border px-3 py-1.5 text-xs uppercase tracking-wider text-muted-foreground transition-colors hover:border-accent hover:text-foreground aria-pressed:border-accent aria-pressed:text-accent'
+                    className='min-h-9 rounded-full border border-border px-4 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:border-foreground hover:text-foreground aria-pressed:border-foreground aria-pressed:bg-foreground aria-pressed:text-background'
                   >
                     {showHow ? 'Hide how' : 'Show how'}
                   </button>
@@ -211,9 +211,9 @@ export function AskBar() {
                   type='button'
                   onClick={() => setOpen(false)}
                   aria-label='Close answer'
-                  className='inline-flex min-h-9 min-w-9 items-center justify-center text-muted-foreground transition-colors hover:text-foreground'
+                  className='inline-flex min-h-9 min-w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground'
                 >
-                  ✕
+                  <XIcon aria-hidden weight='bold' className='size-4' />
                 </button>
               </div>
             </div>
@@ -253,7 +253,7 @@ export function AskBar() {
                     type='button'
                     disabled={busy}
                     onClick={() => ask(p)}
-                    className='min-h-9 border border-border px-3 py-1.5 text-sm text-muted-foreground transition-[color,border-color,transform] duration-200 hover:border-accent hover:text-foreground motion-safe:hover:-translate-y-px disabled:opacity-50'
+                    className='min-h-9 rounded-full border border-border px-4 py-1.5 text-sm text-muted-foreground transition-[color,border-color,background-color,transform] duration-200 hover:border-foreground hover:text-foreground motion-safe:hover:-translate-y-px disabled:opacity-50'
                   >
                     {p}
                   </button>

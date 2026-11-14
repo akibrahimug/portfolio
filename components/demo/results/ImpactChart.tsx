@@ -10,7 +10,7 @@ export function ImpactChart({ output }: { output: ReturnType<typeof getImpact> }
         {output.compares.map((c) => (
           <div key={c.key}>
             <div className='flex items-baseline justify-between gap-4'>
-              <span className='font-display text-lg'>{c.label}</span>
+              <span className='text-lg font-semibold'>{c.label}</span>
               <span className='font-display text-xl text-accent'>{c.delta}</span>
             </div>
             <Text size='sm' className='mt-1'>

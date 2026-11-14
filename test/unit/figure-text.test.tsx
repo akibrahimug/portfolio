@@ -5,7 +5,7 @@ import { redesignContent } from '@/lib/redesign-content'
 
 const figures = (text: string) => {
   const { container } = render(<p><FigureText text={text} /></p>)
-  return { all: [...container.querySelectorAll('span.font-display')].map((s) => s.textContent), text: container.textContent }
+  return { all: [...container.querySelectorAll('span[data-figure]')].map((s) => s.textContent), text: container.textContent }
 }
 
 describe('FigureText', () => {

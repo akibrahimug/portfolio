@@ -7,7 +7,9 @@ import {
 import { emailLogoBase64 } from '@/lib/email-logo'
 
 const TO = process.env.RESEND_TO_EMAIL || 'kasomaibrahim@gmail.com'
-const FROM = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev'
+/** Resend's shared sender: needs no verified domain, but only delivers to the account owner. */
+const FALLBACK_FROM = 'onboarding@resend.dev'
+const FROM = process.env.RESEND_FROM_EMAIL || FALLBACK_FROM
 
 const logoAttachment = {
   filename: 'logo.png',
@@ -47,12 +49,13 @@ export async function POST(req: Request) {
 
   // Constructed per request: Resend throws without a key, and the key check above fails soft.
   const resend = new Resend(process.env.RESEND_API_KEY)
-  const fromHeader = `Ibrahim Kasoma <${FROM}>`
+  const notify = notificationEmail({ name: trimmedName, email: trimmedEmail, message: trimmedMessage })
 
-  try {
-    const notify = notificationEmail({ name: trimmedName, email: trimmedEmail, message: trimmedMessage })
-    await resend.emails.send({
-      from: fromHeader,
+  // The SDK does not throw on an API failure (bad key, unverified domain): it resolves with
+  // `{ error }`. Treating that as success is how the form once said "Sent" and delivered nothing.
+  const sendNotification = (from: string) =>
+    send(resend, {
+      from: `Ibrahim Kasoma <${from}>`,
       to: TO,
       replyTo: trimmedEmail,
       subject: notify.subject,
@@ -60,24 +63,40 @@ export async function POST(req: Request) {
       text: notify.text,
       attachments: [logoAttachment],
     })
-  } catch {
-    return json({ error: 'Could not send right now. Try again in a moment.' }, 500)
+
+  let failure = await sendNotification(FROM)
+  // A from-domain Resend has not verified is refused outright. Resend's own sender still
+  // delivers to the account owner, so the message reaches the inbox while the domain is fixed.
+  if (failure && FROM !== FALLBACK_FROM && /domain|verif/i.test(failure)) {
+    console.error(`[contact] ${FROM} was refused (${failure}); retrying from ${FALLBACK_FROM}`)
+    failure = await sendNotification(FALLBACK_FROM)
+  }
+  if (failure) {
+    console.error(`[contact] notification not sent: ${failure}`)
+    return json({ error: 'Could not send right now. Please email me instead.' }, 502)
   }
 
   // Best-effort confirmation to the visitor — failure here doesn't fail the request.
-  try {
-    const ack = acknowledgementEmail({ name: trimmedName, message: trimmedMessage })
-    await resend.emails.send({
-      from: fromHeader,
-      to: trimmedEmail,
-      subject: ack.subject,
-      html: ack.html,
-      text: ack.text,
-      attachments: [logoAttachment],
-    })
-  } catch {
-    /* swallow — primary notification already delivered */
-  }
+  const ack = acknowledgementEmail({ name: trimmedName, message: trimmedMessage })
+  const ackFailure = await send(resend, {
+    from: `Ibrahim Kasoma <${FROM}>`,
+    to: trimmedEmail,
+    subject: ack.subject,
+    html: ack.html,
+    text: ack.text,
+    attachments: [logoAttachment],
+  })
+  if (ackFailure) console.error(`[contact] acknowledgement not sent: ${ackFailure}`)
 
   return json({ ok: true })
+}
+
+/** Sends one email. Resolves with null on success, or the reason it was not sent. */
+async function send(resend: Resend, email: Parameters<Resend['emails']['send']>[0]): Promise<string | null> {
+  try {
+    const { error } = await resend.emails.send(email)
+    return error ? `${error.name}: ${error.message}` : null
+  } catch (e) {
+    return e instanceof Error ? e.message : String(e)
+  }
 }

@@ -8,7 +8,7 @@ import { useDemoChat } from './DemoChatProvider'
 import { MarginNotes } from './MarginNotes'
 import { useIntroReplay } from './useIntroReplay'
 import { useTypewriter } from './useTypewriter'
-import { Text, Eyebrow } from '@/components/ui/Typography'
+import { Eyebrow } from '@/components/ui/Typography'
 import { Button, Arrow } from '@/components/ui/Button'
 import { cn } from '@/components/ui/cn'
 
@@ -58,25 +58,25 @@ export function DemoConsole({ initialMessages }: { initialMessages: DemoUIMessag
           // Any focus inside the demo ends the intro at once (it re-renders the answer area).
           onFocusCapture={finish}
           className={cn(
-            'demo-frame relative border bg-card/40 transition-colors duration-500',
-            working ? 'border-accent/70' : 'border-border-strong',
+            'demo-frame relative rounded-3xl border bg-background transition-colors duration-500',
+            working ? 'border-accent/60' : 'border-border-strong',
           )}
           data-working={working || undefined}
         >
           {/* question + status */}
           <div className='flex items-start justify-between gap-4 border-b border-border px-5 py-4 md:px-7'>
             <div className='min-h-14 min-w-0'>
-              <Eyebrow as='span' className='tracking-wider'>
+              <Eyebrow as='span'>
                 {answer?.metadata?.source === 'example' || replaying ? 'Example question' : 'You asked'}
               </Eyebrow>
-              {questionText && <p className='demo-land mt-1 font-display text-display-sm italic'>“{questionText}”</p>}
+              {questionText && <p className='demo-land mt-1 font-display text-display-sm'>{questionText}</p>}
             </div>
             <div className='flex shrink-0 items-center gap-4'>
               <button
                 type='button'
                 aria-pressed={showHow}
                 onClick={() => setShowHow((v) => !v)}
-                className='min-h-9 border border-border px-3 py-1.5 text-xs uppercase tracking-wider text-muted-foreground transition-colors hover:border-accent hover:text-foreground aria-pressed:border-accent aria-pressed:text-accent'
+                className='min-h-9 rounded-full border border-border px-4 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:border-foreground hover:text-foreground aria-pressed:border-foreground aria-pressed:bg-foreground aria-pressed:text-background'
               >
                 {showHow ? 'Hide how' : 'Show how'}
               </button>
@@ -101,7 +101,7 @@ export function DemoConsole({ initialMessages }: { initialMessages: DemoUIMessag
           </div>
 
           {/* ask */}
-          <form onSubmit={onSubmit} className='border-t border-border px-5 py-4 md:px-7'>
+          <form onSubmit={onSubmit} className='rounded-b-3xl border-t border-border bg-card px-5 py-5 md:px-7'>
             <label htmlFor={inputId} className='sr-only'>
               Ask about Ibrahim&apos;s work
             </label>
@@ -118,7 +118,7 @@ export function DemoConsole({ initialMessages }: { initialMessages: DemoUIMessag
                 maxLength={MAX_INPUT}
                 placeholder={placeholder}
                 autoComplete='off'
-                className='min-w-0 flex-1 border-b border-border-strong bg-transparent py-2.5 text-base placeholder:text-faint focus-visible:border-accent'
+                className='min-w-0 flex-1 rounded-full border border-border-strong bg-background px-5 py-2.5 text-base placeholder:text-faint transition-colors hover:border-foreground/60 focus-visible:border-foreground'
               />
               {busy ? (
                 <Button variant='outline' onClick={() => stop()}>
@@ -138,7 +138,7 @@ export function DemoConsole({ initialMessages }: { initialMessages: DemoUIMessag
                     type='button'
                     disabled={busy}
                     onClick={() => ask(p)}
-                    className='min-h-9 border border-border px-3 py-1.5 text-sm text-muted-foreground transition-[color,border-color,transform] duration-200 hover:border-accent hover:text-foreground motion-safe:hover:-translate-y-px disabled:opacity-50'
+                    className='min-h-9 rounded-full border border-border px-4 py-1.5 text-sm text-muted-foreground transition-[color,border-color,background-color,transform] duration-200 hover:border-foreground hover:text-foreground motion-safe:hover:-translate-y-px disabled:opacity-50 bg-background'
                   >
                     {p}
                   </button>

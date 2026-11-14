@@ -20,7 +20,7 @@ function ToolResult({ part }: { part: Part }) {
   if (!isStaticToolUIPart(part)) return null
   if (part.state === 'output-error') return <Text size='sm'>That lookup failed. Try asking another way.</Text>
   if (part.state !== 'output-available') {
-    return <div className='demo-pending h-40 border border-dashed border-border' aria-label='Loading result' />
+    return <div className='demo-pending h-40 rounded-2xl bg-muted' aria-label='Loading result' />
   }
   const View = RESULT_VIEWS[toolName(part)] as React.ComponentType<{ output: unknown }>
   return (
@@ -38,7 +38,7 @@ export function Answer({ message }: { message: DemoUIMessage }) {
   return (
     <div className='space-y-6'>
       {message.metadata?.source === 'offline' && (
-        <p className='demo-land border-l-2 border-accent pl-3 text-sm text-muted-foreground'>
+        <p className='demo-land rounded-2xl bg-muted px-4 py-3 text-sm text-muted-foreground'>
           {OFFLINE_NOTE[message.metadata.offlineReason ?? 'unavailable']}
         </p>
       )}

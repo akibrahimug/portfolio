@@ -20,7 +20,7 @@ export const TOPICS = [
 ] as const
 export type Topic = (typeof TOPICS)[number]
 
-export type WorkRecord = {
+type WorkRecord = {
   slug: string
   title: string
   kind: string
@@ -96,7 +96,6 @@ export function getImpact({ focus }: { focus?: string } = {}) {
     scale: c.impact.scale.map((s) => ({ ...s })),
   }
 }
-export const IMPACT_KEYS = c.impact.compares.map((m) => m.key) as [string, ...string[]]
 
 const MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
 /** 'Feb 2020–Nov 2022' → the start as a Date (first of the month). */

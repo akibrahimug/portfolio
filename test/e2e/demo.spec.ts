@@ -7,7 +7,7 @@ test.describe('live demo (offline mode: real tools, no model)', () => {
   test('opens on a real example answer, never an empty frame', async ({ page }) => {
     await page.goto('/#demo')
     const demo = page.locator('#demo')
-    await expect(demo.getByText('“Show me his performance work”')).toBeVisible()
+    await expect(demo.locator('p', { hasText: 'Show me his performance work' })).toBeVisible()
     await expect(demo.getByRole('link', { name: /EF EPI/ })).toBeVisible()
   })
 
@@ -15,7 +15,7 @@ test.describe('live demo (offline mode: real tools, no model)', () => {
     await page.goto('/#demo')
     const demo = page.locator('#demo')
     await demo.getByRole('button', { name: 'How do I hire him?' }).click()
-    await expect(demo.getByText('“How do I hire him?”')).toBeVisible()
+    await expect(demo.locator('p', { hasText: 'How do I hire him?' })).toBeVisible()
     await expect(demo.getByRole('link', { name: /Email Ibrahim/ })).toBeVisible()
   })
 
@@ -50,7 +50,7 @@ test('with motion, the demo plays its example answer once it is scrolled into vi
   await demo.scrollIntoViewIfNeeded()
   // It plays (busy), then lands on the finished example.
   await expect(demo.locator('[aria-busy=true]')).toHaveCount(1, { timeout: 8000 })
-  await expect(demo.getByText('“Show me his performance work”')).toBeVisible({ timeout: 8000 })
+  await expect(demo.locator('p', { hasText: 'Show me his performance work' })).toBeVisible({ timeout: 8000 })
   await expect(demo.getByRole('link', { name: /EF EPI/ })).toBeVisible({ timeout: 8000 })
   await expect(demo.locator('[aria-busy=true]')).toHaveCount(0, { timeout: 8000 })
 })
@@ -99,7 +99,7 @@ test.describe('sticky ask bar', () => {
     await page.locator('#experience').scrollIntoViewIfNeeded()
     await expect(bar(page)).not.toHaveAttribute('inert', '')
     await page.getByRole('textbox', { name: 'Ask AI' }).focus()
-    await expect(panel(page).getByText('“How do I hire him?”')).toBeVisible()
+    await expect(panel(page).locator('p', { hasText: 'How do I hire him?' })).toBeVisible()
   })
 
   test('asking from the bar opens the answer over the page; Esc closes it in place', async ({ page }) => {

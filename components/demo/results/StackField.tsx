@@ -23,7 +23,7 @@ export function StackField({ output }: { output: ReturnType<typeof getStack> }) 
           {output.tech.map((t) => (
             <li key={t.name} className={cn('font-display leading-tight', tier(t.confidence))}>
               {t.name}
-              {t.experience && <span className='ml-1.5 align-middle text-[11px] font-sans text-faint'>{t.experience}</span>}
+              {t.experience && <span className='ml-1.5 align-middle text-xs font-normal tracking-normal text-faint'>{t.experience}</span>}
             </li>
           ))}
         </ul>
@@ -32,7 +32,7 @@ export function StackField({ output }: { output: ReturnType<typeof getStack> }) 
         <dl className='mt-6 grid gap-x-8 gap-y-3 border-t border-border pt-5 sm:grid-cols-2'>
           {output.groups.map((g) => (
             <div key={g.label}>
-              <Eyebrow as='dt' className='tracking-wider'>
+              <Eyebrow as='dt' className='font-semibold text-foreground'>
                 {g.label}
               </Eyebrow>
               <dd className='mt-1 text-sm text-muted-foreground'>{g.items.join(' · ')}</dd>

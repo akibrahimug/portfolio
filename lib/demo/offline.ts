@@ -107,7 +107,7 @@ export function routeOffline(text: string): { lead: string; calls: Call[] } {
   return { lead: LOOSE, calls: [{ name: 'findWork', input: {} }] }
 }
 
-export const RUN: Record<DemoToolName, (input: never) => unknown> = {
+const RUN: Record<DemoToolName, (input: never) => unknown> = {
   findWork: findWork as (i: never) => unknown,
   getImpact: getImpact as (i: never) => unknown,
   getExperience: getExperience as (i: never) => unknown,
