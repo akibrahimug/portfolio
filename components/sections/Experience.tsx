@@ -9,18 +9,18 @@ export function Experience() {
 
   return (
     <Section id='experience'>
-      <Section.Header index='03' eyebrow='Experience'>
+      <Section.Header>
         <Section.Title>{experience.heading}</Section.Title>
       </Section.Header>
       <Section.Body>
         <div className='space-y-px'>
-          {experience.roles.map((role, i) => {
+          {experience.roles.map((role) => {
             const href = 'href' in role ? (role.href as string) : undefined
             return (
               <div key={`${role.company}-${role.title}-${role.period}`}>
                 <div className='grid gap-4 border-t border-border py-9 md:grid-cols-12 md:gap-6'>
                   <div className='text-sm md:col-span-3'>
-                    <p className='text-faint'>{role.period}</p>
+                    <p className='font-semibold text-foreground'>{role.period}</p>
                     <p className='mt-1 text-muted-foreground'>{role.place}</p>
                   </div>
                   <div className='md:col-span-9'>
@@ -28,7 +28,7 @@ export function Experience() {
                       {role.title && (
                         <>
                           {role.title}
-                          <span className='text-muted-foreground'> · </span>
+                          <span className='font-normal text-faint'> · </span>
                         </>
                       )}
                       {href ? (
@@ -50,8 +50,8 @@ export function Experience() {
         <div className='mt-10 grid gap-4 border-t border-border pt-8 sm:grid-cols-2 md:grid-cols-12 md:gap-6 [&>*]:md:col-span-3 [&>*:first-child]:md:col-start-4'>
           {experience.education.map((e) => (
             <div key={e.school}>
-              <Eyebrow className='tracking-wider'>{e.period}</Eyebrow>
-              <p className='mt-1 font-display text-base'>{e.school}</p>
+              <Eyebrow>{e.period}</Eyebrow>
+              <p className='mt-1 text-base font-semibold'>{e.school}</p>
               <p className='text-sm text-muted-foreground'>{e.course}</p>
             </div>
           ))}

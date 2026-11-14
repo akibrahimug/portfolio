@@ -63,8 +63,8 @@ export default async function CaseStudyPage({ params }: Params) {
       />
       <article>
         <Container className='pt-28 md:pt-36'>
-          <Link href='/#work' className='inline-flex min-h-11 items-center gap-2 text-sm text-muted-foreground hover:text-foreground'>
-            <span aria-hidden>←</span> All case studies
+          <Link href='/#work' className='group inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground'>
+            <Arrow dir='left' /> All case studies
           </Link>
           <Eyebrow className='mt-8'>
             {c.origin === 'ef' ? 'EF Education First' : 'Independent'} · {c.period}
@@ -112,7 +112,7 @@ export default async function CaseStudyPage({ params }: Params) {
               <div>
                 <Eyebrow as='dt'>Stack</Eyebrow>
                 <dd className='mt-1'>
-                  <TagList items={c.stack} className='gap-x-3' />
+                  <TagList items={c.stack} className='mt-1' />
                 </dd>
               </div>
             </dl>
@@ -141,7 +141,7 @@ export default async function CaseStudyPage({ params }: Params) {
           <Link href={`/work/${next.slug}`} transitionTypes={['to-case']} className='group grid gap-6 border-t border-border pt-10 md:grid-cols-12 md:gap-6'>
             <div className='md:col-span-5'>
               <Eyebrow>Next case study</Eyebrow>
-              <Heading level={2} size='lg' className='mt-3 group-hover:text-accent'>
+              <Heading level={2} size='lg' className='mt-3'>
                 {next.title}
               </Heading>
               <Text className='mt-3'>{next.lede}</Text>

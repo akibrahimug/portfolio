@@ -8,10 +8,10 @@ import { cn } from '@/components/ui/cn'
  */
 export function LeadFigure({ lead, size = 'md', className }: { lead: Lead; size?: 'md' | 'lg'; className?: string }) {
   return (
-    <p className={cn('grid items-center gap-x-5 gap-y-2 border-t border-border pt-5 sm:grid-cols-[auto_1fr]', className)}>
+    <p className={cn('grid items-center gap-x-5 gap-y-2 border-t border-foreground/15 pt-5 sm:grid-cols-[auto_1fr]', className)}>
       <span
         className={cn(
-          'whitespace-nowrap font-display leading-none tracking-tight text-accent',
+          'whitespace-nowrap font-display leading-none text-accent',
           size === 'lg' ? 'text-display-xl' : 'text-display-lg',
         )}
       >

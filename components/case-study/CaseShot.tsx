@@ -23,7 +23,7 @@ export function CaseShot({
 }) {
   return (
     <ViewTransition name={`case-shot-${slug}`}>
-      <div className={cn('relative aspect-[16/10] overflow-hidden border border-border bg-muted', className)}>
+      <div className={cn('relative aspect-[16/10] overflow-hidden rounded-2xl border border-border bg-muted md:rounded-3xl', className)}>
         <Image
           src={src}
           alt={alt}

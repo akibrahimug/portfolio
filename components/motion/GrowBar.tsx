@@ -22,9 +22,9 @@ export function GrowBar({
 }) {
   return (
     <div className='flex items-center gap-3'>
-      <div className='relative h-2 flex-1 overflow-hidden bg-muted'>
+      <div className='relative h-2 flex-1 overflow-hidden rounded-full bg-muted'>
         <motion.div
-          className={cn('h-full', accent ? 'bg-accent' : 'bg-foreground/20')}
+          className={cn('h-full rounded-full', accent ? 'bg-accent' : 'bg-foreground/25')}
           data-grow=''
           initial={{ width: 0 }}
           whileInView={{ width: `${pct}%` }}

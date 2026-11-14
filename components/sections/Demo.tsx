@@ -5,9 +5,9 @@ import { exampleMessages } from '@/lib/demo/offline'
 export function Demo() {
   return (
     <Section id='demo'>
-      <Section.Header index='01' eyebrow='Live demo'>
+      <Section.Header>
         <Section.Title>
-          Ask a <em>free model</em> about my work.
+          Ask a free model about my work.
         </Section.Title>
         <Section.Intro>
           The model reads this site through five tools and can only use what they return, so every figure is

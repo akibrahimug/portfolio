@@ -79,12 +79,12 @@ export function MarginNotes({ message, busy }: { message?: DemoUIMessage; busy: 
     )
 
   return (
-    <div className='border-l border-border pl-5 md:sticky md:top-24'>
+    <div className='rounded-3xl bg-card p-6 md:sticky md:top-24'>
       <Eyebrow>How this answer was made</Eyebrow>
       <ol className='mt-4 space-y-4'>
         {notes.map((n, i) => (
           <li key={i} className='flex gap-3 text-sm leading-relaxed text-muted-foreground'>
-            <span className='font-display text-accent' aria-hidden>
+            <span className='font-semibold tabular-nums text-foreground' aria-hidden>
               {i + 1}
             </span>
             <span>{n}</span>

@@ -29,7 +29,7 @@ function knowsAbout(): string[] {
 }
 
 function person() {
-  const { hero, about, contact, experience } = redesignContent
+  const { hero, contact, experience } = redesignContent
   return {
     '@type': 'Person',
     '@id': PERSON_ID,

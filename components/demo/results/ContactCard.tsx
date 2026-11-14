@@ -18,8 +18,8 @@ export function ContactCard({ output }: { output: ReturnType<typeof getContact> 
       <ul className='mt-5 flex flex-wrap gap-x-6 gap-y-2'>
         {output.socials.map((s) => (
           <li key={s.href}>
-            <TextLink variant='action' external href={s.href}>
-              {s.label} ↗
+            <TextLink variant='action' external href={s.href} className='group inline-flex items-center gap-1.5'>
+              {s.label} <Arrow dir='out' />
             </TextLink>
           </li>
         ))}

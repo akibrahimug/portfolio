@@ -8,11 +8,15 @@
    ========================================================================== */
 
 @theme inline {
-  --radius: 0.15rem;
+  /* Radius scale: chips/buttons are pills; fields 12px; cards and pictures 16px; frames 24px. */
+  --radius-field: 0.75rem;
+  --radius-card: 1rem;
+  --radius-frame: 1.5rem;
 
   /* Typefaces — CSS variables are injected by next/font in app/layout.tsx */
-  --font-display: var(--font-display-face), ui-serif, Georgia, serif;
+  /* One family, as on ef.com: headings are the body face set bold. */
   --font-sans: var(--font-body-face), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-sans);
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -28,34 +32,36 @@
 
 /* Display type scale → utilities `text-display-{xs..xl}` */
 @theme {
-  --text-display-xl: clamp(2.25rem, 1.4rem + 3.6vw, 3.75rem);
-  --text-display-xl--line-height: 1.02;
-  --text-display-xl--letter-spacing: -0.02em;
-  --text-display-lg: clamp(1.875rem, 1.35rem + 2.2vw, 3rem);
-  --text-display-lg--line-height: 1.05;
-  --text-display-lg--letter-spacing: -0.02em;
+  --text-display-xl: clamp(2.375rem, 1.3rem + 4.2vw, 4.25rem);
+  --text-display-xl--line-height: 1.04;
+  --text-display-xl--letter-spacing: -0.035em;
+  --text-display-lg: clamp(1.875rem, 1.4rem + 1.9vw, 2.75rem);
+  --text-display-lg--line-height: 1.12;
+  --text-display-lg--letter-spacing: -0.028em;
   --text-display-md: clamp(1.5rem, 1.3rem + 0.8vw, 1.875rem);
-  --text-display-md--line-height: 1.15;
-  --text-display-md--letter-spacing: -0.02em;
+  --text-display-md--line-height: 1.2;
+  --text-display-md--letter-spacing: -0.022em;
   --text-display-sm: clamp(1.25rem, 1.15rem + 0.45vw, 1.5rem);
-  --text-display-sm--line-height: 1.2;
-  --text-display-sm--letter-spacing: -0.015em;
+  --text-display-sm--line-height: 1.25;
+  --text-display-sm--letter-spacing: -0.018em;
   --text-display-xs: 1.125rem;
-  --text-display-xs--line-height: 1.3;
-  --text-display-xs--letter-spacing: -0.01em;
+  --text-display-xs--line-height: 1.35;
+  --text-display-xs--letter-spacing: -0.012em;
 }
 
 :root {
   color-scheme: light;
 
-  --background: oklch(0.986 0.005 85);
-  --foreground: oklch(0.205 0.012 55);
-  --card: oklch(0.972 0.005 85);
-  --muted: oklch(0.95 0.006 85);
-  --muted-foreground: oklch(0.43 0.012 55); /* 7:1 on --background (body copy) */
-  --faint: oklch(0.5 0.012 55);
-  --border: oklch(0.205 0.012 55 / 0.12);
-  --border-strong: oklch(0.205 0.012 55 / 0.3);
+  /* White page, near-black ink, neutral greys. Red is the only colour and it means "the result":
+     the portrait, lead figures, the after-bar in a chart, focus and errors. Buttons are ink. */
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.21 0 0); /* #191919 */
+  --card: oklch(0.975 0.002 60);
+  --muted: oklch(0.955 0.002 60);
+  --muted-foreground: oklch(0.4 0 0); /* 9:1 on --background (body copy) */
+  --faint: oklch(0.52 0 0); /* 5.5:1 on --background, 4.9:1 on --muted (labels) */
+  --border: oklch(0.21 0 0 / 0.13);
+  --border-strong: oklch(0.21 0 0 / 0.32);
 
   --accent: oklch(0.542 0.221 27); /* #d10413 — sampled from the portrait brush stroke */
   --accent-foreground: oklch(0.99 0 0);
@@ -89,6 +95,10 @@
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
+  /* Display type is the body face, bold. A utility weight (font-medium…) still wins over this. */
+  .font-display {
+    font-weight: 700;
+  }
   ::selection {
     background: var(--accent);
     color: var(--accent-foreground);
@@ -101,8 +111,8 @@
 
 /* ---------------------------------------------------------------------------
    Hero entrance — once on load, then the hero stands (~1.1s total).
-   Words rise out of masks (RiseText); `.enter-up` blocks follow; `.enter-settle`
-   eases the picture from 1.03 → 1. Never hidden under reduced motion.
+   Words rise out of masks (RiseText); `.enter-up` blocks follow. The portrait does not move.
+   Never hidden under reduced motion.
    ------------------------------------------------------------------------- */
 @theme {
   --ease-enter: cubic-bezier(0.22, 1, 0.36, 1);
@@ -125,9 +135,6 @@
   .enter-up {
     animation: enter-up 600ms var(--ease-enter) var(--enter-delay, 450ms) both;
   }
-  .enter-settle {
-    animation: settle 1100ms var(--ease-enter) both;
-  }
 }
 @keyframes rise {
   from {
@@ -138,11 +145,6 @@
   from {
     opacity: 0;
     transform: translateY(10px);
-  }
-}
-@keyframes settle {
-  from {
-    transform: scale(1.03);
   }
 }
 
@@ -156,6 +158,7 @@
   height: 1.05em;
   margin-left: 0.15em;
   vertical-align: text-bottom;
+  border-radius: 2px;
   background: var(--accent);
 }
 @media (prefers-reduced-motion: no-preference) {
@@ -204,14 +207,5 @@
   ::view-transition-old(*),
   ::view-transition-new(*) {
     animation: none !important;
-  }
-}
-
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
-  .text-pretty {
-    text-wrap: pretty;
   }
 }

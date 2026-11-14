@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository layout
 
-A **single Next.js 16.4 app (App Router, React 19.3) at the repo root**, deployed on Vercel. TypeScript, Tailwind v4, Motion v12 (`motion/react`), AI SDK v7, Resend (contact form). Light (paper) theme only. The home page is statically prerendered; the only server-side code is `app/api/contact/route.ts` (Resend mailer).
+A **single Next.js 16.4 app (App Router, React 19.3) at the repo root**, deployed on Vercel. TypeScript, Tailwind v4, Motion v12 (`motion/react`), AI SDK v7, Resend (contact form). Light theme only: white page, near-black ink, one sans family (Hanken Grotesk; headings are the body face set bold), pill buttons and rounded cards, modelled on ef.com. No italics, no serif, no numbered or uppercase eyebrows. The home page is statically prerendered; the only server-side code is `app/api/contact/route.ts` (Resend mailer).
 
 **Branching:** the AI-era redesign lives on the long-lived `redesign/ai-era` branch. Phase PRs target `redesign/ai-era`, never `master`, until the whole redesign is ready — `master` still has the old `client/` layout and is what production deploys.
 
@@ -36,10 +36,10 @@ Path alias: `@/*` → repo root (see `tsconfig.json`).
 
 Composition flows one way — each layer only imports from the layers above it:
 
-1. **Tokens** — `styles/globals.css`: colours, typefaces, the `text-display-{xs..xl}` type scale, `.feature-invert`. A type or palette change is a token change.
-2. **Primitives** — `components/ui/`: `Container` (the `.wrap`: 1248px content box, 96px margins at 1440), `Heading`/`Text`/`Eyebrow`, `Button`/`ButtonLink`/`Arrow`, `TextLink`, `BulletList`/`TagList`, `cn`. Server-safe, no state.
+1. **Tokens** — `styles/globals.css`: colours, typefaces, the `text-display-{xs..xl}` type scale, the radius scale (pills; 12px fields; 16px cards and pictures; 24px frames). A type or palette change is a token change. Red (`--accent`) means "the result" only: lead figures, the after-bar in charts, focus and errors. Buttons are ink.
+2. **Primitives** — `components/ui/`: `Container` (the `.wrap`: 1248px content box, 96px margins at 1440), `Heading`/`Text`/`Eyebrow`, `Button`/`ButtonLink`/`Arrow`, `TextLink`, `BulletList`/`TagList`, `cn`. Server-safe, no state. Icons come from **Phosphor** (`@phosphor-icons/react/ssr`, bold weight) — `Arrow` wraps the four directional ones; never type a glyph (→ ↗ ✕) into markup.
 3. **Motion** — `components/motion/`: `RiseText` (CSS-only hero entrance, server-safe), `GrowBar` (client). No scroll-reveals: content is at rest when scrolled to (a hidden-until-scrolled block also traps keyboard focus on invisible content). Never branch on `useReducedMotion()` for SSR'd start states — React won't patch the stranded inline style on hydration; handle reduced motion in CSS (`[data-grow]`, `.rise-word`, `.enter-up`).
-   - **Hero** — `components/hero/InkPortrait.tsx` + `ink-gl.ts`: the page's one effect. Raw WebGL1 ink shader over a priority `<Image>`, loaded after idle; dry frame == the image, so it swaps in invisibly. A face `protect` ellipse (from `hero.avatarProtect` in content) keeps the person still while the ink runs. Skipped under reduced motion / no WebGL.
+   - **Hero portrait** — a plain priority `next/image` (the LCP element). No effect over it: Ibrahim removed the WebGL ink shader on 2026-11-14 as a gimmick he had seen on AI-built sites. Don't add one back.
 4. **Patterns** — `components/patterns/`: compound `Section` (`Section.Header/Title/Intro/Body`, renders a `<div>` scroll target), `Band` (the full-bleed `<section>` that sits directly in `<main>`).
 5. **Sections** — `components/sections/`: one per page section. Server Components by default; `'use client'` only where there is real state (SiteNav, Contact, and `components/demo/AskBar`).
 
@@ -86,7 +86,7 @@ A free model answers questions about the site by calling **grounded tools** and 
 
 ### Contact form
 
-The only server-side surface is `app/api/contact/route.ts` (covered by `test/unit/contact-route.test.ts`). It uses Resend to email submissions to `RESEND_TO_EMAIL`, with `replyTo` set to the visitor's email so replies go to their inbox. Validates name/email/message and fails-soft if `RESEND_API_KEY` is missing.
+The only server-side surface is `app/api/contact/route.ts` (covered by `test/unit/contact-route.test.ts`). It uses Resend to email submissions to `RESEND_TO_EMAIL`, with `replyTo` set to the visitor's email so replies go to their inbox. Validates name/email/message and fails-soft if `RESEND_API_KEY` is missing. The Resend SDK **resolves with `{ error }` instead of throwing** on a bad key or unverified domain, so the route checks that return: a refused notification is logged (`[contact] …`) and answered with 502, never "Sent". If the from-domain is refused it retries once from `onboarding@resend.dev` (which only delivers to the Resend account owner).
 
 ### Project images (when needed)
 

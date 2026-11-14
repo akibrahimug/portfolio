@@ -20,19 +20,16 @@ export const redesignContent = {
   },
   cv: { label: 'Download CV', href: '/Ibrahim_Kasoma_CV.pdf' },
   hero: {
-    /** h1 — names the category. `{ em }` segments render as the accent italic. */
-    headline: ['Senior frontend engineer building', { em: 'AI-native' }, 'interfaces.'] as const,
+    /** h1 — names the category. One plain sentence: no emphasised word. */
+    headline: 'Senior frontend engineer building AI-native interfaces.',
     statement:
       'Six years of production TypeScript and React, 80+ apps shipped. At EF Education First I ship across a Next.js platform used by 3.4M people a month in 60+ markets.',
-    location: 'Stroud, Gloucestershire, UK',
     primaryCta: { label: 'Email me', href: 'mailto:kasomaibrahim@gmail.com' },
     secondaryCta: { label: 'Ask AI (Live Demo)', href: '#demo' },
     avatarSrc: '/icons/avarta-cutout.webp',
     avatarWidth: 1221,
     avatarHeight: 1472,
     avatarAlt: 'Ibrahim Kasoma · Senior Frontend Engineer',
-    /** Face + beard on avarta-cutout, image space from the top-left; the ink shader keeps it still. */
-    avatarProtect: { x: 0.455, y: 0.34, rx: 0.15, ry: 0.19 },
   },
   skills: {
     groups: [
@@ -335,4 +332,3 @@ export const redesignContent = {
   },
 } as const
 
-export type RedesignContent = typeof redesignContent

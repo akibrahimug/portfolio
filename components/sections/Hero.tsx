@@ -1,11 +1,11 @@
 import type { CSSProperties } from 'react'
+import Image from 'next/image'
 import { redesignContent } from '@/lib/redesign-content'
 import { Container } from '@/components/ui/Container'
 import { Heading, Text } from '@/components/ui/Typography'
 import { ButtonLink, Arrow } from '@/components/ui/Button'
 import { RiseText } from '@/components/motion/RiseText'
 import { FigureText } from '@/components/ui/FigureText'
-import { InkPortrait } from '@/components/hero/InkPortrait'
 
 const delay = (ms: number) => ({ '--enter-delay': `${ms}ms` }) as CSSProperties
 
@@ -14,12 +14,12 @@ export function Hero() {
 
   return (
     <section id='top' aria-labelledby='hero-h' className='flex min-h-svh flex-col justify-center pb-10 pt-20 md:pb-20 md:pt-32'>
-      <Container className='grid items-start gap-6 md:grid-cols-12 md:gap-6'>
+      <Container className='grid items-start gap-8 md:grid-cols-12 md:gap-6'>
         <div className='hero-text md:col-span-7'>
-          <Heading level={1} size='xl' id='hero-h'>
-            <RiseText segments={hero.headline} />
+          <Heading level={1} size='xl' id='hero-h' className='font-extrabold'>
+            <RiseText text={hero.headline} />
           </Heading>
-          <Text size='lead' className='enter-up mt-6 max-w-xl' style={delay(420)}>
+          <Text size='lead' className='enter-up mt-6 max-w-xl md:text-xl md:leading-relaxed' style={delay(420)}>
             <FigureText text={hero.statement} />
           </Text>
 
@@ -37,13 +37,15 @@ export function Hero() {
         </div>
 
         <div className='order-first md:order-last md:col-span-5'>
-          <InkPortrait
+          {/* A still photograph: the LCP element, no effect over it. */}
+          <Image
             src={hero.avatarSrc}
             width={hero.avatarWidth}
             height={hero.avatarHeight}
             alt={hero.avatarAlt}
-            protect={hero.avatarProtect}
-            className='enter-settle relative mx-auto aspect-4/5 w-40 cursor-crosshair sm:w-56 md:w-full md:max-w-md'
+            priority
+            sizes='(max-width: 640px) 11rem, (max-width: 768px) 15rem, 30rem'
+            className='mx-auto h-auto w-44 sm:w-60 md:w-full md:max-w-[30rem]'
           />
         </div>
       </Container>
