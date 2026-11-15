@@ -18,7 +18,7 @@ describe('structured data (JSON-LD)', () => {
     expect(person.name).toBe('Ibrahim Kasoma')
     expect(person.sameAs).toEqual(redesignContent.contact.socials.map((s) => s.href))
     expect(person.knowsAbout).toContain('TypeScript')
-    expect(person.image.url).toBe(`${SITE_URL}${redesignContent.hero.avatarSrc}`)
+    expect(person.image.url).toBe(`${SITE_URL}/portrait.jpg`)
   })
 
   it('ProfilePage points at the Person and the OG image', () => {

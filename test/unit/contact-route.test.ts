@@ -57,6 +57,13 @@ describe('POST /api/contact', () => {
     expect(send.mock.calls[1][0]).toMatchObject({ to: 'jane@example.com' })
   })
 
+  it('the acknowledgement invites a reply, so a reply to it has to reach the inbox', async () => {
+    await post(valid)
+    const ack = send.mock.calls[1][0]
+    expect(ack.text).toContain('Replying to this email')
+    expect(ack.replyTo).toBe(process.env.RESEND_TO_EMAIL || 'kasomaibrahim@gmail.com')
+  })
+
   it('still succeeds if only the acknowledgement fails', async () => {
     send.mockResolvedValueOnce({ data: { id: 'x' }, error: null }).mockRejectedValueOnce(new Error('boom'))
     const res = await post(valid)
