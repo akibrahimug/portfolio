@@ -29,7 +29,7 @@ const wrap = (preheader: string, body: string) => `<!doctype html>
           <table role="presentation" cellpadding="0" cellspacing="0" border="0">
             <tr>
               <td style="padding-right:14px;">
-                <img src="${LOGO_CID}" width="48" height="48" alt="${BRAND_NAME}" style="display:block;border-radius:50%;" />
+                <img src="${LOGO_CID}" width="64" height="64" alt="${BRAND_NAME}" style="display:block;width:64px;height:64px;" />
               </td>
               <td style="vertical-align:middle;">
                 <div style="font-size:14px;font-weight:600;color:#1c1917;line-height:1.2;">${BRAND_NAME}</div>

@@ -12,9 +12,9 @@ const FALLBACK_FROM = 'onboarding@resend.dev'
 const FROM = process.env.RESEND_FROM_EMAIL || FALLBACK_FROM
 
 const logoAttachment = {
-  filename: 'logo.png',
+  filename: 'logo.jpg',
   content: emailLogoBase64,
-  contentType: 'image/png',
+  contentType: 'image/jpeg',
   contentId: EMAIL_LOGO_CID,
 }
 
@@ -81,6 +81,9 @@ export async function POST(req: Request) {
   const ackFailure = await send(resend, {
     from: `Ibrahim Kasoma <${FROM}>`,
     to: trimmedEmail,
+    // The from address is a sender, not a mailbox: without this a reply to the
+    // acknowledgement goes nowhere, and the email tells the visitor they can reply.
+    replyTo: TO,
     subject: ack.subject,
     html: ack.html,
     text: ack.text,

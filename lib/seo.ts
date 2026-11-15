@@ -19,6 +19,16 @@ export const ogImage = {
   alt: 'Ibrahim Kasoma · Senior Frontend Engineer. TypeScript, React, Node.js.',
 }
 
+/**
+ * The portrait as search engines should see it: square, on white. The hero's cutout is
+ * transparent, which Google flattens onto black and crops off-centre in result thumbnails.
+ */
+export const personImage = {
+  url: `${SITE_URL}/portrait.jpg`,
+  width: 1200,
+  height: 1200,
+}
+
 const PERSON_ID = `${SITE_URL}/#person`
 const WEBSITE_ID = `${SITE_URL}/#website`
 
@@ -39,7 +49,7 @@ function person() {
     url: `${SITE_URL}/`,
     image: {
       '@type': 'ImageObject',
-      url: `${SITE_URL}${hero.avatarSrc}`,
+      ...personImage,
       caption: hero.avatarAlt,
     },
     email: `mailto:${contact.email}`,
