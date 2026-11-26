@@ -8,6 +8,7 @@ import { SiteNav } from '@/components/sections/SiteNav'
 import { Footer } from '@/components/sections/Footer'
 import { AskBar } from '@/components/demo/AskBar'
 import { DemoChatProvider } from '@/components/demo/DemoChatProvider'
+import { ClickTracker } from '@/components/analytics/ClickTracker'
 
 // One variable family, wired to tokens (`--font-sans`, `--font-display`) in globals.css:
 // headings are the body face set bold. No second face, no italics.
@@ -92,6 +93,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           {children}
           <Footer />
         </DemoChatProvider>
+        <ClickTracker />
       </body>
     </html>
   )

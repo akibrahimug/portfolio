@@ -1,18 +1,15 @@
 import { Ratelimit } from '@upstash/ratelimit'
-import { Redis } from '@upstash/redis'
+import { redis } from '@/lib/redis'
 
 /**
  * Per-visitor limit so one person can't drain the shared free model quota.
- * Upstash free tier; Vercel's Marketplace may name the vars either way. Without them the
- * limiter is off (local dev) — the free providers' own quotas still apply.
+ * Upstash free tier. Without Redis the limiter is off (local dev) — the free providers'
+ * own quotas still apply.
  */
-const url = process.env.UPSTASH_REDIS_REST_URL ?? process.env.KV_REST_API_URL
-const token = process.env.UPSTASH_REDIS_REST_TOKEN ?? process.env.KV_REST_API_TOKEN
-
 const limiter =
-  url && token
+  redis
     ? new Ratelimit({
-        redis: new Redis({ url, token }),
+        redis,
         limiter: Ratelimit.slidingWindow(20, '10 m'),
         prefix: 'demo',
         // Rejections are cached in memory per instance: an abuser stops costing Redis calls.

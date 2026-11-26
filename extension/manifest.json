@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "Portfolio Click Inspector",
+  "version": "1.0.0",
+  "description": "Shows how often each link and button on kasomaibrahim.dev was clicked, drawn over the live page.",
+  "permissions": ["storage"],
+  "host_permissions": ["https://www.kasomaibrahim.dev/*", "http://localhost:3000/*"],
+  "action": {
+    "default_title": "Click Inspector",
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.kasomaibrahim.dev/*", "http://localhost:3000/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["track-key.js"],
+      "matches": ["https://www.kasomaibrahim.dev/*", "http://localhost:3000/*"]
+    }
+  ]
+}
