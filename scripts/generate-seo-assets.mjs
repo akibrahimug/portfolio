@@ -103,12 +103,17 @@ await page.evaluate(() => document.fonts.ready)
 await page.screenshot({ path: path.join(PUB, 'og.png') })
 console.log('wrote', path.join(PUB, 'og.png'))
 
-// Square portrait on white: the whole cutout, centred, nothing transparent.
+// Square head-and-shoulders crop on white, nothing transparent. Search thumbnails are ~90px:
+// the whole hexagon left the face tiny, so the crop is framed on the face (cutout pixels,
+// 1221×1472 source: hair top ≈ y70, face centre ≈ x560).
+const CROP = { x: 125, y: 45, size: 870 }
 async function renderPortrait(size, opts) {
+  const scale = size / CROP.size
   await page.setViewportSize({ width: size, height: size })
-  await page.setContent(`<!doctype html><html><body style="margin:0;width:${size}px;height:${size}px;background:#fff">
-    <img src="${avatarData}" style="display:block;width:100%;height:100%;padding:4%;box-sizing:border-box;object-fit:contain" />
+  await page.setContent(`<!doctype html><html><body style="margin:0;width:${size}px;height:${size}px;background:#fff;overflow:hidden;position:relative">
+    <img src="${avatarData}" style="position:absolute;width:${1221 * scale}px;left:${-CROP.x * scale}px;top:${-CROP.y * scale}px" />
   </body></html>`)
+  await page.evaluate(() => document.querySelector('img').decode())
   return page.screenshot({ type: 'jpeg', quality: 88, ...opts })
 }
 
